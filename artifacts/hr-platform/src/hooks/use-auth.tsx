@@ -23,10 +23,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const ME_QUERY_KEY = ["auth-me"];
 
+// In production the frontend lives on a different Railway domain than the
+// api-server, so `/api/*` paths must be prefixed with the absolute URL of the
+// backend. In dev `VITE_API_URL` is unset and Vite proxies `/api` to
+// localhost:8080 (see vite.config.ts), which means the relative path Just Works.
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+
 async function fetchProfile(): Promise<User | null> {
   const token = await getAccessToken();
   if (!token) return null;
-  const res = await fetch("/api/auth/me", {
+  const res = await fetch(`${API_BASE}/api/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (res.status === 401) return null;

@@ -16,6 +16,29 @@ export function setAuthTokenProvider(provider: AuthTokenProvider | null): void {
   authTokenProvider = provider;
 }
 
+/**
+ * Base URL prepended to relative paths (those starting with `/`). In dev,
+ * Vite proxies `/api` to the local backend so this stays empty. In
+ * production, the frontend and api-server live on separate Railway domains
+ * so the full backend URL is read from VITE_API_URL at build time.
+ */
+const API_BASE = (() => {
+  try {
+    const env = (import.meta as unknown as { env?: Record<string, string | undefined> }).env;
+    return env?.VITE_API_URL?.replace(/\/$/, "") ?? "";
+  } catch {
+    return "";
+  }
+})();
+
+function applyApiBase(input: RequestInfo | URL): RequestInfo | URL {
+  if (!API_BASE) return input;
+  if (typeof input === "string" && input.startsWith("/")) {
+    return `${API_BASE}${input}`;
+  }
+  return input;
+}
+
 export type ErrorType<T = unknown> = ApiError<T>;
 
 export type BodyType<T> = T;
@@ -318,9 +341,10 @@ export async function customFetch<T = unknown>(
     }
   }
 
-  const requestInfo = { method, url: resolveUrl(input) };
+  const resolvedInput = applyApiBase(input);
+  const requestInfo = { method, url: resolveUrl(resolvedInput) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  const response = await fetch(resolvedInput, { ...init, method, headers });
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

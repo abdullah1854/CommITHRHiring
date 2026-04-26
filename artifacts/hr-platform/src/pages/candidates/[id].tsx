@@ -11,6 +11,11 @@ import {
   getGetCandidateQueryKey,
   getListCandidatesQueryKey,
 } from "@workspace/api-client-react";
+
+// In production the api-server lives on a different Railway domain than the
+// frontend, so manually-built fetch URLs must be prefixed. In dev VITE_API_URL
+// is unset and Vite proxies `/api` to localhost:8080 (see vite.config.ts).
+const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   ArrowLeft, Mail, Phone, MapPin, FileText, Sparkles, CheckCircle2,
@@ -85,7 +90,7 @@ export default function CandidateProfile() {
     (async () => {
       try {
         const res = await fetch(
-          `/api/ai/interview-questions/${candidateId}/${candidateJobId}`,
+          `${API_BASE}/api/ai/interview-questions/${candidateId}/${candidateJobId}`,
           { credentials: "include" },
         );
         if (res.status === 404) {
@@ -828,7 +833,7 @@ function LinkedInBadge({
     try {
       const body: Record<string, string> = {};
       if (url) body.linkedinUrl = url;
-      await fetch(`/api/candidates/${candidateId}/scrape-linkedin`, {
+      await fetch(`${API_BASE}/api/candidates/${candidateId}/scrape-linkedin`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify(body),
       });
@@ -889,7 +894,7 @@ function LinkedInInsightsPanel({
     if (!urlInput.trim()) return;
     setScraping(true);
     try {
-      await fetch(`/api/candidates/${candidateId}/scrape-linkedin`, {
+      await fetch(`${API_BASE}/api/candidates/${candidateId}/scrape-linkedin`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         credentials: "include", body: JSON.stringify({ linkedinUrl: urlInput.trim() }),
       });
