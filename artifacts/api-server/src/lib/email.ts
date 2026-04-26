@@ -30,6 +30,10 @@ interface SendEmailOptions {
   subject: string;
   html: string;
   type?: string;
+  ics?: {
+    filename: string;
+    content: string;
+  };
 }
 
 export async function sendEmail(opts: SendEmailOptions): Promise<void>;
@@ -91,6 +95,13 @@ async function sendEmailInternal(opts: SendEmailOptions): Promise<void> {
       to: opts.to,
       subject: opts.subject,
       html: opts.html,
+      icalEvent: opts.ics
+        ? {
+            filename: opts.ics.filename,
+            method: "REQUEST",
+            content: opts.ics.content,
+          }
+        : undefined,
     });
 
     try {
@@ -149,4 +160,56 @@ export function interviewInviteTemplate(opts: {
       <p>Best regards,<br/><strong>GIQ Recruitment Team</strong></p>
     </div>
   `;
+}
+
+function escapeIcsText(value: string): string {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/\n/g, "\\n")
+    .replace(/,/g, "\\,")
+    .replace(/;/g, "\\;");
+}
+
+function formatIcsDate(date: Date): string {
+  return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+}
+
+export function buildInterviewIcs(opts: {
+  id: string;
+  candidateName: string;
+  jobTitle: string;
+  interviewerName: string;
+  interviewType: string;
+  scheduledAt: Date;
+  durationMinutes: number;
+  location?: string | null;
+  meetingLink?: string | null;
+}): string {
+  const start = opts.scheduledAt;
+  const end = new Date(start.getTime() + opts.durationMinutes * 60_000);
+  const summary = `Interview: ${opts.jobTitle} — ${opts.candidateName}`;
+  const description = [
+    `Interview type: ${opts.interviewType.replace(/_/g, " ")}`,
+    `Interviewer: ${opts.interviewerName}`,
+    opts.meetingLink ? `Meeting link: ${opts.meetingLink}` : null,
+  ].filter(Boolean).join("\n");
+
+  return [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//GIQ//Recruitment Platform//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:REQUEST",
+    "BEGIN:VEVENT",
+    `UID:${opts.id}@giq-recruitment`,
+    `DTSTAMP:${formatIcsDate(new Date())}`,
+    `DTSTART:${formatIcsDate(start)}`,
+    `DTEND:${formatIcsDate(end)}`,
+    `SUMMARY:${escapeIcsText(summary)}`,
+    `DESCRIPTION:${escapeIcsText(description)}`,
+    opts.location ? `LOCATION:${escapeIcsText(opts.location)}` : null,
+    opts.meetingLink ? `URL:${opts.meetingLink}` : null,
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ].filter(Boolean).join("\r\n");
 }

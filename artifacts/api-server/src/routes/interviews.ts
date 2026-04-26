@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "@workspace/db";
 import { requireAuth } from "../middlewares/auth.js";
-import { sendEmail, interviewInviteTemplate } from "../lib/email.js";
+import { generateInterviewIcs, sendEmail, interviewInviteTemplate } from "../lib/email.js";
 import { candidatePublicSelect, jobListSelect } from "../lib/prismaSafeSelects.js";
 
 const interviewInclude = {
@@ -142,6 +142,34 @@ router.get("/:id", requireAuth, async (req, res) => {
     res.json({ ...interview, job: interview.job ? { ...interview.job, candidateCount: 0 } : null });
   } catch (err) {
     res.status(500).json({ error: "Internal Server Error", message: "Failed to fetch interview" });
+  }
+});
+
+router.get("/:id/ics", requireAuth, async (req, res) => {
+  try {
+    const interview = await prisma.interview.findFirst({
+      where: { id: req.params.id as string },
+      include: interviewInclude,
+    });
+    if (!interview) return res.status(404).json({ error: "Not Found", message: "Interview not found" });
+
+    const ics = generateInterviewIcs({
+      uid: interview.id,
+      candidateName: interview.candidate?.fullName ?? "Candidate",
+      jobTitle: interview.job?.title ?? "Position",
+      interviewerName: interview.interviewerName,
+      interviewType: interview.interviewType,
+      scheduledAt: interview.scheduledAt,
+      durationMinutes: interview.durationMinutes,
+      location: interview.location,
+      meetingLink: interview.meetingLink,
+    });
+    res.setHeader("Content-Type", "text/calendar; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="interview-${interview.id}.ics"`);
+    res.send(ics);
+  } catch (err) {
+    console.error("[interviews] ics failed:", err);
+    res.status(500).json({ error: "Internal Server Error", message: "Failed to generate calendar invite" });
   }
 });
 

@@ -274,6 +274,14 @@ export default function Interviews() {
                             )}
                             {interview.inviteSentAt ? "Resend" : "Send Invite"}
                           </button>
+                          <a
+                            href={`/api/interviews/${interview.id}/ics`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors"
+                            title="Download calendar invite (.ics)"
+                          >
+                            <CalendarIcon className="w-3.5 h-3.5" />
+                            ICS
+                          </a>
                           <button
                             type="button"
                             onClick={() => handleDelete(interview.id)}

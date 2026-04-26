@@ -959,14 +959,22 @@ export default function CandidateProfile() {
                               {new Date(interview.scheduledAt).toLocaleString()} &bull; {interview.interviewerName}
                             </div>
                           </div>
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider capitalize
-                            ${interview.status === "scheduled" ? "bg-blue-100 text-blue-800" :
-                              interview.status === "completed" ? "bg-emerald-100 text-emerald-800" :
-                              interview.status === "cancelled" ? "bg-slate-100 text-slate-600" :
-                              "bg-red-100 text-red-800"}
-                          `}>
-                            {interview.status.replace(/_/g, " ")}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={`${API_BASE}/api/interviews/${interview.id}/ics`}
+                              className="text-xs font-bold text-primary hover:underline"
+                            >
+                              Download calendar
+                            </a>
+                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider capitalize
+                              ${interview.status === "scheduled" ? "bg-blue-100 text-blue-800" :
+                                interview.status === "completed" ? "bg-emerald-100 text-emerald-800" :
+                                interview.status === "cancelled" ? "bg-slate-100 text-slate-600" :
+                                "bg-red-100 text-red-800"}
+                            `}>
+                              {interview.status.replace(/_/g, " ")}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>
