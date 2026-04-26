@@ -23,7 +23,7 @@ export function ProtectedLayout({ children, title }: ProtectedLayoutProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex items-center justify-center bg-muted">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
@@ -32,7 +32,7 @@ export function ProtectedLayout({ children, title }: ProtectedLayoutProps) {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-muted flex">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 md:ml-64 flex flex-col min-w-0">
         <Header title={title} onMenuClick={() => setSidebarOpen(true)} />

@@ -43,14 +43,14 @@ export default function SettingsPage() {
   return (
     <DashboardLayout title="User Settings">
       <div className="max-w-3xl space-y-6">
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+        <div className="bg-card border border-border rounded-2xl shadow-sm p-6">
           <div className="flex items-start gap-4 mb-6">
             <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
               <Bell className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-900">Notification Preferences</h2>
-              <p className="text-sm text-slate-500 mt-1">
+              <h2 className="text-xl font-bold text-foreground">Notification Preferences</h2>
+              <p className="text-sm text-muted-foreground mt-1">
                 Choose which recruitment events should notify you. These MVP preferences are stored locally on this device.
               </p>
             </div>
@@ -87,7 +87,7 @@ export default function SettingsPage() {
             />
           </div>
 
-          <div className="pt-6 mt-6 border-t border-slate-100 flex justify-end">
+          <div className="pt-6 mt-6 border-t border-border flex justify-end">
             <button
               type="button"
               onClick={save}
@@ -120,24 +120,24 @@ function PreferenceRow({
     <button
       type="button"
       onClick={onToggle}
-      className="w-full flex items-center justify-between gap-4 p-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-left transition-colors"
+      className="w-full flex items-center justify-between gap-4 p-4 rounded-xl border border-border hover:bg-muted text-left transition-colors"
     >
       <div className="flex items-start gap-3">
-        <div className="mt-0.5 w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
+        <div className="mt-0.5 w-8 h-8 rounded-lg bg-muted text-muted-foreground flex items-center justify-center">
           {icon}
         </div>
         <div>
-          <p className="font-semibold text-slate-900">{title}</p>
-          <p className="text-sm text-slate-500 mt-0.5">{description}</p>
+          <p className="font-semibold text-foreground">{title}</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
         </div>
       </div>
       <span
         className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${
-          checked ? "bg-primary" : "bg-slate-300"
+          checked ? "bg-primary" : "bg-muted"
         }`}
       >
         <span
-          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform mt-0.5 ${
+          className={`inline-block h-5 w-5 transform rounded-full bg-card shadow transition-transform mt-0.5 ${
             checked ? "translate-x-5" : "translate-x-0.5"
           }`}
         />

@@ -37,7 +37,7 @@ export default function JobCandidates() {
   return (
     <DashboardLayout title={`Candidates: ${job?.title || 'Loading...'}`}>
       <div className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-        <Link href="/jobs" className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center">
+        <Link href="/jobs" className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Jobs
         </Link>
         <button 
@@ -50,9 +50,9 @@ export default function JobCandidates() {
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
         {isLoadingCandidates ? (
-          <div className="p-12 text-center text-slate-500">Loading candidates...</div>
+          <div className="p-12 text-center text-muted-foreground">Loading candidates...</div>
         ) : mergedList.length === 0 ? (
           <EmptyState
             icon={<User className="w-6 h-6" />}
@@ -78,14 +78,14 @@ export default function JobCandidates() {
                       {candidate.rankInfo ? (
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mx-auto
                           ${candidate.rankInfo.rank === 1 ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' : 
-                            candidate.rankInfo.rank === 2 ? 'bg-slate-200 text-slate-700 border border-slate-300' :
+                            candidate.rankInfo.rank === 2 ? 'bg-muted text-foreground border border-input' :
                             candidate.rankInfo.rank === 3 ? 'bg-orange-100 text-orange-800 border border-orange-200' :
-                            'bg-slate-100 text-slate-500'}
+                            'bg-muted text-muted-foreground'}
                         `}>
                           #{candidate.rankInfo.rank}
                         </div>
                       ) : (
-                        <span className="text-slate-300 text-xs">-</span>
+                        <span className="text-muted-foreground/60 text-xs">-</span>
                       )}
                     </DataTableCell>
                     <DataTableCell>
@@ -94,10 +94,10 @@ export default function JobCandidates() {
                           {getInitials(candidate.fullName)}
                         </div>
                         <div>
-                          <Link href={`/candidates/${candidate.id}`} className="font-bold text-slate-900 hover:text-primary transition-colors">
+                          <Link href={`/candidates/${candidate.id}`} className="font-bold text-foreground hover:text-primary transition-colors">
                             {candidate.fullName}
                           </Link>
-                          <div className="text-xs text-slate-500 mt-0.5 max-w-xs truncate">{candidate.email || "No email"}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5 max-w-xs truncate">{candidate.email || "No email"}</div>
                         </div>
                       </div>
                     </DataTableCell>
@@ -120,12 +120,12 @@ export default function JobCandidates() {
                           </div>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-400 italic">Not screened</span>
+                        <span className="text-xs text-muted-foreground/70 italic">Not screened</span>
                       )}
                     </DataTableCell>
                     <DataTableCell><CandidateStatusBadge status={candidate.status} /></DataTableCell>
                     <DataTableCell className="text-right">
-                      <Link href={`/candidates/${candidate.id}`} className="inline-block bg-white border border-slate-200 hover:border-primary text-slate-700 hover:text-primary px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm">
+                      <Link href={`/candidates/${candidate.id}`} className="inline-block bg-card border border-border hover:border-primary text-foreground hover:text-primary px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm">
                         View Profile
                       </Link>
                     </DataTableCell>

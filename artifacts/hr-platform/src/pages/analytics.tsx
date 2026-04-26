@@ -133,20 +133,20 @@ export default function Analytics() {
     <DashboardLayout title="Analytics Dashboard">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <p className="text-sm text-slate-500">Export the current analytics view for reporting or print it as a PDF.</p>
+          <p className="text-sm text-muted-foreground">Export the current analytics view for reporting or print it as a PDF.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={exportAnalytics}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-semibold text-foreground hover:bg-muted"
           >
             <Download className="w-4 h-4" /> Export CSV
           </button>
           <button
             type="button"
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-border bg-card text-sm font-semibold text-foreground hover:bg-muted"
           >
             <FileText className="w-4 h-4" /> Print / Save PDF
           </button>
@@ -155,22 +155,22 @@ export default function Analytics() {
       {/* KPI Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {kpiCards.map(kpi => (
-          <div key={kpi.label} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div key={kpi.label} className="bg-card rounded-2xl border border-border shadow-sm p-5">
             <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center mb-3`}>
               {kpi.icon}
             </div>
-            <div className="text-2xl font-display font-bold text-slate-900">{kpi.value}</div>
-            <div className="text-sm font-medium text-slate-600 mt-0.5">{kpi.label}</div>
-            <div className="text-xs text-slate-400 mt-1">{kpi.sub}</div>
+            <div className="text-2xl font-display font-bold text-foreground">{kpi.value}</div>
+            <div className="text-sm font-medium text-muted-foreground mt-0.5">{kpi.label}</div>
+            <div className="text-xs text-muted-foreground/70 mt-1">{kpi.sub}</div>
           </div>
         ))}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Pipeline Funnel */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="font-bold text-lg text-slate-900 mb-1">Recruitment Funnel</h3>
-          <p className="text-sm text-slate-400 mb-6">Candidate distribution by pipeline stage</p>
+        <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <h3 className="font-bold text-lg text-foreground mb-1">Recruitment Funnel</h3>
+          <p className="text-sm text-muted-foreground/70 mb-6">Candidate distribution by pipeline stage</p>
           <div className="h-72">
             {isPipelineLoading ? (
               <Loader />
@@ -189,9 +189,9 @@ export default function Analytics() {
         </div>
 
         {/* Activity Trends */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h3 className="font-bold text-lg text-slate-900 mb-1">Activity Trends</h3>
-          <p className="text-sm text-slate-400 mb-6">Daily activity over the past 14 days</p>
+        <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+          <h3 className="font-bold text-lg text-foreground mb-1">Activity Trends</h3>
+          <p className="text-sm text-muted-foreground/70 mb-6">Daily activity over the past 14 days</p>
           <div className="h-72">
             {isActivityLoading ? (
               <Loader />
@@ -213,22 +213,22 @@ export default function Analytics() {
         </div>
 
         {/* Job Performance */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
-          <h3 className="font-bold text-lg text-slate-900 mb-1">Job Performance</h3>
-          <p className="text-sm text-slate-400 mb-4">Candidate volume and average AI match score by job. Candidate counts use the left axis; AI scores use the right axis (/100).</p>
+        <div className="bg-card p-6 rounded-2xl border border-border shadow-sm lg:col-span-2">
+          <h3 className="font-bold text-lg text-foreground mb-1">Job Performance</h3>
+          <p className="text-sm text-muted-foreground/70 mb-4">Candidate volume and average AI match score by job. Candidate counts use the left axis; AI scores use the right axis (/100).</p>
           {isMinimalJobData && (
             <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="rounded-xl bg-blue-50 border border-blue-100 p-4">
                 <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Job</p>
-                <p className="font-bold text-slate-900 truncate">{displayJobs[0]?.jobTitle ?? "No job data"}</p>
+                <p className="font-bold text-foreground truncate">{displayJobs[0]?.jobTitle ?? "No job data"}</p>
               </div>
-              <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Candidates</p>
-                <p className="text-2xl font-display font-bold text-slate-900">{displayJobs[0]?.candidateCount ?? 0}</p>
+              <div className="rounded-xl bg-muted border border-border p-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Candidates</p>
+                <p className="text-2xl font-display font-bold text-foreground">{displayJobs[0]?.candidateCount ?? 0}</p>
               </div>
               <div className="rounded-xl bg-purple-50 border border-purple-100 p-4">
                 <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">Avg AI Score</p>
-                <p className="text-2xl font-display font-bold text-slate-900">{displayJobs[0]?.averageScore ?? 0}/100</p>
+                <p className="text-2xl font-display font-bold text-foreground">{displayJobs[0]?.averageScore ?? 0}/100</p>
               </div>
             </div>
           )}
@@ -254,9 +254,9 @@ export default function Analytics() {
       </div>
 
       {/* Per-job breakdown table */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-        <h3 className="font-bold text-lg text-slate-900 mb-1">Per-Job Breakdown</h3>
-        <p className="text-sm text-slate-400 mb-6">Detailed metrics for each requisition</p>
+      <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+        <h3 className="font-bold text-lg text-foreground mb-1">Per-Job Breakdown</h3>
+        <p className="text-sm text-muted-foreground/70 mb-6">Detailed metrics for each requisition</p>
         {isJobLoading ? (
           <div className="py-10 flex justify-center"><Loader /></div>
         ) : displayJobs.length === 0 ? (
@@ -267,30 +267,30 @@ export default function Analytics() {
             className="py-8"
           />
         ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-200">
+          <div className="overflow-hidden rounded-xl border border-border">
             <DataTable minWidthClassName="min-w-[600px]">
               <DataTableHeader>
                 <DataTableRow className="hover:bg-transparent">
-                  <DataTableHead className="text-slate-600">Job Title</DataTableHead>
-                  <DataTableHead className="hidden text-slate-600 md:table-cell">Department</DataTableHead>
-                  <DataTableHead className="text-right text-slate-600">Candidates</DataTableHead>
-                  <DataTableHead className="text-right text-slate-600">Avg Score</DataTableHead>
-                  <DataTableHead className="text-right text-slate-600">Interviews</DataTableHead>
-                  <DataTableHead className="hidden text-slate-600 md:table-cell">Status</DataTableHead>
+                  <DataTableHead className="text-muted-foreground">Job Title</DataTableHead>
+                  <DataTableHead className="hidden text-muted-foreground md:table-cell">Department</DataTableHead>
+                  <DataTableHead className="text-right text-muted-foreground">Candidates</DataTableHead>
+                  <DataTableHead className="text-right text-muted-foreground">Avg Score</DataTableHead>
+                  <DataTableHead className="text-right text-muted-foreground">Interviews</DataTableHead>
+                  <DataTableHead className="hidden text-muted-foreground md:table-cell">Status</DataTableHead>
                 </DataTableRow>
               </DataTableHeader>
               <DataTableBody>
                 {displayJobs.map((j, i) => (
                   <DataTableRow key={(j as any).jobId ?? `${j.jobTitle}-${i}`}>
-                    <DataTableCell className="font-medium text-slate-900">{j.jobTitle}</DataTableCell>
-                    <DataTableCell className="hidden text-sm text-slate-600 md:table-cell">{(j as any).department ?? "—"}</DataTableCell>
-                    <DataTableCell className="text-right text-sm tabular-nums text-slate-700">{j.candidateCount}</DataTableCell>
-                    <DataTableCell className="text-right text-sm font-semibold tabular-nums text-slate-900">{j.averageScore || 0}/100</DataTableCell>
-                    <DataTableCell className="text-right text-sm tabular-nums text-slate-700">{j.interviewCount}</DataTableCell>
+                    <DataTableCell className="font-medium text-foreground">{j.jobTitle}</DataTableCell>
+                    <DataTableCell className="hidden text-sm text-muted-foreground md:table-cell">{(j as any).department ?? "—"}</DataTableCell>
+                    <DataTableCell className="text-right text-sm tabular-nums text-foreground">{j.candidateCount}</DataTableCell>
+                    <DataTableCell className="text-right text-sm font-semibold tabular-nums text-foreground">{j.averageScore || 0}/100</DataTableCell>
+                    <DataTableCell className="text-right text-sm tabular-nums text-foreground">{j.interviewCount}</DataTableCell>
                     <DataTableCell className="hidden md:table-cell">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${
                         (j as any).status === "open" ? "bg-emerald-100 text-emerald-800"
-                        : (j as any).status === "closed" ? "bg-slate-100 text-slate-600"
+                        : (j as any).status === "closed" ? "bg-muted text-muted-foreground"
                         : "bg-yellow-100 text-yellow-800"
                       }`}>
                         {(j as any).status ?? "open"}

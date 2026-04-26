@@ -114,17 +114,17 @@ export default function NewInterview() {
 
   return (
     <DashboardLayout title="Schedule Interview">
-      <div className="max-w-3xl bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+      <div className="max-w-3xl bg-card rounded-2xl shadow-sm border border-border p-6 md:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">
+              <label className="text-sm font-semibold text-foreground">
                 Candidate <span className="text-red-500">*</span>
               </label>
               <select
                 required
                 disabled={candidatesLoading}
-                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-card"
                 value={formData.candidateId}
                 onChange={(e) => setFormData({ ...formData, candidateId: e.target.value })}
               >
@@ -139,13 +139,13 @@ export default function NewInterview() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">
+              <label className="text-sm font-semibold text-foreground">
                 Job <span className="text-red-500">*</span>
               </label>
               <select
                 required
                 disabled={jobsLoading}
-                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-card"
                 value={formData.jobId}
                 onChange={(e) => setFormData({ ...formData, jobId: e.target.value })}
               >
@@ -159,7 +159,7 @@ export default function NewInterview() {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-semibold text-slate-700">
+              <label className="text-sm font-semibold text-foreground">
                 Interview Type <span className="text-red-500">*</span>
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -173,14 +173,14 @@ export default function NewInterview() {
                       className={`p-4 rounded-xl border text-left transition-all ${
                         active
                           ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                          : "border-slate-200 hover:border-slate-300 bg-white"
+                          : "border-border hover:border-input bg-card"
                       }`}
                     >
-                      <div className="flex items-center gap-2 font-semibold text-slate-800">
+                      <div className="flex items-center gap-2 font-semibold text-foreground">
                         {opt.icon}
                         {opt.label}
                       </div>
-                      <div className="text-xs text-slate-500 mt-1">{opt.hint}</div>
+                      <div className="text-xs text-muted-foreground mt-1">{opt.hint}</div>
                     </button>
                   );
                 })}
@@ -188,26 +188,26 @@ export default function NewInterview() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">
+              <label className="text-sm font-semibold text-foreground">
                 Date &amp; Time <span className="text-red-500">*</span>
               </label>
               <input
                 required
                 type="datetime-local"
-                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 value={formData.scheduledAt}
                 onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Duration (Minutes)</label>
+              <label className="text-sm font-semibold text-foreground">Duration (Minutes)</label>
               <input
                 required
                 type="number"
                 min={15}
                 step={15}
-                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 value={formData.durationMinutes}
                 onChange={(e) =>
                   setFormData({ ...formData, durationMinutes: Number(e.target.value) })
@@ -216,28 +216,28 @@ export default function NewInterview() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">
+              <label className="text-sm font-semibold text-foreground">
                 Interviewer Name <span className="text-red-500">*</span>
               </label>
               <input
                 required
                 type="text"
                 placeholder="e.g. Jane Doe"
-                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 value={formData.interviewerName}
                 onChange={(e) => setFormData({ ...formData, interviewerName: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">
+              <label className="text-sm font-semibold text-foreground">
               {formData.uiFormat === "onsite" ? "Office / Location" : "Meeting Link"}
             </label>
               {formData.uiFormat === "onsite" ? (
                 <input
                   type="text"
                   placeholder="e.g. HQ — Meeting Room 3"
-                  className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                  className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 />
@@ -245,7 +245,7 @@ export default function NewInterview() {
                 <input
                   type="url"
                   placeholder="https://zoom.us/j/..."
-                  className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                  className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                   value={formData.meetingLink}
                   onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
                 />
@@ -253,32 +253,32 @@ export default function NewInterview() {
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <label className="text-sm font-semibold text-slate-700">Notes / Agenda</label>
+              <label className="text-sm font-semibold text-foreground">Notes / Agenda</label>
               <textarea
                 rows={3}
                 placeholder="Interview focus areas, talking points..."
-                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               />
             </div>
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-slate-700 select-none cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-foreground select-none cursor-pointer">
             <input
               type="checkbox"
-              className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
+              className="w-4 h-4 text-primary border-input rounded focus:ring-primary"
               checked={formData.sendInvite}
               onChange={(e) => setFormData({ ...formData, sendInvite: e.target.checked })}
             />
             Send calendar invite email to candidate after scheduling
           </label>
 
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100">
+          <div className="pt-4 flex justify-end gap-3 border-t border-border">
             <button
               type="button"
               onClick={() => setLocation("/interviews")}
-              className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors"
+              className="px-5 py-2.5 rounded-xl border border-border text-muted-foreground font-semibold hover:bg-muted transition-colors"
             >
               Cancel
             </button>

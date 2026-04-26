@@ -74,16 +74,16 @@ export default function Admin() {
 
   return (
     <DashboardLayout title="Administration">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-8">
-        <div className="flex border-b border-slate-200">
+      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden mb-8">
+        <div className="flex border-b border-border">
           <button
-            className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${activeTab === "users" ? "text-primary border-b-2 border-primary" : "text-slate-500 hover:bg-slate-50"}`}
+            className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${activeTab === "users" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:bg-muted"}`}
             onClick={() => setActiveTab("users")}
           >
             <Users className="w-4 h-4" /> Users & Roles
           </button>
           <button
-            className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${activeTab === "system" ? "text-primary border-b-2 border-primary" : "text-slate-500 hover:bg-slate-50"}`}
+            className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${activeTab === "system" ? "text-primary border-b-2 border-primary" : "text-muted-foreground hover:bg-muted"}`}
             onClick={() => setActiveTab("system")}
           >
             <Settings className="w-4 h-4" /> System Settings
@@ -94,8 +94,8 @@ export default function Admin() {
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h3 className="font-bold text-lg text-slate-900">Manage Team Members</h3>
-                <p className="text-sm text-slate-500 mt-1">{usersData?.users.length ?? 0} team members in your organization</p>
+                <h3 className="font-bold text-lg text-foreground">Manage Team Members</h3>
+                <p className="text-sm text-muted-foreground mt-1">{usersData?.users.length ?? 0} team members in your organization</p>
               </div>
               <button
                 onClick={() => setIsAddUserOpen(true)}
@@ -105,15 +105,15 @@ export default function Admin() {
               </button>
             </div>
 
-            <div className="overflow-hidden rounded-xl border border-slate-200">
+            <div className="overflow-hidden rounded-xl border border-border">
               <DataTable minWidthClassName="min-w-[600px]">
                 <DataTableHeader>
                   <DataTableRow className="hover:bg-transparent">
-                    <DataTableHead className="text-slate-600">Name</DataTableHead>
-                    <DataTableHead className="text-slate-600">Email</DataTableHead>
-                    <DataTableHead className="text-slate-600">Role</DataTableHead>
-                    <DataTableHead className="text-slate-600">Status</DataTableHead>
-                    <DataTableHead className="text-right text-slate-600">Actions</DataTableHead>
+                    <DataTableHead className="text-muted-foreground">Name</DataTableHead>
+                    <DataTableHead className="text-muted-foreground">Email</DataTableHead>
+                    <DataTableHead className="text-muted-foreground">Role</DataTableHead>
+                    <DataTableHead className="text-muted-foreground">Status</DataTableHead>
+                    <DataTableHead className="text-right text-muted-foreground">Actions</DataTableHead>
                   </DataTableRow>
                 </DataTableHeader>
                 <DataTableBody>
@@ -134,13 +134,13 @@ export default function Admin() {
                   )}
                   {(usersData?.users ?? []).map(user => (
                     <DataTableRow key={user.id}>
-                      <DataTableCell className="font-medium text-slate-900">
+                      <DataTableCell className="font-medium text-foreground">
                         {user.name}
                         {currentUser?.id === user.id && (
-                          <span className="ml-2 text-xs font-normal text-slate-400">(you)</span>
+                          <span className="ml-2 text-xs font-normal text-muted-foreground/70">(you)</span>
                         )}
                       </DataTableCell>
-                      <DataTableCell className="text-sm text-slate-600">{user.email}</DataTableCell>
+                      <DataTableCell className="text-sm text-muted-foreground">{user.email}</DataTableCell>
                       <DataTableCell>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${user.role === "admin" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}>
                           {user.role === "admin" ? <ShieldAlert className="w-3 h-3 mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
@@ -148,7 +148,7 @@ export default function Admin() {
                         </span>
                       </DataTableCell>
                       <DataTableCell>
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${user.isActive ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600"}`}>
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${user.isActive ? "bg-emerald-100 text-emerald-800" : "bg-muted text-muted-foreground"}`}>
                           {user.isActive ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                           {user.isActive ? "Active" : "Inactive"}
                         </span>
@@ -157,7 +157,7 @@ export default function Admin() {
                         <div className="flex items-center justify-end gap-3">
                           <button
                             onClick={() => openEditRole(user.id, user.role as Role)}
-                            className="text-sm font-semibold text-slate-600 hover:text-primary transition-colors"
+                            className="text-sm font-semibold text-muted-foreground hover:text-primary transition-colors"
                           >
                             Edit Role
                           </button>
@@ -180,27 +180,27 @@ export default function Admin() {
 
         {activeTab === "system" && (
           <div className="p-6">
-            <h3 className="font-bold text-lg text-slate-900 mb-6">System Configuration</h3>
+            <h3 className="font-bold text-lg text-foreground mb-6">System Configuration</h3>
             <div className="space-y-6 max-w-2xl">
               <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-5 rounded-xl border border-purple-100">
-                <h4 className="font-semibold text-slate-900 mb-2">OpenAI Integration</h4>
-                <p className="text-sm text-slate-500 mb-4">AI screening, JD generation, and candidate summaries are powered by OpenAI via Replit AI Integrations.</p>
+                <h4 className="font-semibold text-foreground mb-2">OpenAI Integration</h4>
+                <p className="text-sm text-muted-foreground mb-4">AI screening, JD generation, and candidate summaries are powered by OpenAI via Replit AI Integrations.</p>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">
                   <CheckCircle className="w-3 h-3" /> Connected & Active
                 </span>
               </div>
 
-              <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
-                <h4 className="font-semibold text-slate-900 mb-2">Email Notifications</h4>
-                <p className="text-sm text-slate-500 mb-4">Configure SMTP templates for candidate emails and interview invites. Email sending is handled server-side.</p>
+              <div className="bg-muted p-5 rounded-xl border border-border">
+                <h4 className="font-semibold text-foreground mb-2">Email Notifications</h4>
+                <p className="text-sm text-muted-foreground mb-4">Configure SMTP templates for candidate emails and interview invites. Email sending is handled server-side.</p>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
                   Configure SMTP to enable
                 </span>
               </div>
 
-              <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
-                <h4 className="font-semibold text-slate-900 mb-2">Data Retention</h4>
-                <p className="text-sm text-slate-500 mb-4">All candidate data, resumes, and screening results are stored in your private PostgreSQL database.</p>
+              <div className="bg-muted p-5 rounded-xl border border-border">
+                <h4 className="font-semibold text-foreground mb-2">Data Retention</h4>
+                <p className="text-sm text-muted-foreground mb-4">All candidate data, resumes, and screening results are stored in your private PostgreSQL database.</p>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold">
                   <CheckCircle className="w-3 h-3" /> Encrypted at rest
                 </span>
@@ -212,36 +212,36 @@ export default function Admin() {
 
       {isAddUserOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-sm">
-            <h3 className="text-xl font-bold text-slate-900 mb-1">Add New User</h3>
-            <p className="text-sm text-slate-500 mb-6">Send them an invite to join your GIQ workspace.</p>
+          <div className="bg-card rounded-2xl w-full max-w-md p-6 shadow-sm">
+            <h3 className="text-xl font-bold text-foreground mb-1">Add New User</h3>
+            <p className="text-sm text-muted-foreground mb-6">Send them an invite to join your GIQ workspace.</p>
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Full Name</label>
+                <label className="block text-sm font-semibold text-foreground mb-1">Full Name</label>
                 <input
                   required
                   type="text"
-                  className="w-full p-2.5 border border-slate-200 rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-full p-2.5 border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder="e.g. Jane Smith"
                   value={newUser.name}
                   onChange={e => setNewUser({ ...newUser, name: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Work Email</label>
+                <label className="block text-sm font-semibold text-foreground mb-1">Work Email</label>
                 <input
                   required
                   type="email"
-                  className="w-full p-2.5 border border-slate-200 rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-full p-2.5 border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder="jane@company.com"
                   value={newUser.email}
                   onChange={e => setNewUser({ ...newUser, email: e.target.value })}
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Role</label>
+                <label className="block text-sm font-semibold text-foreground mb-1">Role</label>
                 <select
-                  className="w-full p-2.5 border border-slate-200 rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-full p-2.5 border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   value={newUser.role}
                   onChange={e => setNewUser({ ...newUser, role: e.target.value as Role })}
                 >
@@ -250,17 +250,17 @@ export default function Admin() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-semibold text-slate-700 mb-1">Temporary Password <span className="font-normal text-slate-400">(optional)</span></label>
+                <label className="block text-sm font-semibold text-foreground mb-1">Temporary Password <span className="font-normal text-muted-foreground/70">(optional)</span></label>
                 <input
                   type="password"
-                  className="w-full p-2.5 border border-slate-200 rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-full p-2.5 border border-border rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder="Leave blank to send an invite link"
                   value={newUser.password}
                   onChange={e => setNewUser({ ...newUser, password: e.target.value })}
                 />
               </div>
               <div className="pt-4 flex justify-end gap-2">
-                <button type="button" onClick={() => setIsAddUserOpen(false)} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                <button type="button" onClick={() => setIsAddUserOpen(false)} className="px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted rounded-lg transition-colors">
                   Cancel
                 </button>
                 <button type="submit" disabled={isCreating} className="px-4 py-2 text-sm font-semibold bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2">
@@ -275,28 +275,28 @@ export default function Admin() {
 
       {editingUserId && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setEditingUserId(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-sm" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-bold text-slate-900 mb-1">Change Role</h3>
-            <p className="text-sm text-slate-500 mb-6">Update this user's permission level.</p>
+          <div className="bg-card rounded-2xl w-full max-w-sm p-6 shadow-sm" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold text-foreground mb-1">Change Role</h3>
+            <p className="text-sm text-muted-foreground mb-6">Update this user's permission level.</p>
             <div className="space-y-2">
               {(["recruiter", "admin"] as Role[]).map(r => (
                 <button
                   key={r}
                   onClick={() => setEditRole(r)}
-                  className={`w-full text-left p-3 rounded-lg border-2 transition-all ${editRole === r ? "border-primary bg-primary/5" : "border-slate-200 hover:border-slate-300"}`}
+                  className={`w-full text-left p-3 rounded-lg border-2 transition-all ${editRole === r ? "border-primary bg-primary/5" : "border-border hover:border-input"}`}
                 >
                   <div className="flex items-center gap-2">
                     {r === "admin" ? <ShieldAlert className="w-4 h-4 text-purple-600" /> : <Shield className="w-4 h-4 text-blue-600" />}
-                    <span className="font-semibold text-slate-900 capitalize">{r}</span>
+                    <span className="font-semibold text-foreground capitalize">{r}</span>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1 ml-6">
+                  <p className="text-xs text-muted-foreground mt-1 ml-6">
                     {r === "admin" ? "Full access, team management, settings" : "Manage candidates, jobs, and interviews"}
                   </p>
                 </button>
               ))}
             </div>
             <div className="pt-6 flex justify-end gap-2">
-              <button type="button" onClick={() => setEditingUserId(null)} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+              <button type="button" onClick={() => setEditingUserId(null)} className="px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted rounded-lg transition-colors">
                 Cancel
               </button>
               <button type="button" onClick={handleSaveRole} disabled={isUpdating} className="px-4 py-2 text-sm font-semibold bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2">

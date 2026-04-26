@@ -25,7 +25,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-muted px-4 relative overflow-hidden">
       {/* Decorative background */}
       <div className="pointer-events-none absolute top-0 right-0 -mr-40 -mt-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
       <div className="pointer-events-none absolute bottom-0 left-0 -ml-40 -mb-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
@@ -42,11 +42,11 @@ export default function Login() {
               <img src={`${import.meta.env.BASE_URL}images/logo-icon.png`} alt="Logo" className="w-10 h-10 filter brightness-0 invert" />
             </div>
           </div>
-          <h1 className="text-3xl font-display font-bold text-slate-900">Welcome Back</h1>
-          <p className="text-slate-500 mt-2">Sign in to your COMM-iT hiring dashboard</p>
+          <h1 className="text-3xl font-display font-bold text-foreground">Welcome Back</h1>
+          <p className="text-muted-foreground mt-2">Sign in to your COMM-iT hiring dashboard</p>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-sm shadow-slate-200/50 border border-slate-100">
+        <div className="bg-card p-8 rounded-3xl shadow-sm border border-border">
 
           {isBackendDown && (
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3">
@@ -65,15 +65,15 @@ export default function Login() {
 
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email Address</label>
+              <label className="block text-sm font-semibold text-foreground mb-1.5">Email Address</label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/70" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-900"
+                  className="w-full pl-10 pr-4 py-3 bg-muted border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground"
                   placeholder="name@comm-itgroup.com"
                 />
               </div>
@@ -81,17 +81,17 @@ export default function Login() {
 
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-sm font-semibold text-slate-700">Password</label>
+                <label className="block text-sm font-semibold text-foreground">Password</label>
                 <a href="#" className="text-xs font-medium text-primary hover:underline">Forgot password?</a>
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/70" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-900"
+                  className="w-full pl-10 pr-4 py-3 bg-muted border border-border rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground"
                   placeholder="••••••••"
                 />
               </div>
@@ -100,7 +100,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoggingIn}
-              className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold shadow-sm transition-all disabled:opacity-60 flex items-center justify-center"
+              className="w-full py-3.5 bg-foreground hover:opacity-90 text-white rounded-xl font-semibold shadow-sm transition-all disabled:opacity-60 flex items-center justify-center"
             >
               {isLoggingIn
                 ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Signing In...</>
@@ -110,7 +110,7 @@ export default function Login() {
         </div>
 
         <div className="text-center mt-8">
-          <Link href="/" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
+          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             ← Back to public site
           </Link>
         </div>

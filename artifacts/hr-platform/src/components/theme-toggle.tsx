@@ -29,7 +29,7 @@ export function ThemeToggle({ className, variant = "default" }: ThemeToggleProps
       className={cn(
         "inline-flex items-center gap-1 rounded-full p-1 transition-colors duration-200",
         variant === "default" && "border border-border bg-muted/70 shadow-sm",
-        variant === "transparent" && "border border-white/20 bg-white/10 text-white backdrop-blur-md",
+        variant === "transparent" && "surface-glass border border-white/20 text-white backdrop-blur-md",
         variant === "sidebar" && "w-full rounded-xl border border-sidebar-border bg-sidebar-accent/40",
         className,
       )}
@@ -51,7 +51,7 @@ export function ThemeToggle({ className, variant = "default" }: ThemeToggleProps
               "inline-flex min-h-8 items-center justify-center gap-1.5 rounded-full px-2.5 text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
               variant === "sidebar" && "flex-1 rounded-lg px-2",
               variant === "default" && (isActive ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"),
-              variant === "transparent" && (isActive ? "bg-background text-foreground shadow-sm" : "text-white/75 hover:bg-white/10 hover:text-white"),
+              variant === "transparent" && (isActive ? "bg-background text-foreground shadow-sm" : "text-white/75 hover:surface-glass hover:text-white"),
               variant === "sidebar" &&
                 (isActive
                   ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"

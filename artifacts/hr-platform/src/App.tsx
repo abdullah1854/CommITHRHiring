@@ -39,7 +39,7 @@ function ProtectedRoute({ component: Component, adminOnly = false, ...rest }: an
         const { user, isLoading } = useAuth();
 
         if (isLoading) {
-          return <div className="min-h-screen flex items-center justify-center bg-slate-50">Loading...</div>;
+          return <div className="min-h-screen flex items-center justify-center bg-muted">Loading...</div>;
         }
 
         if (!user) {

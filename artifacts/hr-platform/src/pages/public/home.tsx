@@ -24,14 +24,14 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-sm font-medium backdrop-blur-md border border-white/20 mb-8 shadow-sm">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full surface-glass text-white text-sm font-medium backdrop-blur-md border border-white/20 mb-8 shadow-sm">
               <Sparkles className="w-4 h-4 text-blue-300" />
               Introducing GIQ AI Recruitment
             </span>
             <h1 className="text-5xl md:text-7xl font-display font-extrabold text-white leading-tight mb-6 drop-shadow-sm">
               Hire the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">perfect candidate</span> <br className="hidden md:block"/> in record time.
             </h1>
-            <p className="text-lg md:text-xl text-slate-200 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+            <p className="text-lg md:text-xl text-muted-foreground/50 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
               Automate resume screening, discover deep insights with AI-driven rankings, and streamline your entire interview process from a single, beautiful platform.
             </p>
             
@@ -40,7 +40,7 @@ export default function Home() {
                 View Open Positions
                 <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link href="/login" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/10 text-white border border-white/20 font-semibold text-lg backdrop-blur-md hover:bg-white/20 transition-all">
+              <Link href="/login" className="w-full sm:w-auto px-8 py-4 rounded-xl surface-glass text-white border border-white/20 font-semibold text-lg backdrop-blur-md hover:surface-glass-strong transition-all">
                 Recruiter Login
               </Link>
             </div>
@@ -49,11 +49,11 @@ export default function Home() {
       </div>
 
       {/* Features Section */}
-      <div id="features" className="py-24 bg-slate-50 relative z-20 -mt-10 rounded-t-[3rem] shadow-[0_-20px_50px_-15px_rgba(0,0,0,0.1)]">
+      <div id="features" className="py-24 bg-muted relative z-20 -mt-10 rounded-t-[3rem] shadow-[0_-20px_50px_-15px_rgba(0,0,0,0.1)]">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-3xl mx-auto mb-20">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-6">Everything your HR team needs</h2>
-            <p className="text-slate-600 text-lg">GIQ combines enterprise-grade applicant tracking with cutting-edge artificial intelligence to find the signal in the noise.</p>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-6">Everything your HR team needs</h2>
+            <p className="text-muted-foreground text-lg">GIQ combines enterprise-grade applicant tracking with cutting-edge artificial intelligence to find the signal in the noise.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -80,7 +80,7 @@ export default function Home() {
       </div>
       
       {/* Stats Section */}
-      <div className="py-24 bg-white border-t border-slate-100">
+      <div className="py-24 bg-card border-t border-border">
         <div className="max-w-7xl mx-auto px-6">
           <div className="bg-slate-900 rounded-3xl p-12 relative overflow-hidden shadow-sm">
             <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-primary rounded-full blur-[100px] opacity-30"></div>
@@ -88,15 +88,15 @@ export default function Home() {
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-slate-800">
               <div>
                 <div className="text-5xl font-display font-bold text-white mb-2">70%</div>
-                <div className="text-slate-400 font-medium">Faster Time to Hire</div>
+                <div className="text-muted-foreground/70 font-medium">Faster Time to Hire</div>
               </div>
               <div>
                 <div className="text-5xl font-display font-bold text-white mb-2">10k+</div>
-                <div className="text-slate-400 font-medium">Resumes Processed</div>
+                <div className="text-muted-foreground/70 font-medium">Resumes Processed</div>
               </div>
               <div>
                 <div className="text-5xl font-display font-bold text-white mb-2">95%</div>
-                <div className="text-slate-400 font-medium">Hiring Manager Satisfaction</div>
+                <div className="text-muted-foreground/70 font-medium">Hiring Manager Satisfaction</div>
               </div>
             </div>
           </div>
@@ -114,12 +114,12 @@ function FeatureCard({ icon, title, description, color }: { icon: React.ReactNod
   };
 
   return (
-    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm shadow-slate-200/50 hover:-translate-y-2 transition-all duration-300">
+    <div className="bg-card p-8 rounded-3xl border border-border shadow-sm shadow-slate-200/50 hover:-translate-y-2 transition-all duration-300">
       <div className={`w-16 h-16 rounded-2xl ${bgColors[color]} flex items-center justify-center mb-6`}>
         {icon}
       </div>
-      <h3 className="text-xl font-bold text-slate-900 mb-3">{title}</h3>
-      <p className="text-slate-600 leading-relaxed">{description}</p>
+      <h3 className="text-xl font-bold text-foreground mb-3">{title}</h3>
+      <p className="text-muted-foreground leading-relaxed">{description}</p>
     </div>
   );
 }

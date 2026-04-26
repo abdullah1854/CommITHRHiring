@@ -26,8 +26,8 @@ export default function JobDetail() {
     return (
       <PublicLayout>
         <div className="max-w-3xl mx-auto py-20 text-center">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Job not found</h2>
-          <p className="text-slate-500 mb-6">This position may have been closed or doesn't exist.</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Job not found</h2>
+          <p className="text-muted-foreground mb-6">This position may have been closed or doesn't exist.</p>
           <Link href="/careers" className="text-primary font-medium hover:underline">
             View all open positions
           </Link>
@@ -44,7 +44,7 @@ export default function JobDetail() {
       {/* Header */}
       <div className="bg-slate-900 text-white py-16 px-6">
         <div className="max-w-4xl mx-auto">
-          <Link href="/careers" className="inline-flex items-center text-slate-400 hover:text-white mb-8 transition-colors text-sm font-medium">
+          <Link href="/careers" className="inline-flex items-center text-muted-foreground/70 hover:text-white mb-8 transition-colors text-sm font-medium">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Careers
           </Link>
@@ -52,7 +52,7 @@ export default function JobDetail() {
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
             <div>
               <div className="flex flex-wrap gap-2 mb-4">
-                <span className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-semibold backdrop-blur-md">
+                <span className="px-3 py-1 surface-glass text-white rounded-full text-xs font-semibold backdrop-blur-md">
                   {job.department}
                 </span>
                 {job.status !== "open" && (
@@ -63,7 +63,7 @@ export default function JobDetail() {
               </div>
               <h1 className="text-3xl md:text-5xl font-display font-bold mb-6">{job.title}</h1>
               
-              <div className="flex flex-wrap gap-6 text-slate-300 text-sm">
+              <div className="flex flex-wrap gap-6 text-muted-foreground/60 text-sm">
                 <div className="flex items-center">
                   <MapPin className="w-4 h-4 mr-2" />
                   {job.location}
@@ -90,7 +90,7 @@ export default function JobDetail() {
               className={`px-8 py-4 rounded-xl font-bold shadow-sm flex items-center shrink-0 transition-all ${
                 job.status === "open" 
                   ? "bg-primary text-white hover:bg-blue-600 hover:-translate-y-1 hover:shadow-primary/30" 
-                  : "bg-slate-800 text-slate-500 cursor-not-allowed"
+                  : "bg-foreground/40 text-background cursor-not-allowed"
               }`}
             >
               <Upload className="w-5 h-5 mr-2" />
@@ -104,42 +104,42 @@ export default function JobDetail() {
       <div className="max-w-4xl mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-12">
           <section>
-            <h2 className="text-2xl font-display font-bold text-slate-900 mb-4">About the Role</h2>
-            <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed whitespace-pre-line">
+            <h2 className="text-2xl font-display font-bold text-foreground mb-4">About the Role</h2>
+            <div className="prose prose-slate max-w-none text-muted-foreground leading-relaxed whitespace-pre-line">
               {job.description}
             </div>
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-slate-900 mb-4">Responsibilities</h2>
-            <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed whitespace-pre-line">
+            <h2 className="text-2xl font-display font-bold text-foreground mb-4">Responsibilities</h2>
+            <div className="prose prose-slate max-w-none text-muted-foreground leading-relaxed whitespace-pre-line">
               {job.responsibilities}
             </div>
           </section>
 
           <section>
-            <h2 className="text-2xl font-display font-bold text-slate-900 mb-4">Qualifications</h2>
-            <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed whitespace-pre-line">
+            <h2 className="text-2xl font-display font-bold text-foreground mb-4">Qualifications</h2>
+            <div className="prose prose-slate max-w-none text-muted-foreground leading-relaxed whitespace-pre-line">
               {job.qualifications}
             </div>
           </section>
         </div>
 
         <div className="space-y-8">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-4 flex items-center">
+          <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
+            <h3 className="font-bold text-foreground mb-4 flex items-center">
               <Briefcase className="w-5 h-5 mr-2 text-primary" />
               Required Skills
             </h3>
             <div className="flex flex-wrap gap-2">
               {requiredSkills.length > 0 ? (
                 requiredSkills.map(skill => (
-                  <span key={skill} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg">
+                  <span key={skill} className="px-3 py-1.5 bg-muted text-foreground text-sm font-medium rounded-lg">
                     {skill}
                   </span>
                 ))
               ) : (
-                <p className="text-sm text-slate-500 leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   Skills to be confirmed by the recruiter. Apply with your relevant experience and the team will review fit.
                 </p>
               )}
@@ -147,10 +147,10 @@ export default function JobDetail() {
             
             {preferredSkills.length > 0 && (
               <>
-                <h3 className="font-bold text-slate-900 mt-8 mb-4">Preferred Skills</h3>
+                <h3 className="font-bold text-foreground mt-8 mb-4">Preferred Skills</h3>
                 <div className="flex flex-wrap gap-2">
                   {preferredSkills.map(skill => (
-                    <span key={skill} className="px-3 py-1.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg">
+                    <span key={skill} className="px-3 py-1.5 border border-border text-muted-foreground text-sm font-medium rounded-lg">
                       {skill}
                     </span>
                   ))}

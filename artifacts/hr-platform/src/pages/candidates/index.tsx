@@ -151,19 +151,19 @@ export default function Candidates() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 w-4 h-4" />
             <input
               type="text"
               placeholder="Search by name or email..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
+              className="w-full pl-9 pr-4 py-2 bg-card border border-border rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
             />
           </div>
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-primary shadow-sm"
+            className="px-3 py-2 border border-border rounded-lg text-sm bg-card focus:outline-none focus:border-primary shadow-sm"
           >
             <option value="">All Statuses</option>
             <option value="new">New</option>
@@ -176,18 +176,18 @@ export default function Candidates() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="inline-flex rounded-lg border border-border bg-card p-1 shadow-sm">
             <button
               type="button"
               onClick={() => setViewMode("list")}
-              className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${viewMode === "list" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"}`}
+              className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${viewMode === "list" ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted"}`}
             >
               <List className="w-4 h-4" /> List
             </button>
             <button
               type="button"
               onClick={() => setViewMode("board")}
-              className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${viewMode === "board" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"}`}
+              className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${viewMode === "board" ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted"}`}
             >
               <Columns3 className="w-4 h-4" /> Board
             </button>
@@ -196,7 +196,7 @@ export default function Candidates() {
             type="button"
             onClick={() => exportCsv(selectedCandidates.length ? selectedCandidates : filtered)}
             disabled={filtered.length === 0}
-            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors disabled:opacity-50"
+            className="bg-card border border-border hover:bg-muted text-foreground px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors disabled:opacity-50"
           >
             Export CSV
           </button>
@@ -220,17 +220,17 @@ export default function Candidates() {
                 if (e.target.value) void handleBulkStatus(e.target.value);
                 e.target.value = "";
               }}
-              className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white focus:outline-none focus:border-primary shadow-sm"
+              className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-card focus:outline-none focus:border-primary shadow-sm"
             >
               <option value="">Change status…</option>
               {CANDIDATE_STATUSES.map((status) => (
                 <option key={status.value} value={status.value}>{status.label}</option>
               ))}
             </select>
-            <button type="button" onClick={() => exportCsv(selectedCandidates)} className="px-3 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm font-semibold">
+            <button type="button" onClick={() => exportCsv(selectedCandidates)} className="px-3 py-2 bg-card border border-blue-200 text-blue-700 rounded-lg text-sm font-semibold">
               Export selected
             </button>
-            <button type="button" onClick={handleBulkDelete} disabled={isDeleting} className="px-3 py-2 bg-white border border-red-200 text-red-700 rounded-lg text-sm font-semibold disabled:opacity-50">
+            <button type="button" onClick={handleBulkDelete} disabled={isDeleting} className="px-3 py-2 bg-card border border-red-200 text-red-700 rounded-lg text-sm font-semibold disabled:opacity-50">
               Delete selected
             </button>
             <button type="button" onClick={() => setSelectedIds(new Set())} className="px-3 py-2 text-blue-700 rounded-lg text-sm font-semibold">
@@ -240,23 +240,23 @@ export default function Candidates() {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="p-12 flex justify-center"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div></div>
         ) : isError ? (
           <div className="p-16 text-center max-w-2xl mx-auto">
             <Users className="w-12 h-12 text-amber-300 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Could not load candidates</h3>
-            <p className="text-slate-500 mb-2">
+            <h3 className="text-lg font-bold text-foreground mb-2">Could not load candidates</h3>
+            <p className="text-muted-foreground mb-2">
               The API request failed, so this page is not showing reliable data.
             </p>
             <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 inline-block max-w-2xl break-words mb-4">
               {error instanceof Error ? error.message : "Unknown error"}
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-muted-foreground">
               If you use <strong>http://</strong> (not HTTPS) behind PM2, add{" "}
-              <code className="bg-slate-100 px-1 rounded">SESSION_COOKIE_SECURE=false</code> to the API{" "}
-              <code className="bg-slate-100 px-1 rounded">.env</code>, rebuild the API, and restart PM2 — otherwise session cookies are not sent and APIs return 401.
+              <code className="bg-muted px-1 rounded">SESSION_COOKIE_SECURE=false</code> to the API{" "}
+              <code className="bg-muted px-1 rounded">.env</code>, rebuild the API, and restart PM2 — otherwise session cookies are not sent and APIs return 401.
             </p>
           </div>
         ) : filtered.length === 0 ? (
@@ -285,17 +285,17 @@ export default function Candidates() {
                     setDraggingCandidateId(null);
                     if (candidateId) void moveCandidateToStatus(candidateId, column.value);
                   }}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 min-h-[220px] p-3"
+                  className="rounded-2xl border border-border bg-muted min-h-[220px] p-3"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-slate-800">{column.label}</h3>
-                    <span className="text-xs font-bold bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
+                    <h3 className="font-bold text-foreground">{column.label}</h3>
+                    <span className="text-xs font-bold bg-card border border-border text-muted-foreground px-2 py-0.5 rounded-full">
                       {column.candidates.length}
                     </span>
                   </div>
                   <div className="space-y-3">
                     {column.candidates.length === 0 ? (
-                      <div className="border border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-slate-400 bg-white/60">
+                      <div className="border border-dashed border-border rounded-xl p-4 text-center text-xs text-muted-foreground/70 bg-card/60">
                         Drop candidates here
                       </div>
                     ) : (
@@ -309,29 +309,29 @@ export default function Candidates() {
                             e.dataTransfer.effectAllowed = "move";
                           }}
                           onDragEnd={() => setDraggingCandidateId(null)}
-                          className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-sm transition-shadow"
+                          className="bg-card border border-border rounded-xl p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-sm transition-shadow"
                         >
                           <div className="flex items-start gap-3">
                             <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                               {getInitials(candidate.fullName)}
                             </div>
                             <div className="min-w-0 flex-1">
-                              <Link href={`/candidates/${candidate.id}`} className="font-bold text-sm text-slate-900 hover:text-primary transition-colors block truncate">
+                              <Link href={`/candidates/${candidate.id}`} className="font-bold text-sm text-foreground hover:text-primary transition-colors block truncate">
                                 {candidate.fullName}
                               </Link>
-                              <p className="text-xs text-slate-500 truncate">{candidate.email ?? "No email"}</p>
+                              <p className="text-xs text-muted-foreground truncate">{candidate.email ?? "No email"}</p>
                               <div className="mt-2 flex items-center gap-2 flex-wrap">
                                 {candidate.latestScore ? (
-                                  <span className="text-[11px] font-bold text-slate-700">{candidate.latestScore}/100</span>
+                                  <span className="text-[11px] font-bold text-foreground">{candidate.latestScore}/100</span>
                                 ) : (
-                                  <span className="text-[11px] text-slate-400">No AI score</span>
+                                  <span className="text-[11px] text-muted-foreground/70">No AI score</span>
                                 )}
                                 {candidate.latestFit && <FitLabelBadge fitLabel={candidate.latestFit} />}
                               </div>
                               <select
                                 value={candidate.status}
                                 onChange={(e) => void moveCandidateToStatus(candidate.id, e.target.value)}
-                                className="mt-3 w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg bg-slate-50"
+                                className="mt-3 w-full px-2 py-1.5 text-xs border border-border rounded-lg bg-muted"
                               >
                                 {CANDIDATE_STATUSES.map((status) => (
                                   <option key={status.value} value={status.value}>{status.label}</option>
@@ -377,26 +377,26 @@ export default function Candidates() {
                           checked={selectedIds.has(candidate.id)}
                           onChange={() => toggleSelected(candidate.id)}
                           aria-label={`Select ${candidate.fullName}`}
-                          className="rounded border-slate-300 text-primary focus:ring-primary"
+                          className="rounded border-input text-primary focus:ring-primary"
                         />
                         <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                           {getInitials(candidate.fullName)}
                         </div>
                         <div>
-                          <Link href={`/candidates/${candidate.id}`} className="font-bold text-slate-900 hover:text-primary transition-colors block">
+                          <Link href={`/candidates/${candidate.id}`} className="font-bold text-foreground hover:text-primary transition-colors block">
                             {candidate.fullName}
                           </Link>
-                          {candidate.location && <div className="text-xs text-slate-500 mt-0.5">{candidate.location}</div>}
+                          {candidate.location && <div className="text-xs text-muted-foreground mt-0.5">{candidate.location}</div>}
                         </div>
                       </div>
                     </DataTableCell>
                     <DataTableCell>
-                      <div className="flex flex-col gap-1 text-sm text-slate-600">
+                      <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                         {candidate.email && (
-                          <div className="flex items-center"><Mail className="w-3 h-3 mr-1.5 text-slate-400"/> {candidate.email}</div>
+                          <div className="flex items-center"><Mail className="w-3 h-3 mr-1.5 text-muted-foreground/70"/> {candidate.email}</div>
                         )}
                         {candidate.phone && (
-                          <div className="flex items-center"><Phone className="w-3 h-3 mr-1.5 text-slate-400"/> {candidate.phone}</div>
+                          <div className="flex items-center"><Phone className="w-3 h-3 mr-1.5 text-muted-foreground/70"/> {candidate.phone}</div>
                         )}
                       </div>
                     </DataTableCell>
@@ -404,20 +404,20 @@ export default function Candidates() {
                     <DataTableCell>
                       {candidate.latestScore ? (
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-700">{candidate.latestScore}/100</span>
+                          <span className="font-bold text-foreground">{candidate.latestScore}/100</span>
                           {candidate.latestFit && <FitLabelBadge fitLabel={candidate.latestFit} />}
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-400 italic">No data</span>
+                        <span className="text-xs text-muted-foreground/70 italic">No data</span>
                       )}
                     </DataTableCell>
                     <DataTableCell>
                       <div className="flex gap-1 flex-wrap max-w-[200px]">
                         {candidate.skills.slice(0, 3).map(s => (
-                          <span key={s} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">{s}</span>
+                          <span key={s} className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-md">{s}</span>
                         ))}
                         {candidate.skills.length > 3 && (
-                          <span className="text-[10px] text-slate-400 px-1 py-0.5">+{candidate.skills.length - 3}</span>
+                          <span className="text-[10px] text-muted-foreground/70 px-1 py-0.5">+{candidate.skills.length - 3}</span>
                         )}
                       </div>
                     </DataTableCell>
@@ -427,7 +427,7 @@ export default function Candidates() {
                           type="button"
                           onClick={() => handleDeleteCandidate(candidate.id, candidate.fullName)}
                           disabled={isDeleting}
-                          className="text-slate-400 hover:text-red-600 transition-colors disabled:opacity-50"
+                          className="text-muted-foreground/70 hover:text-red-600 transition-colors disabled:opacity-50"
                           aria-label={`Delete ${candidate.fullName}`}
                           title="Delete candidate"
                         >

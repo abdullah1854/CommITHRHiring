@@ -329,7 +329,7 @@ export default function CandidateProfile() {
   return (
     <DashboardLayout title="Candidate Profile">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <Link href="/candidates" className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center">
+        <Link href="/candidates" className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center">
           <ArrowLeft className="w-4 h-4 mr-1" /> Back to Candidates
         </Link>
         <div className="flex gap-2 flex-wrap">
@@ -337,7 +337,7 @@ export default function CandidateProfile() {
             type="button"
             onClick={handleDeleteCandidate}
             disabled={isDeleting}
-            className="bg-white border border-slate-200 text-slate-600 hover:bg-red-50 hover:border-red-200 hover:text-red-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
+            className="bg-card border border-border text-muted-foreground hover:bg-red-50 hover:border-red-200 hover:text-red-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
             Delete candidate
@@ -347,7 +347,7 @@ export default function CandidateProfile() {
               <button
                 onClick={handleReject}
                 disabled={isRejecting}
-                className="bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                className="bg-card border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
               >
                 {isRejecting ? "Processing..." : "Reject"}
               </button>
@@ -375,44 +375,44 @@ export default function CandidateProfile() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 min-w-0">
         {/* Left Column */}
         <div className="xl:col-span-1 space-y-6 min-w-0">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
             <div className="h-24 bg-gradient-to-r from-blue-600 to-indigo-600" />
             <div className="px-6 pb-6">
               <div className="flex items-end -mt-10 mb-5">
-                <div className="w-20 h-20 rounded-2xl bg-white p-1 shadow-sm shrink-0">
-                  <div className="w-full h-full rounded-xl bg-slate-100 flex items-center justify-center text-2xl font-bold text-primary">
+                <div className="w-20 h-20 rounded-2xl bg-card p-1 shadow-sm shrink-0">
+                  <div className="w-full h-full rounded-xl bg-muted flex items-center justify-center text-2xl font-bold text-primary">
                     {getInitials(candidate.fullName)}
                   </div>
                 </div>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">{candidate.fullName}</h1>
+                <h1 className="text-2xl font-bold text-foreground">{candidate.fullName}</h1>
                 <CandidateStatusBadge status={candidate.status} className="mt-2" />
 
                 <div className="mt-6 space-y-3">
                   {candidate.email && (
-                    <div className="flex items-center text-sm text-slate-600">
-                      <Mail className="w-4 h-4 mr-3 text-slate-400" />
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Mail className="w-4 h-4 mr-3 text-muted-foreground/70" />
                       <a href={`mailto:${candidate.email}`} className="hover:text-primary transition-colors">{candidate.email}</a>
                     </div>
                   )}
                   {candidate.phone && (
-                    <div className="flex items-center text-sm text-slate-600">
-                      <Phone className="w-4 h-4 mr-3 text-slate-400" />
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <Phone className="w-4 h-4 mr-3 text-muted-foreground/70" />
                       {candidate.phone}
                     </div>
                   )}
                   {candidate.location && (
-                    <div className="flex items-center text-sm text-slate-600">
-                      <MapPin className="w-4 h-4 mr-3 text-slate-400" />
+                    <div className="flex items-center text-sm text-muted-foreground">
+                      <MapPin className="w-4 h-4 mr-3 text-muted-foreground/70" />
                       {candidate.location}
                     </div>
                   )}
                   {candidate.resume && (
-                    <div className="text-sm text-slate-600 pt-3 border-t border-slate-100">
+                    <div className="text-sm text-muted-foreground pt-3 border-t border-border">
                       <div className="flex items-center mb-2">
-                        <FileText className="w-4 h-4 mr-3 text-slate-400" />
-                        <span className="font-semibold text-slate-700">Resume</span>
+                        <FileText className="w-4 h-4 mr-3 text-muted-foreground/70" />
+                        <span className="font-semibold text-foreground">Resume</span>
                       </div>
                       <div className="flex flex-wrap gap-2 pl-7">
                         {isPdfResume && (
@@ -424,7 +424,7 @@ export default function CandidateProfile() {
                             Preview PDF
                           </button>
                         )}
-                        <a href={candidate.resume.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-slate-600 hover:text-primary hover:underline flex items-center">
+                        <a href={candidate.resume.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-muted-foreground hover:text-primary hover:underline flex items-center">
                           Open/download <ExternalLink className="w-3 h-3 ml-1" />
                         </a>
                       </div>
@@ -439,9 +439,9 @@ export default function CandidateProfile() {
                     onRefresh={invalidateCandidate}
                   />
                   {currentJobTitle && (
-                    <div className="pt-3 border-t border-slate-100">
-                      <p className="text-xs text-slate-400 uppercase font-semibold tracking-wide mb-1">Applying for</p>
-                      <p className="text-sm font-semibold text-slate-800">{currentJobTitle}</p>
+                    <div className="pt-3 border-t border-border">
+                      <p className="text-xs text-muted-foreground/70 uppercase font-semibold tracking-wide mb-1">Applying for</p>
+                      <p className="text-sm font-semibold text-foreground">{currentJobTitle}</p>
                     </div>
                   )}
                 </div>
@@ -450,41 +450,41 @@ export default function CandidateProfile() {
           </div>
 
           {latestScreening && (
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-800 shadow-sm p-6 text-white">
+            <div className="rounded-2xl border border-primary/20 shadow-sm p-6 text-white bg-gradient-to-br from-primary to-indigo-700">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold flex items-center"><Sparkles className="w-4 h-4 mr-2 text-blue-400" /> AI Score</h3>
+                <h3 className="font-bold flex items-center"><Sparkles className="w-4 h-4 mr-2 text-blue-200" /> AI Score</h3>
                 <FitLabelBadge fitLabel={latestScreening.fitLabel} />
               </div>
               <div className="flex items-end gap-2">
-                <div className="text-5xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                <div className="text-5xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-emerald-200">
                   {latestScreening.matchScore}
                 </div>
-                <div className="text-slate-400 font-medium mb-1">/ 100</div>
+                <div className="text-white/70 font-medium mb-1">/ 100</div>
               </div>
-              <p className="text-sm text-slate-400 mt-4 leading-relaxed">{latestScreening.aiRecommendation}</p>
+              <p className="text-sm text-white/80 mt-4 leading-relaxed">{latestScreening.aiRecommendation}</p>
             </div>
           )}
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-            <h3 className="font-bold text-slate-900 mb-4">Skills</h3>
+          <div className="bg-card rounded-2xl border border-border shadow-sm p-6">
+            <h3 className="font-bold text-foreground mb-4">Skills</h3>
             {candidate.skills.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {candidate.skills.map((skill, i) => (
-                  <span key={i} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg">
+                  <span key={i} className="px-3 py-1.5 bg-muted text-foreground text-xs font-semibold rounded-lg">
                     {skill}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-slate-400">No skills extracted yet.</p>
+              <p className="text-sm text-muted-foreground/70">No skills extracted yet.</p>
             )}
           </div>
         </div>
 
         {/* Right Column */}
         <div className="xl:col-span-2 space-y-6 min-w-0">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="flex border-b border-slate-200 px-2 overflow-x-auto">
+          <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
+            <div className="flex border-b border-border px-2 overflow-x-auto">
               <TabButton active={activeTab === "overview"} onClick={() => setActiveTab("overview")}>Overview</TabButton>
               <TabButton active={activeTab === "ai"} onClick={() => setActiveTab("ai")}>
                 <Sparkles className="w-4 h-4 mr-1.5 text-purple-500" /> AI Insights
@@ -508,13 +508,13 @@ export default function CandidateProfile() {
               {activeTab === "overview" && (
                 <div className="space-y-8">
                   <section>
-                    <h3 className="text-lg font-bold text-slate-900 mb-3">Experience Summary</h3>
-                    <p className="text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <h3 className="text-lg font-bold text-foreground mb-3">Experience Summary</h3>
+                    <p className="text-muted-foreground leading-relaxed bg-muted p-4 rounded-xl border border-border">
                       {candidate.experienceSummary || "No summary available. Generate an AI summary for deeper insights."}
                     </p>
                   </section>
                   <section>
-                    <h3 className="text-lg font-bold text-slate-900 mb-3">Education</h3>
+                    <h3 className="text-lg font-bold text-foreground mb-3">Education</h3>
                     {isEditingEducation ? (
                       <div className="space-y-3">
                         <textarea
@@ -522,7 +522,7 @@ export default function CandidateProfile() {
                           value={educationDraft}
                           onChange={(e) => setEducationDraft(e.target.value)}
                           placeholder="e.g. MBA, National University of Singapore; PMP certification"
-                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
+                          className="w-full p-3 bg-muted border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
                         />
                         <div className="flex gap-2">
                           <button
@@ -547,7 +547,7 @@ export default function CandidateProfile() {
                           <button
                             type="button"
                             onClick={() => setIsEditingEducation(false)}
-                            className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold"
+                            className="px-3 py-1.5 bg-muted text-muted-foreground rounded-lg text-xs font-bold"
                           >
                             Cancel
                           </button>
@@ -555,7 +555,7 @@ export default function CandidateProfile() {
                       </div>
                     ) : candidate.educationSummary ? (
                       <div className="flex items-start justify-between gap-3">
-                        <p className="text-slate-600 leading-relaxed">{candidate.educationSummary}</p>
+                        <p className="text-muted-foreground leading-relaxed">{candidate.educationSummary}</p>
                         <button
                           type="button"
                           onClick={() => {
@@ -568,9 +568,9 @@ export default function CandidateProfile() {
                         </button>
                       </div>
                     ) : (
-                      <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4">
-                        <p className="text-sm font-semibold text-slate-700">Education not extracted yet</p>
-                        <p className="text-xs text-slate-500 mt-1">
+                      <div className="rounded-xl border border-dashed border-border bg-muted p-4">
+                        <p className="text-sm font-semibold text-foreground">Education not extracted yet</p>
+                        <p className="text-xs text-muted-foreground mt-1">
                           The resume parser did not find a clear education section. Add degrees or certifications manually if relevant.
                         </p>
                         <button
@@ -587,7 +587,7 @@ export default function CandidateProfile() {
                     )}
                   </section>
                   <section>
-                    <h3 className="text-lg font-bold text-slate-900 mb-3">Recruiter Notes</h3>
+                    <h3 className="text-lg font-bold text-foreground mb-3">Recruiter Notes</h3>
                     <textarea
                       className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900 placeholder:text-yellow-700/50"
                       rows={4}
@@ -609,7 +609,7 @@ export default function CandidateProfile() {
                         );
                       }}
                     />
-                    <p className="text-xs text-slate-400 mt-2">Notes save automatically when you click outside.</p>
+                    <p className="text-xs text-muted-foreground/70 mt-2">Notes save automatically when you click outside.</p>
                   </section>
                 </div>
               )}
@@ -622,7 +622,7 @@ export default function CandidateProfile() {
                       onClick={handleScreen}
                       disabled={isScreening || !currentJobId}
                       title={!currentJobId ? "No job associated with this candidate" : "Run AI screening against the job description"}
-                      className="bg-white border border-purple-200 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-card border border-purple-200 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isScreening ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Bot className="w-4 h-4 mr-2" />}
                       {latestScreening ? "Re-run Screening" : "Run Deep Screening"}
@@ -630,14 +630,14 @@ export default function CandidateProfile() {
                     <button
                       onClick={handleSummary}
                       disabled={isSummarizing}
-                      className="bg-white border border-purple-200 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm transition-all disabled:opacity-50"
+                      className="bg-card border border-purple-200 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm transition-all disabled:opacity-50"
                     >
                       {isSummarizing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <BrainCircuit className="w-4 h-4 mr-2" />}
                       {candidate.aiSummary ? "Regenerate Summary" : "Generate Summary"}
                     </button>
                     {currentJobTitle && (
-                      <p className="text-xs text-slate-600 w-full">
-                        Summary and fit analysis target: <span className="font-semibold text-slate-800">{currentJobTitle}</span>
+                      <p className="text-xs text-muted-foreground w-full">
+                        Summary and fit analysis target: <span className="font-semibold text-foreground">{currentJobTitle}</span>
                       </p>
                     )}
                     {!currentJobId && (
@@ -658,12 +658,12 @@ export default function CandidateProfile() {
                   {/* Screening result detail */}
                   {latestScreening && (
                     <div className="space-y-4">
-                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                      <h4 className="font-bold text-foreground flex items-center gap-2">
                         <Bot className="w-4 h-4 text-purple-500" /> Screening Analysis
                       </h4>
                       {latestScreening.reasoning && (
-                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                          <p className="text-sm text-slate-600 leading-relaxed">{latestScreening.reasoning}</p>
+                        <div className="bg-muted p-4 rounded-xl border border-border">
+                          <p className="text-sm text-muted-foreground leading-relaxed">{latestScreening.reasoning}</p>
                         </div>
                       )}
                       {latestScreening.aiRecommendation && (
@@ -704,19 +704,19 @@ export default function CandidateProfile() {
                   {/* AI Summary */}
                   {candidate.aiSummary && (
                     <div className="space-y-4">
-                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                      <h4 className="font-bold text-foreground flex items-center gap-2">
                         <BrainCircuit className="w-4 h-4 text-purple-500" /> Candidate Profile Summary
                       </h4>
 
-                      <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
-                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Executive Summary</p>
-                        <p className="text-slate-700 leading-relaxed">{candidate.aiSummary.overallSummary}</p>
+                      <div className="bg-muted p-5 rounded-xl border border-border">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Executive Summary</p>
+                        <p className="text-foreground leading-relaxed">{candidate.aiSummary.overallSummary}</p>
                       </div>
 
                       {candidate.aiSummary.experienceSnapshot && (
-                        <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
-                          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Experience Snapshot</p>
-                          <p className="text-slate-700 leading-relaxed">{candidate.aiSummary.experienceSnapshot}</p>
+                        <div className="bg-muted p-5 rounded-xl border border-border">
+                          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Experience Snapshot</p>
+                          <p className="text-foreground leading-relaxed">{candidate.aiSummary.experienceSnapshot}</p>
                         </div>
                       )}
 
@@ -782,18 +782,18 @@ export default function CandidateProfile() {
 
                   {/* Prompt to generate summary after screening */}
                   {latestScreening && !candidate.aiSummary && (
-                    <div className="text-center py-10 text-slate-500 border border-dashed border-slate-200 rounded-2xl">
-                      <Bot className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                      <p className="font-semibold text-slate-700 mb-1">Screening complete</p>
+                    <div className="text-center py-10 text-muted-foreground border border-dashed border-border rounded-2xl">
+                      <Bot className="w-12 h-12 text-muted-foreground/60 mx-auto mb-3" />
+                      <p className="font-semibold text-foreground mb-1">Screening complete</p>
                       <p className="text-sm">Click <strong>Generate Summary</strong> above for a full AI profile breakdown.</p>
                     </div>
                   )}
 
                   {/* No data at all */}
                   {!latestScreening && !candidate.aiSummary && (
-                    <div className="text-center py-14 text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl">
+                    <div className="text-center py-14 text-muted-foreground border-2 border-dashed border-border rounded-2xl">
                       <Sparkles className="w-12 h-12 text-purple-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-bold text-slate-700 mb-2">No AI Insights Yet</h3>
+                      <h3 className="text-lg font-bold text-foreground mb-2">No AI Insights Yet</h3>
                       <p className="max-w-sm mx-auto text-sm">
                         {currentJobId
                           ? "Click Run Deep Screening to get an AI fit score, matched skills, and candidate summary."
@@ -829,10 +829,10 @@ export default function CandidateProfile() {
                         value={questionFocus}
                         onChange={(e) => setQuestionFocus(e.target.value)}
                         placeholder={questionFocusPlaceholder}
-                        className="w-full p-3 text-sm border border-indigo-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder:text-slate-400"
+                        className="w-full p-3 text-sm border border-indigo-200 rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder:text-muted-foreground/70"
                       />
                       {questionFocus.length > 400 && (
-                        <p className="text-xs text-slate-500 mt-1">{questionFocus.length}/500 characters</p>
+                        <p className="text-xs text-muted-foreground mt-1">{questionFocus.length}/500 characters</p>
                       )}
                     </div>
 
@@ -904,19 +904,19 @@ export default function CandidateProfile() {
                         const questions = interviewQuestions[key];
                         if (!questions?.length) return null;
                         return (
-                          <div key={key} className="border border-slate-200 rounded-xl overflow-hidden">
+                          <div key={key} className="border border-border rounded-xl overflow-hidden">
                             <button
                               onClick={() => toggleSection(key)}
-                              className={`w-full p-4 flex items-center justify-between text-left font-semibold text-sm bg-${color}-50 border-b border-slate-200 hover:bg-${color}-100 transition-colors`}
+                              className={`w-full p-4 flex items-center justify-between text-left font-semibold text-sm bg-${color}-50 border-b border-border hover:bg-${color}-100 transition-colors`}
                             >
-                              <span className={`text-${color}-900`}>{label} <span className="font-normal text-slate-500">({questions.length})</span></span>
-                              {expandedSections[key] ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                              <span className={`text-${color}-900`}>{label} <span className="font-normal text-muted-foreground">({questions.length})</span></span>
+                              {expandedSections[key] ? <ChevronUp className="w-4 h-4 text-muted-foreground/70" /> : <ChevronDown className="w-4 h-4 text-muted-foreground/70" />}
                             </button>
                             {expandedSections[key] && (
-                              <ul className="p-4 space-y-3 bg-white">
+                              <ul className="p-4 space-y-3 bg-card">
                                 {questions.map((q, i) => (
-                                  <li key={i} className="flex gap-3 text-sm text-slate-700">
-                                    <span className="font-bold text-slate-400 shrink-0">{i + 1}.</span>
+                                  <li key={i} className="flex gap-3 text-sm text-foreground">
+                                    <span className="font-bold text-muted-foreground/70 shrink-0">{i + 1}.</span>
                                     <span>{q}</span>
                                   </li>
                                 ))}
@@ -927,9 +927,9 @@ export default function CandidateProfile() {
                       })}
                     </div>
                   ) : (
-                    <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400">
+                    <div className="text-center py-12 border-2 border-dashed border-border rounded-2xl text-muted-foreground/70">
                       <HelpCircle className="w-12 h-12 text-indigo-200 mx-auto mb-4" />
-                      <h3 className="text-lg font-bold text-slate-600 mb-2">No Questions Generated Yet</h3>
+                      <h3 className="text-lg font-bold text-muted-foreground mb-2">No Questions Generated Yet</h3>
                       <p className="text-sm max-w-sm mx-auto">
                         Generate AI-powered, role-specific interview questions tailored to this candidate's profile and the job requirements.
                       </p>
@@ -941,9 +941,9 @@ export default function CandidateProfile() {
               {activeTab === "interviews" && (
                 <div>
                   {(!candidate.interviews || candidate.interviews.length === 0) ? (
-                    <div className="text-center py-12 text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl">
-                      <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                      <h3 className="text-lg font-bold text-slate-700 mb-2">No Interviews Scheduled</h3>
+                    <div className="text-center py-12 text-muted-foreground border-2 border-dashed border-border rounded-2xl">
+                      <Calendar className="w-12 h-12 text-muted-foreground/60 mx-auto mb-4" />
+                      <h3 className="text-lg font-bold text-foreground mb-2">No Interviews Scheduled</h3>
                       <Link href={`/interviews/new?candidateId=${candidate.id}`} className="mt-4 inline-block bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
                         Schedule First Interview
                       </Link>
@@ -951,10 +951,10 @@ export default function CandidateProfile() {
                   ) : (
                     <div className="space-y-4">
                       {candidate.interviews.map(interview => (
-                        <div key={interview.id} className="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors">
+                        <div key={interview.id} className="border border-border rounded-xl p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-muted hover:bg-muted transition-colors">
                           <div>
-                            <h4 className="font-bold text-slate-900 capitalize">{interview.interviewType.replace(/_/g, " ")}</h4>
-                            <div className="text-sm text-slate-500 mt-1 flex items-center">
+                            <h4 className="font-bold text-foreground capitalize">{interview.interviewType.replace(/_/g, " ")}</h4>
+                            <div className="text-sm text-muted-foreground mt-1 flex items-center">
                               <Calendar className="w-3 h-3 mr-1" />
                               {new Date(interview.scheduledAt).toLocaleString()} &bull; {interview.interviewerName}
                             </div>
@@ -969,7 +969,7 @@ export default function CandidateProfile() {
                             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider capitalize
                               ${interview.status === "scheduled" ? "bg-blue-100 text-blue-800" :
                                 interview.status === "completed" ? "bg-emerald-100 text-emerald-800" :
-                                interview.status === "cancelled" ? "bg-slate-100 text-slate-600" :
+                                interview.status === "cancelled" ? "bg-muted text-muted-foreground" :
                                 "bg-red-100 text-red-800"}
                             `}>
                               {interview.status.replace(/_/g, " ")}
@@ -986,14 +986,14 @@ export default function CandidateProfile() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-lg font-bold text-slate-900">Communication History</h3>
-                      <p className="text-sm text-slate-500">Emails logged for this candidate's email address.</p>
+                      <h3 className="text-lg font-bold text-foreground">Communication History</h3>
+                      <p className="text-sm text-muted-foreground">Emails logged for this candidate's email address.</p>
                     </div>
                     <button
                       type="button"
                       onClick={loadCommunications}
                       disabled={isLoadingCommunications}
-                      className="px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                      className="px-3 py-2 text-xs font-bold rounded-lg border border-border text-muted-foreground hover:bg-muted disabled:opacity-50"
                     >
                       {isLoadingCommunications ? "Refreshing…" : "Refresh"}
                     </button>
@@ -1002,11 +1002,11 @@ export default function CandidateProfile() {
                   {isLoadingCommunications && communications === null ? (
                     <div className="py-10 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
                   ) : !candidate.email ? (
-                    <div className="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-sm text-slate-500">
+                    <div className="border border-dashed border-border rounded-2xl p-8 text-center text-sm text-muted-foreground">
                       Add a candidate email address to track communication history.
                     </div>
                   ) : (communications ?? []).length === 0 ? (
-                    <div className="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-sm text-slate-500">
+                    <div className="border border-dashed border-border rounded-2xl p-8 text-center text-sm text-muted-foreground">
                       No email communications have been logged yet.
                     </div>
                   ) : (
@@ -1014,15 +1014,15 @@ export default function CandidateProfile() {
                       {(communications ?? []).map((item) => {
                         const expanded = expandedCommunicationId === item.id;
                         return (
-                          <div key={item.id} className="border border-slate-200 rounded-xl bg-slate-50 overflow-hidden">
+                          <div key={item.id} className="border border-border rounded-xl bg-muted overflow-hidden">
                             <button
                               type="button"
                               onClick={() => setExpandedCommunicationId(expanded ? null : item.id)}
-                              className="w-full p-4 text-left flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 hover:bg-slate-100"
+                              className="w-full p-4 text-left flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 hover:bg-muted"
                             >
                               <div>
-                                <p className="font-semibold text-slate-900">{item.subject || "(No subject)"}</p>
-                                <p className="text-xs text-slate-500">
+                                <p className="font-semibold text-foreground">{item.subject || "(No subject)"}</p>
+                                <p className="text-xs text-muted-foreground">
                                   {item.type} • {new Date(item.createdAt).toLocaleString()}
                                 </p>
                               </div>
@@ -1035,8 +1035,8 @@ export default function CandidateProfile() {
                               </span>
                             </button>
                             {expanded && (
-                              <div className="border-t border-slate-200 bg-white p-4">
-                                <div className="prose prose-sm max-w-none text-slate-700" dangerouslySetInnerHTML={{ __html: item.body || "<p>No body recorded.</p>" }} />
+                              <div className="border-t border-border bg-card p-4">
+                                <div className="prose prose-sm max-w-none text-foreground" dangerouslySetInnerHTML={{ __html: item.body || "<p>No body recorded.</p>" }} />
                               </div>
                             )}
                           </div>
@@ -1052,12 +1052,12 @@ export default function CandidateProfile() {
       </div>
       {isResumePreviewOpen && candidate.resume && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 p-4 flex items-center justify-center" onClick={() => setIsResumePreviewOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-sm w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
-            <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900">Resume Preview</h3>
-              <button type="button" onClick={() => setIsResumePreviewOpen(false)} className="text-sm font-semibold text-slate-500 hover:text-slate-900">Close</button>
+          <div className="bg-card rounded-2xl shadow-sm w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <h3 className="font-bold text-foreground">Resume Preview</h3>
+              <button type="button" onClick={() => setIsResumePreviewOpen(false)} className="text-sm font-semibold text-muted-foreground hover:text-foreground">Close</button>
             </div>
-            <iframe src={candidate.resume.fileUrl} title={`${candidate.fullName} resume`} className="flex-1 w-full bg-slate-100" />
+            <iframe src={candidate.resume.fileUrl} title={`${candidate.fullName} resume`} className="flex-1 w-full bg-muted" />
           </div>
         </div>
       )}
@@ -1088,7 +1088,7 @@ function LinkedInBadge({
 
   const badge = (() => {
     if (!status || status === "skipped") {
-      return { icon: <ShieldOff className="w-4 h-4" />, label: "Not on CV", color: "text-slate-400 bg-slate-50 border-slate-200" };
+      return { icon: <ShieldOff className="w-4 h-4" />, label: "Not on CV", color: "text-muted-foreground/70 bg-muted border-border" };
     }
     if (status === "pending") {
       return { icon: <Loader2 className="w-4 h-4 animate-spin" />, label: "Verifying…", color: "text-blue-600 bg-blue-50 border-blue-200" };
@@ -1105,7 +1105,7 @@ function LinkedInBadge({
   })();
 
   return (
-    <div className="pt-3 border-t border-slate-100 space-y-2">
+    <div className="pt-3 border-t border-border space-y-2">
       <div className={`flex items-center gap-2 text-xs font-semibold px-2.5 py-1.5 rounded-lg border w-fit ${badge.color}`}>
         {badge.icon} {badge.label}
       </div>
@@ -1149,7 +1149,7 @@ function LinkedInInsightsPanel({
 
   if (status === "verified" && profile) {
     return (
-      <div className="border border-slate-200 rounded-xl overflow-hidden">
+      <div className="border border-border rounded-xl overflow-hidden">
         <div className={`px-4 py-3 flex items-center gap-2 text-sm font-semibold ${discrepancies.length > 0 ? "bg-orange-50 text-orange-800 border-b border-orange-200" : "bg-emerald-50 text-emerald-800 border-b border-emerald-200"}`}>
           {discrepancies.length > 0 ? <ShieldAlert className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
           LinkedIn Verification — {discrepancies.length > 0 ? `${discrepancies.length} discrepanc${discrepancies.length === 1 ? "y" : "ies"} detected` : "Verified, no discrepancies"}
@@ -1159,8 +1159,8 @@ function LinkedInInsightsPanel({
             </a>
           )}
         </div>
-        <div className="p-4 space-y-3 bg-white">
-          {profile.headline && <p className="text-sm text-slate-600 italic">"{profile.headline}"</p>}
+        <div className="p-4 space-y-3 bg-card">
+          {profile.headline && <p className="text-sm text-muted-foreground italic">"{profile.headline}"</p>}
           {discrepancies.length > 0 && (
             <div className="space-y-1.5">
               {discrepancies.map((d: string, i: number) => (
@@ -1173,12 +1173,12 @@ function LinkedInInsightsPanel({
           )}
           {profile.skills?.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Skills on LinkedIn</p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Skills on LinkedIn</p>
               <div className="flex flex-wrap gap-1.5">
                 {profile.skills.slice(0, 20).map((s: string, i: number) => (
-                  <span key={i} className="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs rounded-md">{s}</span>
+                  <span key={i} className="px-2 py-0.5 bg-muted text-foreground text-xs rounded-md">{s}</span>
                 ))}
-                {profile.skills.length > 20 && <span className="text-xs text-slate-400">+{profile.skills.length - 20} more</span>}
+                {profile.skills.length > 20 && <span className="text-xs text-muted-foreground/70">+{profile.skills.length - 20} more</span>}
               </div>
             </div>
           )}
@@ -1217,7 +1217,7 @@ function LinkedInInsightsPanel({
           value={urlInput}
           onChange={(e) => setUrlInput(e.target.value)}
           placeholder="https://www.linkedin.com/in/username"
-          className="flex-1 text-sm px-3 py-2 border border-amber-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="flex-1 text-sm px-3 py-2 border border-amber-300 bg-card rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
         <button
           onClick={triggerScrape}
@@ -1237,7 +1237,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
     <button
       onClick={onClick}
       className={`px-3 sm:px-5 py-3 sm:py-4 text-sm font-bold border-b-2 transition-colors flex items-center whitespace-nowrap shrink-0 ${
-        active ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300"
+        active ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground hover:border-input"
       }`}
     >
       {children}

@@ -156,11 +156,26 @@
   }
 }
 
+/* Frosted backdrop on top of card-coloured surfaces (e.g. sticky headers
+   over scrolling content). Reads correctly under both themes. */
 .glass-panel {
-  @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-sm shadow-slate-200/50;
+  background-color: hsl(var(--card) / 0.8);
+  backdrop-filter: blur(16px);
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 }
 
-/* Custom Scrollbar */
+/* Translucent light overlay used inside fixed dark hero gradients —
+   always white-on-dark regardless of theme, so we deliberately use a
+   raw rgba instead of a token here. */
+.surface-glass {
+  background-color: rgb(255 255 255 / 0.1);
+}
+.surface-glass-strong {
+  background-color: rgb(255 255 255 / 0.2);
+}
+
+/* Custom Scrollbar — uses border tokens so the track blends in both themes. */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -169,8 +184,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
+  background-color: hsl(var(--border));
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400;
+  background-color: hsl(var(--muted-foreground) / 0.5);
 }

@@ -82,7 +82,7 @@ function CopyButton({ text, variant = "default" }: { text: string; variant?: "de
   const color =
     variant === "indigo"
       ? "text-indigo-600 hover:text-indigo-800"
-      : "text-slate-500 hover:text-primary";
+      : "text-muted-foreground hover:text-primary";
   return (
     <button type="button" onClick={handle} className={`${base} ${color}`}>
       {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
@@ -163,15 +163,15 @@ export default function AITools() {
 
   return (
     <DashboardLayout title="AI Assistant Tools">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden md:min-h-[calc(100vh-12rem)] flex flex-col">
+      <div className="bg-card border border-border rounded-2xl shadow-sm overflow-hidden md:min-h-[calc(100vh-12rem)] flex flex-col">
         {/* Tabs */}
-        <div className="flex border-b border-slate-200 bg-slate-50/50">
+        <div className="flex border-b border-border bg-muted/50">
           <button
             type="button"
             className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
               activeTab === "generate"
-                ? "bg-white text-primary border-b-2 border-primary shadow-[0_4px_0_-2px_white]"
-                : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                ? "bg-card text-primary border-b-2 border-primary shadow-[0_4px_0_-2px_white]"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
             onClick={() => setActiveTab("generate")}
           >
@@ -181,8 +181,8 @@ export default function AITools() {
             type="button"
             className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
               activeTab === "improve"
-                ? "bg-white text-primary border-b-2 border-primary shadow-[0_4px_0_-2px_white]"
-                : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                ? "bg-card text-primary border-b-2 border-primary shadow-[0_4px_0_-2px_white]"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
             }`}
             onClick={() => setActiveTab("improve")}
           >
@@ -196,22 +196,22 @@ export default function AITools() {
               {/* Form */}
               <div>
                 <div className="mb-6">
-                  <h3 className="text-lg font-bold text-slate-900">What are you looking for?</h3>
-                  <p className="text-sm text-slate-500">
+                  <h3 className="text-lg font-bold text-foreground">What are you looking for?</h3>
+                  <p className="text-sm text-muted-foreground">
                     Provide a few details, and AI will draft a complete, compelling job description.
                   </p>
                 </div>
 
                 <form onSubmit={handleGenerate} className="space-y-5">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                    <label className="block text-sm font-semibold text-foreground mb-1.5">
                       Prompt / Requirements <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       required
                       rows={5}
                       placeholder={promptExample}
-                      className="w-full p-4 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-900"
+                      className="w-full p-4 bg-muted border border-border rounded-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground"
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                     />
@@ -219,22 +219,22 @@ export default function AITools() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">
                         Department
                       </label>
                       <input
                         type="text"
-                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary"
+                        className="w-full p-3 bg-muted border border-border rounded-md focus:outline-none focus:border-primary"
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">
                         Seniority
                       </label>
                       <select
-                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary"
+                        className="w-full p-3 bg-muted border border-border rounded-md focus:outline-none focus:border-primary"
                         value={seniority}
                         onChange={(e) => setSeniority(e.target.value)}
                       >
@@ -246,11 +246,11 @@ export default function AITools() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-slate-700 mb-1.5">
+                      <label className="block text-sm font-semibold text-foreground mb-1.5">
                         Employment Type
                       </label>
                       <select
-                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary"
+                        className="w-full p-3 bg-muted border border-border rounded-md focus:outline-none focus:border-primary"
                         value={employmentType}
                         onChange={(e) => setEmploymentType(e.target.value)}
                       >
@@ -279,18 +279,18 @@ export default function AITools() {
               </div>
 
               {/* Output */}
-              <div className="bg-slate-50 rounded-2xl border border-slate-200 flex flex-col overflow-hidden h-full md:min-h-[400px]">
-                <div className="p-4 border-b border-slate-200 bg-white flex justify-between items-center">
-                  <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+              <div className="bg-muted rounded-2xl border border-border flex flex-col overflow-hidden h-full md:min-h-[400px]">
+                <div className="p-4 border-b border-border bg-card flex justify-between items-center">
+                  <h4 className="font-semibold text-foreground flex items-center gap-2">
                     <FileText className="w-4 h-4" /> AI Draft
                   </h4>
                   {generatedResult && <CopyButton text={formattedGenerated} />}
                 </div>
-                <div className="p-6 overflow-y-auto flex-1 text-sm text-slate-700 whitespace-pre-wrap font-mono">
+                <div className="p-6 overflow-y-auto flex-1 text-sm text-foreground whitespace-pre-wrap font-mono">
                   {generatedResult ? (
                     formattedGenerated
                   ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-slate-400 italic">
+                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground/70 italic">
                       <Sparkles className="w-8 h-8 mb-2 opacity-50" />
                       Your generated JD will appear here...
                     </div>
@@ -305,15 +305,15 @@ export default function AITools() {
               {/* Form */}
               <div className="flex flex-col h-full">
                 <div className="mb-6">
-                  <h3 className="text-lg font-bold text-slate-900">Paste Existing Job Description</h3>
-                  <p className="text-sm text-slate-500">
+                  <h3 className="text-lg font-bold text-foreground">Paste Existing Job Description</h3>
+                  <p className="text-sm text-muted-foreground">
                     AI will rewrite it to be more inclusive, engaging, and clear.
                   </p>
                 </div>
                 <form onSubmit={handleImprove} className="flex-1 flex flex-col gap-4">
                   <textarea
                     required
-                    className="flex-1 min-h-[220px] w-full p-4 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 resize-none"
+                    className="flex-1 min-h-[220px] w-full p-4 bg-muted border border-border rounded-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground resize-none"
                     placeholder="Paste your current JD text here..."
                     value={existingJD}
                     onChange={(e) => setExistingJD(e.target.value)}
@@ -321,7 +321,7 @@ export default function AITools() {
 
                   {/* Focus areas */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-slate-700">
+                    <label className="block text-sm font-semibold text-foreground">
                       Focus Areas (optional)
                     </label>
                     <div className="flex flex-wrap gap-2">
@@ -346,7 +346,7 @@ export default function AITools() {
                       <input
                         type="text"
                         placeholder="Add a focus area and press Enter"
-                        className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-md text-sm focus:outline-none focus:border-indigo-500"
+                        className="flex-1 p-2.5 bg-muted border border-border rounded-md text-sm focus:outline-none focus:border-indigo-500"
                         value={focusInput}
                         onChange={(e) => setFocusInput(e.target.value)}
                         onKeyDown={(e) => {
@@ -360,7 +360,7 @@ export default function AITools() {
                         type="button"
                         onClick={() => addFocusArea(focusInput)}
                         disabled={!focusInput.trim()}
-                        className="px-4 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold disabled:opacity-50"
+                        className="px-4 py-2.5 rounded-lg bg-muted hover:bg-muted text-foreground text-sm font-semibold disabled:opacity-50"
                       >
                         Add
                       </button>
@@ -371,7 +371,7 @@ export default function AITools() {
                           key={s}
                           type="button"
                           onClick={() => addFocusArea(s)}
-                          className="text-xs text-slate-500 hover:text-indigo-600 border border-dashed border-slate-300 hover:border-indigo-400 px-2 py-0.5 rounded-full"
+                          className="text-xs text-muted-foreground hover:text-indigo-600 border border-dashed border-input hover:border-indigo-400 px-2 py-0.5 rounded-full"
                         >
                           + {s}
                         </button>
@@ -396,13 +396,13 @@ export default function AITools() {
 
               {/* Output */}
               <div className="bg-indigo-50/50 rounded-2xl border border-indigo-100 flex flex-col overflow-hidden h-full md:min-h-[400px]">
-                <div className="p-4 border-b border-indigo-100 bg-white flex justify-between items-center">
+                <div className="p-4 border-b border-indigo-100 bg-card flex justify-between items-center">
                   <h4 className="font-semibold text-indigo-900 flex items-center gap-2">
                     <Wand2 className="w-4 h-4" /> Enhanced Version
                   </h4>
                   {improvedResult && <CopyButton text={formattedImproved} variant="indigo" />}
                 </div>
-                <div className="p-6 overflow-y-auto flex-1 text-sm text-slate-800 whitespace-pre-wrap font-mono">
+                <div className="p-6 overflow-y-auto flex-1 text-sm text-foreground whitespace-pre-wrap font-mono">
                   {improvedResult ? (
                     formattedImproved
                   ) : (
