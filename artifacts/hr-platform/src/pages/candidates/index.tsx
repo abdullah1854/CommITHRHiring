@@ -3,6 +3,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   useDeleteCandidate,
   useListCandidates,
+  useUpdateCandidate,
   getListCandidatesQueryKey,
 } from "@workspace/api-client-react";
 import { Link } from "wouter";
@@ -16,8 +17,10 @@ export default function Candidates() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const { data, isLoading, isError, error } = useListCandidates({ limit: 100 });
   const { mutateAsync: deleteCandidate, isPending: isDeleting } = useDeleteCandidate();
+  const { mutateAsync: updateCandidate, isPending: isBulkUpdating } = useUpdateCandidate();
 
   const handleDeleteCandidate = async (candidateId: string, candidateName: string) => {
     if (!window.confirm(`Delete ${candidateName} and all related data? This cannot be undone.`)) {
@@ -39,6 +42,79 @@ export default function Candidates() {
     const matchesStatus = !statusFilter || c.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+  const selectedCandidates = filtered.filter((c) => selectedIds.has(c.id));
+  const allFilteredSelected = filtered.length > 0 && filtered.every((c) => selectedIds.has(c.id));
+
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllFiltered = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allFilteredSelected) filtered.forEach((c) => next.delete(c.id));
+      else filtered.forEach((c) => next.add(c.id));
+      return next;
+    });
+  };
+
+  const handleBulkStatus = async (status: string) => {
+    if (selectedCandidates.length === 0) return;
+    try {
+      await Promise.all(selectedCandidates.map((candidate) => updateCandidate({ id: candidate.id, data: { status: status as any } })));
+      await queryClient.invalidateQueries({ queryKey: getListCandidatesQueryKey() });
+      toast.success(`Updated ${selectedCandidates.length} candidate${selectedCandidates.length === 1 ? "" : "s"}`);
+      setSelectedIds(new Set());
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update selected candidates.");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedCandidates.length === 0) return;
+    if (!window.confirm(`Delete ${selectedCandidates.length} selected candidate${selectedCandidates.length === 1 ? "" : "s"} and all related data? This cannot be undone.`)) {
+      return;
+    }
+    try {
+      await Promise.all(selectedCandidates.map((candidate) => deleteCandidate({ id: candidate.id })));
+      await queryClient.invalidateQueries({ queryKey: getListCandidatesQueryKey() });
+      toast.success("Selected candidates deleted");
+      setSelectedIds(new Set());
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete selected candidates.");
+    }
+  };
+
+  const exportCsv = (rows = filtered) => {
+    const csvRows = [
+      ["Name", "Email", "Phone", "Location", "Status", "AI Score", "Fit", "Skills"],
+      ...rows.map((c) => [
+        c.fullName,
+        c.email ?? "",
+        c.phone ?? "",
+        c.location ?? "",
+        c.status,
+        c.latestScore == null ? "" : String(c.latestScore),
+        c.latestFit ?? "",
+        c.skills.join("; "),
+      ]),
+    ];
+    const csv = csvRows
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `candidates-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <DashboardLayout title="All Candidates">
@@ -69,11 +145,57 @@ export default function Candidates() {
           </select>
         </div>
 
-        <Link href="/upload-resume" className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors w-full sm:w-auto justify-center">
-          <UploadCloud className="w-4 h-4" />
-          Upload Resume
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => exportCsv(selectedCandidates.length ? selectedCandidates : filtered)}
+            disabled={filtered.length === 0}
+            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors disabled:opacity-50"
+          >
+            Export CSV
+          </button>
+          <Link href="/upload-resume" className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors justify-center">
+            <UploadCloud className="w-4 h-4" />
+            Upload Resume
+          </Link>
+        </div>
       </div>
+
+      {selectedCandidates.length > 0 && (
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+          <p className="text-sm font-semibold text-blue-900">
+            {selectedCandidates.length} selected
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              disabled={isBulkUpdating}
+              defaultValue=""
+              onChange={(e) => {
+                if (e.target.value) void handleBulkStatus(e.target.value);
+                e.target.value = "";
+              }}
+              className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white focus:outline-none focus:border-primary shadow-sm"
+            >
+              <option value="">Change status…</option>
+              <option value="new">New</option>
+              <option value="reviewing">Reviewing</option>
+              <option value="shortlisted">Shortlisted</option>
+              <option value="interview_scheduled">Interview Scheduled</option>
+              <option value="rejected">Rejected</option>
+              <option value="hired">Hired</option>
+            </select>
+            <button type="button" onClick={() => exportCsv(selectedCandidates)} className="px-3 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm font-semibold">
+              Export selected
+            </button>
+            <button type="button" onClick={handleBulkDelete} disabled={isDeleting} className="px-3 py-2 bg-white border border-red-200 text-red-700 rounded-lg text-sm font-semibold disabled:opacity-50">
+              Delete selected
+            </button>
+            <button type="button" onClick={() => setSelectedIds(new Set())} className="px-3 py-2 text-blue-700 rounded-lg text-sm font-semibold">
+              Clear
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {isLoading ? (
@@ -117,6 +239,14 @@ export default function Candidates() {
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-sm text-slate-500">
                   <th className="p-4 font-semibold">Candidate</th>
+                  <th className="p-4 font-semibold w-10">
+                    <input
+                      type="checkbox"
+                      checked={allFilteredSelected}
+                      onChange={toggleAllFiltered}
+                      aria-label="Select all filtered candidates"
+                    />
+                  </th>
                   <th className="p-4 font-semibold">Contact</th>
                   <th className="p-4 font-semibold">Status</th>
                   <th className="p-4 font-semibold">AI Fit</th>
@@ -129,6 +259,13 @@ export default function Candidates() {
                   <tr key={candidate.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(candidate.id)}
+                          onChange={() => toggleSelected(candidate.id)}
+                          aria-label={`Select ${candidate.fullName}`}
+                          className="rounded border-slate-300 text-primary focus:ring-primary"
+                        />
                         <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                           {getInitials(candidate.fullName)}
                         </div>

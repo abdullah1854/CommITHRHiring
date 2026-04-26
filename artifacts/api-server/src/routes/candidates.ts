@@ -299,6 +299,81 @@ router.post("/", requireAuth, async (req, res) => {
   }
 });
 
+router.post("/bulk", requireAuth, async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body?.candidateIds)
+      ? req.body.candidateIds.map(String).filter(Boolean)
+      : [];
+    const action = typeof req.body?.action === "string" ? req.body.action : "";
+    const status = normalizeStatus(req.body?.status);
+
+    if (ids.length === 0) {
+      return res.status(400).json({ error: "Bad Request", message: "Select at least one candidate" });
+    }
+    if (action !== "update_status" && action !== "delete") {
+      return res.status(400).json({ error: "Bad Request", message: "Invalid bulk action" });
+    }
+
+    if (action === "update_status") {
+      if (!status || !VALID_STATUSES.has(status)) {
+        return res.status(400).json({ error: "Bad Request", message: "A valid status is required" });
+      }
+      const result = await prisma.candidate.updateMany({
+        where: { id: { in: ids } },
+        data: { status },
+      });
+      return res.json({ updated: result.count });
+    }
+
+    await prisma.$transaction(async (tx: any) => {
+      await tx.aiScreeningResult.deleteMany({ where: { candidateId: { in: ids } } });
+      await tx.interview.deleteMany({ where: { candidateId: { in: ids } } });
+      await tx.application.deleteMany({ where: { candidateId: { in: ids } } });
+      await tx.resume.deleteMany({ where: { candidateId: { in: ids } } });
+      await tx.aiCandidateSummary.deleteMany({ where: { candidateId: { in: ids } } });
+      await tx.candidate.deleteMany({ where: { id: { in: ids } } });
+    });
+    ids.forEach(forgetCandidateFromCache);
+    return res.json({ deleted: ids.length });
+  } catch (err) {
+    console.error("[candidates] bulk action failed:", err);
+    return res.status(500).json({ error: "Internal Server Error", message: "Failed to complete bulk action" });
+  }
+});
+
+router.get("/:id/communications", requireAuth, async (req, res) => {
+  try {
+    const id = req.params.id as string;
+    const candidate = await prisma.candidate.findFirst({
+      where: { id },
+      select: { id: true, email: true, fullName: true },
+    });
+    if (!candidate) return res.status(404).json({ error: "Not Found", message: "Candidate not found" });
+    if (!candidate.email) return res.json({ communications: [] });
+
+    const rows = await prisma.emailNotification.findMany({
+      where: { recipientEmail: candidate.email },
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    });
+
+    res.json({
+      communications: rows.map((n) => ({
+        id: n.id,
+        type: n.type,
+        subject: n.subject,
+        body: n.body,
+        status: n.status,
+        createdAt: n.createdAt,
+        sentAt: n.sentAt,
+      })),
+    });
+  } catch (err) {
+    console.error("[candidates] communications failed:", err);
+    res.status(500).json({ error: "Internal Server Error", message: "Failed to fetch communications" });
+  }
+});
+
 router.put("/:id", requireAuth, async (req, res) => {
   try {
     const id = req.params.id as string;
