@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { prisma } from "@workspace/db";
 
@@ -31,6 +32,36 @@ export interface SupabaseSessionUser {
   isActive: boolean;
 }
 
+// Short-lived cache for verified tokens. Each /me, /candidates, /jobs … call
+// would otherwise hit Supabase Auth (≈300-500 ms round-trip) plus Prisma on
+// every request. TTL is short enough (60 s) that deactivating a user
+// propagates within a minute, but long enough to absorb a burst of React
+// Query refetches during a single page navigation.
+const TOKEN_CACHE_TTL_MS = 60_000;
+const TOKEN_CACHE_MAX = 500;
+
+interface CachedEntry {
+  user: SupabaseSessionUser | null;
+  expiresAt: number;
+}
+
+const tokenCache = new Map<string, CachedEntry>();
+
+function hashToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+function pruneCache(now: number): void {
+  if (tokenCache.size < TOKEN_CACHE_MAX) return;
+  for (const [key, entry] of tokenCache) {
+    if (entry.expiresAt <= now) tokenCache.delete(key);
+  }
+  if (tokenCache.size >= TOKEN_CACHE_MAX) {
+    const oldest = tokenCache.keys().next().value;
+    if (oldest) tokenCache.delete(oldest);
+  }
+}
+
 /**
  * Verifies a Supabase access token and returns the linked profile from
  * commit_hr.users. Returns null if the token is invalid, the user is not
@@ -38,26 +69,43 @@ export interface SupabaseSessionUser {
  *
  * Uses supabase.auth.getUser to verify the JWT (network call to Supabase
  * Auth), then Prisma to load the profile (direct Postgres query — bypasses
- * the public-only PostgREST exposure).
+ * the public-only PostgREST exposure). Both lookups are cached for
+ * TOKEN_CACHE_TTL_MS to avoid hammering Supabase on every API request.
  */
 export async function verifyAccessToken(
   token: string,
 ): Promise<SupabaseSessionUser | null> {
+  const now = Date.now();
+  const key = hashToken(token);
+  const cached = tokenCache.get(key);
+  if (cached && cached.expiresAt > now) {
+    return cached.user;
+  }
+
   const { data, error } = await supabaseAdmin.auth.getUser(token);
-  if (error || !data.user) return null;
+  if (error || !data.user) {
+    tokenCache.set(key, { user: null, expiresAt: now + TOKEN_CACHE_TTL_MS });
+    pruneCache(now);
+    return null;
+  }
 
   const profile = await prisma.user.findUnique({
     where: { id: data.user.id },
     select: { id: true, email: true, name: true, role: true, isActive: true },
   });
 
-  if (!profile || !profile.isActive) return null;
+  const result: SupabaseSessionUser | null =
+    profile && profile.isActive
+      ? {
+          id: profile.id,
+          email: profile.email,
+          name: profile.name,
+          role: profile.role,
+          isActive: profile.isActive,
+        }
+      : null;
 
-  return {
-    id: profile.id,
-    email: profile.email,
-    name: profile.name,
-    role: profile.role,
-    isActive: profile.isActive,
-  };
+  tokenCache.set(key, { user: result, expiresAt: now + TOKEN_CACHE_TTL_MS });
+  pruneCache(now);
+  return result;
 }
