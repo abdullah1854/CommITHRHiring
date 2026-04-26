@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { prisma } from "@workspace/db";
 import { requireAuth } from "../middlewares/auth.js";
-import { generateInterviewIcs, sendEmail, interviewInviteTemplate } from "../lib/email.js";
+import { buildInterviewIcs, sendEmail, interviewInviteTemplate } from "../lib/email.js";
 import { candidatePublicSelect, jobListSelect } from "../lib/prismaSafeSelects.js";
 
 const interviewInclude = {
@@ -153,8 +153,8 @@ router.get("/:id/ics", requireAuth, async (req, res) => {
     });
     if (!interview) return res.status(404).json({ error: "Not Found", message: "Interview not found" });
 
-    const ics = generateInterviewIcs({
-      uid: interview.id,
+    const ics = buildInterviewIcs({
+      id: interview.id,
       candidateName: interview.candidate?.fullName ?? "Candidate",
       jobTitle: interview.job?.title ?? "Position",
       interviewerName: interview.interviewerName,
