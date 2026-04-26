@@ -4,6 +4,8 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Link } from "wouter";
 import { ArrowLeft, User, Bot, Zap } from "lucide-react";
 import { CandidateStatusBadge } from "@/components/ui/status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeader, DataTableRow } from "@/components/ui/data-table";
 import { getInitials } from "@/lib/utils";
 
 export default function JobCandidates() {
@@ -52,26 +54,27 @@ export default function JobCandidates() {
         {isLoadingCandidates ? (
           <div className="p-12 text-center text-slate-500">Loading candidates...</div>
         ) : mergedList.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 flex flex-col items-center">
-            <User className="w-12 h-12 text-slate-300 mb-3" />
-            <p className="font-medium">No candidates applied to this job yet.</p>
-          </div>
+          <EmptyState
+            icon={<User className="w-6 h-6" />}
+            headline="No candidates applied yet"
+            description="Candidates assigned to this job will appear here for review and AI ranking."
+            className="py-10"
+          />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[900px]">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-sm text-slate-500">
-                  <th className="p-4 font-semibold w-16 text-center">Rank</th>
-                  <th className="p-4 font-semibold">Candidate Info</th>
-                  <th className="p-4 font-semibold">AI Match Score</th>
-                  <th className="p-4 font-semibold">Status</th>
-                  <th className="p-4 font-semibold text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+          <DataTable>
+              <DataTableHeader>
+                <DataTableRow className="hover:bg-transparent">
+                  <DataTableHead className="w-16 text-center">Rank</DataTableHead>
+                  <DataTableHead>Candidate Info</DataTableHead>
+                  <DataTableHead>AI Match Score</DataTableHead>
+                  <DataTableHead>Status</DataTableHead>
+                  <DataTableHead className="text-right">Action</DataTableHead>
+                </DataTableRow>
+              </DataTableHeader>
+              <DataTableBody>
                 {mergedList.map((candidate) => (
-                  <tr key={candidate.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="p-4 text-center">
+                  <DataTableRow key={candidate.id} className="group">
+                    <DataTableCell className="text-center">
                       {candidate.rankInfo ? (
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mx-auto
                           ${candidate.rankInfo.rank === 1 ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' : 
@@ -84,8 +87,8 @@ export default function JobCandidates() {
                       ) : (
                         <span className="text-slate-300 text-xs">-</span>
                       )}
-                    </td>
-                    <td className="p-4">
+                    </DataTableCell>
+                    <DataTableCell>
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">
                           {getInitials(candidate.fullName)}
@@ -97,8 +100,8 @@ export default function JobCandidates() {
                           <div className="text-xs text-slate-500 mt-0.5 max-w-xs truncate">{candidate.email || "No email"}</div>
                         </div>
                       </div>
-                    </td>
-                    <td className="p-4">
+                    </DataTableCell>
+                    <DataTableCell>
                       {candidate.rankInfo ? (
                         <div className="flex items-center gap-3">
                           <div className={`text-xl font-display font-bold
@@ -119,18 +122,17 @@ export default function JobCandidates() {
                       ) : (
                         <span className="text-xs text-slate-400 italic">Not screened</span>
                       )}
-                    </td>
-                    <td className="p-4"><CandidateStatusBadge status={candidate.status} /></td>
-                    <td className="p-4 text-right">
+                    </DataTableCell>
+                    <DataTableCell><CandidateStatusBadge status={candidate.status} /></DataTableCell>
+                    <DataTableCell className="text-right">
                       <Link href={`/candidates/${candidate.id}`} className="inline-block bg-white border border-slate-200 hover:border-primary text-slate-700 hover:text-primary px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm">
                         View Profile
                       </Link>
-                    </td>
-                  </tr>
+                    </DataTableCell>
+                  </DataTableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </DataTableBody>
+            </DataTable>
         )}
       </div>
     </DashboardLayout>

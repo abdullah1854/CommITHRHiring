@@ -9,6 +9,7 @@ import { Briefcase, Users, Calendar, Sparkles, TrendingUp, ArrowRight, UploadClo
 import { Link } from "wouter";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatDistanceToNow } from "date-fns";
+import { EmptyState } from "@/components/ui/empty-state";
 
 function formatChartDate(value: string | number) {
   const raw = String(value);
@@ -140,9 +141,13 @@ export default function Dashboard() {
             <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
           </div>
         ) : (candidatesData?.candidates?.length ?? 0) === 0 ? (
-          <div className="py-10 text-center text-slate-500 text-sm">
-            No candidates yet. <Link href="/upload-resume" className="text-primary font-medium hover:underline">Upload a resume</Link> to get started.
-          </div>
+          <EmptyState
+            icon={<Users className="w-6 h-6" />}
+            headline="No candidates yet"
+            description="Upload a resume to start building your candidate pipeline."
+            action={<Link href="/upload-resume" className="text-primary font-medium hover:underline">Upload a resume</Link>}
+            className="py-8"
+          />
         ) : (
           <ul className="divide-y divide-slate-100">
             {candidatesData!.candidates.slice(0, 5).map((c) => (

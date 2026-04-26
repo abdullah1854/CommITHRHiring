@@ -9,6 +9,8 @@ import {
 import { Link } from "wouter";
 import { Search, Users, Mail, Phone, UploadCloud, Trash2, Loader2, Columns3, List } from "lucide-react";
 import { CandidateStatusBadge, FitLabelBadge } from "@/components/ui/status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeader, DataTableRow } from "@/components/ui/data-table";
 import { getInitials } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -258,22 +260,18 @@ export default function Candidates() {
             </p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="p-16 text-center">
-            <Users className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
-              {search || statusFilter ? "No candidates match your filters" : "No candidates yet"}
-            </h3>
-            <p className="text-slate-500 mb-6">
-              {search || statusFilter
-                ? "Try adjusting your search terms or clearing the filters."
-                : "Upload resumes to start building your candidate pipeline."}
-            </p>
-            {!search && !statusFilter && (
+          <EmptyState
+            icon={<Users className="w-6 h-6" />}
+            headline={search || statusFilter ? "No candidates match your filters" : "No candidates yet"}
+            description={search || statusFilter
+              ? "Try adjusting your search terms or clearing the filters."
+              : "Upload resumes to start building your candidate pipeline."}
+            action={!search && !statusFilter && (
               <Link href="/upload-resume" className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-blue-700 transition-colors">
                 <UploadCloud className="w-4 h-4" /> Upload Resumes
               </Link>
             )}
-          </div>
+          />
         ) : viewMode === "board" ? (
           <div className="p-4 overflow-x-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4 min-w-[900px]">
@@ -350,30 +348,29 @@ export default function Candidates() {
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[900px]">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-sm text-slate-500">
-                  <th className="p-4 font-semibold w-10">
+          <DataTable>
+              <DataTableHeader>
+                <DataTableRow className="hover:bg-transparent">
+                  <DataTableHead className="w-10">
                     <input
                       type="checkbox"
                       checked={allFilteredSelected}
                       onChange={toggleAllFiltered}
                       aria-label="Select all filtered candidates"
                     />
-                  </th>
-                  <th className="p-4 font-semibold">Candidate</th>
-                  <th className="p-4 font-semibold">Contact</th>
-                  <th className="p-4 font-semibold">Status</th>
-                  <th className="p-4 font-semibold">AI Fit</th>
-                  <th className="p-4 font-semibold">Skills</th>
-                  <th className="p-4 font-semibold"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+                  </DataTableHead>
+                  <DataTableHead>Candidate</DataTableHead>
+                  <DataTableHead>Contact</DataTableHead>
+                  <DataTableHead>Status</DataTableHead>
+                  <DataTableHead>AI Fit</DataTableHead>
+                  <DataTableHead>Skills</DataTableHead>
+                  <DataTableHead />
+                </DataTableRow>
+              </DataTableHeader>
+              <DataTableBody>
                 {filtered.map((candidate) => (
-                  <tr key={candidate.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="p-4">
+                  <DataTableRow key={candidate.id} className="group">
+                    <DataTableCell>
                       <div className="flex items-center gap-3">
                         <input
                           type="checkbox"
@@ -392,8 +389,8 @@ export default function Candidates() {
                           {candidate.location && <div className="text-xs text-slate-500 mt-0.5">{candidate.location}</div>}
                         </div>
                       </div>
-                    </td>
-                    <td className="p-4">
+                    </DataTableCell>
+                    <DataTableCell>
                       <div className="flex flex-col gap-1 text-sm text-slate-600">
                         {candidate.email && (
                           <div className="flex items-center"><Mail className="w-3 h-3 mr-1.5 text-slate-400"/> {candidate.email}</div>
@@ -402,9 +399,9 @@ export default function Candidates() {
                           <div className="flex items-center"><Phone className="w-3 h-3 mr-1.5 text-slate-400"/> {candidate.phone}</div>
                         )}
                       </div>
-                    </td>
-                    <td className="p-4"><CandidateStatusBadge status={candidate.status} /></td>
-                    <td className="p-4">
+                    </DataTableCell>
+                    <DataTableCell><CandidateStatusBadge status={candidate.status} /></DataTableCell>
+                    <DataTableCell>
                       {candidate.latestScore ? (
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-slate-700">{candidate.latestScore}/100</span>
@@ -413,8 +410,8 @@ export default function Candidates() {
                       ) : (
                         <span className="text-xs text-slate-400 italic">No data</span>
                       )}
-                    </td>
-                    <td className="p-4">
+                    </DataTableCell>
+                    <DataTableCell>
                       <div className="flex gap-1 flex-wrap max-w-[200px]">
                         {candidate.skills.slice(0, 3).map(s => (
                           <span key={s} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md">{s}</span>
@@ -423,8 +420,8 @@ export default function Candidates() {
                           <span className="text-[10px] text-slate-400 px-1 py-0.5">+{candidate.skills.length - 3}</span>
                         )}
                       </div>
-                    </td>
-                    <td className="p-4 text-right">
+                    </DataTableCell>
+                    <DataTableCell className="text-right">
                       <div className="flex items-center justify-end gap-3">
                         <button
                           type="button"
@@ -440,12 +437,11 @@ export default function Candidates() {
                           Profile
                         </Link>
                       </div>
-                    </td>
-                  </tr>
+                    </DataTableCell>
+                  </DataTableRow>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </DataTableBody>
+            </DataTable>
         )}
       </div>
     </DashboardLayout>

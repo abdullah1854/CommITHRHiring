@@ -20,13 +20,16 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useThemePreference } from "@/hooks/use-theme-preference";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 interface DashboardLayoutProps {
+  actions?: ReactNode;
   children: ReactNode;
+  subtitle?: ReactNode;
   title: string;
 }
 
-export function DashboardLayout({ children, title }: DashboardLayoutProps) {
+export function DashboardLayout({ actions, children, subtitle, title }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -157,10 +160,10 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="hidden md:flex items-center justify-between px-8 py-5 border-b border-border bg-card flex-shrink-0">
-          <h1 className="text-2xl font-display font-bold text-foreground">{title}</h1>
+          <PageHeader title={title} subtitle={subtitle} actions={actions} className="w-full" />
         </header>
         <div className="md:hidden px-4 py-3 border-b border-border bg-card flex-shrink-0">
-          <h1 className="text-lg font-display font-bold text-foreground truncate">{title}</h1>
+          <PageHeader title={title} subtitle={subtitle} actions={actions} />
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">

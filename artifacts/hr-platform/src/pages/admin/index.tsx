@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Users, Settings, Plus, Shield, ShieldAlert, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeader, DataTableRow } from "@/components/ui/data-table";
+import { EmptyState } from "@/components/ui/empty-state";
 
 type Role = "recruiter" | "admin";
 
@@ -103,46 +105,55 @@ export default function Admin() {
               </button>
             </div>
 
-            <div className="border border-slate-200 rounded-xl overflow-x-auto">
-              <table className="w-full text-left min-w-[600px]">
-                <thead className="bg-slate-50 border-b border-slate-200">
-                  <tr>
-                    <th className="p-4 text-sm font-semibold text-slate-600">Name</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600">Email</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600">Role</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600">Status</th>
-                    <th className="p-4 text-sm font-semibold text-slate-600 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
+            <div className="overflow-hidden rounded-xl border border-slate-200">
+              <DataTable minWidthClassName="min-w-[600px]">
+                <DataTableHeader>
+                  <DataTableRow className="hover:bg-transparent">
+                    <DataTableHead className="text-slate-600">Name</DataTableHead>
+                    <DataTableHead className="text-slate-600">Email</DataTableHead>
+                    <DataTableHead className="text-slate-600">Role</DataTableHead>
+                    <DataTableHead className="text-slate-600">Status</DataTableHead>
+                    <DataTableHead className="text-right text-slate-600">Actions</DataTableHead>
+                  </DataTableRow>
+                </DataTableHeader>
+                <DataTableBody>
                   {usersLoading && (
                     <tr><td colSpan={5} className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" /></td></tr>
                   )}
                   {!usersLoading && (usersData?.users ?? []).length === 0 && (
-                    <tr><td colSpan={5} className="p-8 text-center text-sm text-slate-500">No team members yet. Add your first user above.</td></tr>
+                    <tr>
+                      <td colSpan={5}>
+                        <EmptyState
+                          icon={<Users className="w-6 h-6" />}
+                          headline="No team members yet"
+                          description="Add your first user above to start assigning roles."
+                          className="py-8"
+                        />
+                      </td>
+                    </tr>
                   )}
                   {(usersData?.users ?? []).map(user => (
-                    <tr key={user.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-4 font-medium text-slate-900">
+                    <DataTableRow key={user.id}>
+                      <DataTableCell className="font-medium text-slate-900">
                         {user.name}
                         {currentUser?.id === user.id && (
                           <span className="ml-2 text-xs font-normal text-slate-400">(you)</span>
                         )}
-                      </td>
-                      <td className="p-4 text-sm text-slate-600">{user.email}</td>
-                      <td className="p-4">
+                      </DataTableCell>
+                      <DataTableCell className="text-sm text-slate-600">{user.email}</DataTableCell>
+                      <DataTableCell>
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${user.role === "admin" ? "bg-purple-100 text-purple-800" : "bg-blue-100 text-blue-800"}`}>
                           {user.role === "admin" ? <ShieldAlert className="w-3 h-3 mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
                           {user.role}
                         </span>
-                      </td>
-                      <td className="p-4">
+                      </DataTableCell>
+                      <DataTableCell>
                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${user.isActive ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600"}`}>
                           {user.isActive ? <CheckCircle className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                           {user.isActive ? "Active" : "Inactive"}
                         </span>
-                      </td>
-                      <td className="p-4 text-right">
+                      </DataTableCell>
+                      <DataTableCell className="text-right">
                         <div className="flex items-center justify-end gap-3">
                           <button
                             onClick={() => openEditRole(user.id, user.role as Role)}
@@ -158,11 +169,11 @@ export default function Admin() {
                             {user.isActive ? "Deactivate" : "Activate"}
                           </button>
                         </div>
-                      </td>
-                    </tr>
+                      </DataTableCell>
+                    </DataTableRow>
                   ))}
-                </tbody>
-              </table>
+                </DataTableBody>
+              </DataTable>
             </div>
           </div>
         )}

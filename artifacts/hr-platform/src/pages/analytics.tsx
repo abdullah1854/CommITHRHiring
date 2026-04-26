@@ -10,6 +10,8 @@ import {
   CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 import { Download, FileText, Loader2, Briefcase, Users, Star, TrendingUp } from "lucide-react";
+import { DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeader, DataTableRow } from "@/components/ui/data-table";
+import { EmptyState } from "@/components/ui/empty-state";
 
 function formatChartDate(value: string) {
   if (!value) return "";
@@ -258,29 +260,34 @@ export default function Analytics() {
         {isJobLoading ? (
           <div className="py-10 flex justify-center"><Loader /></div>
         ) : displayJobs.length === 0 ? (
-          <div className="py-10 text-center text-sm text-slate-500">No job data available.</div>
+          <EmptyState
+            icon={<Briefcase className="w-6 h-6" />}
+            headline="No job data available"
+            description="Job performance metrics appear here after candidates and interviews are recorded."
+            className="py-8"
+          />
         ) : (
-          <div className="border border-slate-200 rounded-xl overflow-x-auto">
-            <table className="w-full text-left min-w-[600px]">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="p-4 text-sm font-semibold text-slate-600">Job Title</th>
-                  <th className="p-4 text-sm font-semibold text-slate-600 hidden md:table-cell">Department</th>
-                  <th className="p-4 text-sm font-semibold text-slate-600 text-right">Candidates</th>
-                  <th className="p-4 text-sm font-semibold text-slate-600 text-right">Avg Score</th>
-                  <th className="p-4 text-sm font-semibold text-slate-600 text-right">Interviews</th>
-                  <th className="p-4 text-sm font-semibold text-slate-600 hidden md:table-cell">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+          <div className="overflow-hidden rounded-xl border border-slate-200">
+            <DataTable minWidthClassName="min-w-[600px]">
+              <DataTableHeader>
+                <DataTableRow className="hover:bg-transparent">
+                  <DataTableHead className="text-slate-600">Job Title</DataTableHead>
+                  <DataTableHead className="hidden text-slate-600 md:table-cell">Department</DataTableHead>
+                  <DataTableHead className="text-right text-slate-600">Candidates</DataTableHead>
+                  <DataTableHead className="text-right text-slate-600">Avg Score</DataTableHead>
+                  <DataTableHead className="text-right text-slate-600">Interviews</DataTableHead>
+                  <DataTableHead className="hidden text-slate-600 md:table-cell">Status</DataTableHead>
+                </DataTableRow>
+              </DataTableHeader>
+              <DataTableBody>
                 {displayJobs.map((j, i) => (
-                  <tr key={(j as any).jobId ?? `${j.jobTitle}-${i}`} className="hover:bg-slate-50 transition-colors">
-                    <td className="p-4 font-medium text-slate-900">{j.jobTitle}</td>
-                    <td className="p-4 text-sm text-slate-600 hidden md:table-cell">{(j as any).department ?? "—"}</td>
-                    <td className="p-4 text-sm text-slate-700 text-right tabular-nums">{j.candidateCount}</td>
-                    <td className="p-4 text-sm font-semibold text-slate-900 text-right tabular-nums">{j.averageScore || 0}/100</td>
-                    <td className="p-4 text-sm text-slate-700 text-right tabular-nums">{j.interviewCount}</td>
-                    <td className="p-4 hidden md:table-cell">
+                  <DataTableRow key={(j as any).jobId ?? `${j.jobTitle}-${i}`}>
+                    <DataTableCell className="font-medium text-slate-900">{j.jobTitle}</DataTableCell>
+                    <DataTableCell className="hidden text-sm text-slate-600 md:table-cell">{(j as any).department ?? "—"}</DataTableCell>
+                    <DataTableCell className="text-right text-sm tabular-nums text-slate-700">{j.candidateCount}</DataTableCell>
+                    <DataTableCell className="text-right text-sm font-semibold tabular-nums text-slate-900">{j.averageScore || 0}/100</DataTableCell>
+                    <DataTableCell className="text-right text-sm tabular-nums text-slate-700">{j.interviewCount}</DataTableCell>
+                    <DataTableCell className="hidden md:table-cell">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold capitalize ${
                         (j as any).status === "open" ? "bg-emerald-100 text-emerald-800"
                         : (j as any).status === "closed" ? "bg-slate-100 text-slate-600"
@@ -288,11 +295,11 @@ export default function Analytics() {
                       }`}>
                         {(j as any).status ?? "open"}
                       </span>
-                    </td>
-                  </tr>
+                    </DataTableCell>
+                  </DataTableRow>
                 ))}
-              </tbody>
-            </table>
+              </DataTableBody>
+            </DataTable>
           </div>
         )}
       </div>

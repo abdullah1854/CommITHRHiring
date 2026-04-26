@@ -21,10 +21,12 @@ import {
   MapPin,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { EmptyState } from "@/components/ui/empty-state";
+import { DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeader, DataTableRow } from "@/components/ui/data-table";
 
 const INTERVIEW_ICONS: Record<string, React.ReactNode> = {
   phone_screen: <Phone className="w-3.5 h-3.5" />,
@@ -155,17 +157,13 @@ export default function Interviews() {
             </p>
           </div>
         ) : filteredInterviews.length === 0 ? (
-          <div className="p-16 text-center">
-            <CalendarIcon className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
-              {search || statusFilter ? "No interviews match your filters" : "No interviews scheduled"}
-            </h3>
-            <p className="text-slate-500 mb-6">
-              {search || statusFilter
-                ? "Try adjusting your search or clearing the filters."
-                : "Schedule your first interview to get started."}
-            </p>
-            {!search && !statusFilter && (
+          <EmptyState
+            icon={<CalendarIcon className="w-6 h-6" />}
+            headline={search || statusFilter ? "No interviews match your filters" : "No interviews scheduled"}
+            description={search || statusFilter
+              ? "Try adjusting your search or clearing the filters."
+              : "Schedule your first interview to get started."}
+            action={!search && !statusFilter && (
               <Link
                 href="/interviews/new"
                 className="inline-flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-blue-700 transition-colors"
@@ -173,30 +171,29 @@ export default function Interviews() {
                 <Plus className="w-4 h-4" /> Schedule Interview
               </Link>
             )}
-          </div>
+          />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[900px]">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-sm text-slate-500">
-                  <th className="p-4 font-semibold">Candidate</th>
-                  <th className="p-4 font-semibold">Job</th>
-                  <th className="p-4 font-semibold">Scheduled At</th>
-                  <th className="p-4 font-semibold">Type</th>
-                  <th className="p-4 font-semibold">Status</th>
-                  <th className="p-4 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+          <DataTable>
+              <DataTableHeader>
+                <DataTableRow className="hover:bg-transparent">
+                  <DataTableHead>Candidate</DataTableHead>
+                  <DataTableHead>Job</DataTableHead>
+                  <DataTableHead>Scheduled At</DataTableHead>
+                  <DataTableHead>Type</DataTableHead>
+                  <DataTableHead>Status</DataTableHead>
+                  <DataTableHead className="text-right">Actions</DataTableHead>
+                </DataTableRow>
+              </DataTableHeader>
+              <DataTableBody>
                 {filteredInterviews.map((interview) => {
                   const isRowSending =
                     (isSending && sendingId === interview.id) ||
                     (variables as any)?.id === interview.id;
                   const isRowDeleting = isDeleting && deletingId === interview.id;
                   return (
-                    <>
-                      <tr key={interview.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="p-4">
+                    <Fragment key={interview.id}>
+                      <DataTableRow>
+                        <DataTableCell>
                           <Link
                             href={`/candidates/${interview.candidateId}`}
                             className="font-bold text-slate-900 hover:text-primary transition-colors"
@@ -206,11 +203,11 @@ export default function Interviews() {
                           <div className="text-xs text-slate-400 mt-0.5">
                             {interview.interviewerName}
                           </div>
-                        </td>
-                        <td className="p-4 text-sm text-slate-600">
+                        </DataTableCell>
+                        <DataTableCell className="text-sm text-slate-600">
                           {interview.job?.title ?? "Unknown Job"}
-                        </td>
-                        <td className="p-4 text-sm text-slate-900 font-medium">
+                        </DataTableCell>
+                        <DataTableCell className="text-sm text-slate-900 font-medium">
                           <div className="flex items-center gap-2">
                             <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
                             {format(new Date(interview.scheduledAt), "MMM d, yyyy h:mm a")}
@@ -218,14 +215,14 @@ export default function Interviews() {
                           <div className="text-xs text-slate-400 mt-0.5 ml-6">
                             {interview.durationMinutes} min
                           </div>
-                        </td>
-                        <td className="p-4 text-sm text-slate-600">
+                        </DataTableCell>
+                        <DataTableCell className="text-sm text-slate-600">
                           <div className="flex items-center gap-1.5 capitalize">
                             {INTERVIEW_ICONS[interview.interviewType] ?? null}
                             {interview.interviewType.replace(/_/g, " ")}
                           </div>
-                        </td>
-                        <td className="p-4">
+                        </DataTableCell>
+                        <DataTableCell>
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
                             ${
@@ -241,8 +238,8 @@ export default function Interviews() {
                           >
                             {interview.status.replace(/_/g, " ")}
                           </span>
-                        </td>
-                        <td className="p-4 text-right">
+                        </DataTableCell>
+                        <DataTableCell className="text-right">
                           <div className="flex items-center justify-end gap-3">
                             {interview.meetingLink && (
                               <a
@@ -298,19 +295,18 @@ export default function Interviews() {
                               Delete
                             </button>
                           </div>
-                        </td>
-                      </tr>
+                        </DataTableCell>
+                      </DataTableRow>
                       <tr className="bg-white">
                         <td colSpan={6} className="px-4 pb-4">
                           <ScorecardPanel interview={interview} />
                         </td>
                       </tr>
-                    </>
+                    </Fragment>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
+              </DataTableBody>
+            </DataTable>
         )}
       </div>
     </DashboardLayout>
