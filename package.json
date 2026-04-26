@@ -2,6 +2,11 @@
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
+  "packageManager": "pnpm@10.10.0",
+  "engines": {
+    "node": ">=20.10.0",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
     "preinstall": "node scripts/preinstall.mjs",
     "dev": "pnpm --filter @workspace/api-server --filter @workspace/hr-platform run --parallel dev",
