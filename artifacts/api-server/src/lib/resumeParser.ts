@@ -147,14 +147,78 @@ export function extractNameFromFilename(filename: string): string {
 const JOB_TITLE_LINE =
   /\b(analyst|engineer|manager|developer|consultant|specialist|director|lead(?:er(?:ship)?)?|officer|associate|coordinator|architect|scientist|designer|administrator|executive|intern|graduate|trainee|business\s+analyst|project\s+manager|product\s+owner|scrum\s+master|data\s+scientist|software|full[\s-]?stack|devops|erp|sap|workday|results[\s-]?driven|transformation|innovation|head|chief|principal|founder|owner|president|evangelist|advisor|champion|technician|programmer|professor|researcher|writer|editor|expert)\b/i;
 
-const NOISE_HEADER =
-  /^(curriculum vitae|resume|cv|profile|personal details|contact|summary|objective|professional summary|experience|education|skills|work experience)\s*:?$/i;
+// Weak header noise that can legitimately sit *above* the candidate's name —
+// "Curriculum Vitae", "Resume" used as a banner. We skip these lines but
+// keep scanning further for the actual name.
+const HEADER_NOISE_PHRASES = [
+  "curriculum vitae",
+  "resume",
+  "cv",
+  "profile",
+  "personal details",
+  "personal information",
+  "personal info",
+  "contact",
+  "contact information",
+];
 
-const SECTION_HEADING =
-  /^(curriculum vitae|resume|cv|profile|personal details|contact|summary|objective|professional summary|experience|education|skills|work experience|employment history|work history|core skills|key skills|executive summary|business impact|key deliverables|strategic projects|tech stack|project experience|domain)\s*:?$/i;
+// Strong section markers that mean we've entered the body of the resume —
+// the candidate's name was either already on a line above or never present.
+// Stop scanning once we hit one of these.
+const BODY_SECTION_PHRASES = [
+  "summary",
+  "professional summary",
+  "executive summary",
+  "career summary",
+  "objective",
+  "career objective",
+  "career profile",
+  "career history",
+  "experience",
+  "professional experience",
+  "work experience",
+  "employment history",
+  "work history",
+  "education",
+  "skills",
+  "core skills",
+  "key skills",
+  "skills summary",
+  "core strengths",
+  "strengths",
+  "core competencies",
+  "competencies",
+  "areas of expertise",
+  "expertise",
+  "highlights",
+  "key highlights",
+  "achievements",
+  "key achievements",
+  "key projects",
+  "qualifications",
+  "certifications",
+  "languages",
+  "interests",
+  "references",
+  "business impact",
+  "key deliverables",
+  "strategic projects",
+  "tech stack",
+  "project experience",
+  "domain",
+];
 
-const BODY_SECTION_HEADING =
-  /^(summary|professional summary|executive summary|experience|work experience|employment history|work history|education|core skills|key skills|business impact|key deliverables|strategic projects|tech stack|project experience|domain)\s*:?$/i;
+const NOISE_HEADER = new RegExp(`^(${HEADER_NOISE_PHRASES.join("|")})\\s*:?$`, "i");
+const BODY_SECTION_HEADING = new RegExp(
+  `^(${BODY_SECTION_PHRASES.join("|")})\\s*:?$`,
+  "i",
+);
+// SECTION_HEADING is the union — used by isLikelyCorruptExtractedName /
+// sanitizeExtractedSkills so any heading-shaped string is rejected.
+const SECTION_HEADING = new RegExp(
+  `^(${[...HEADER_NOISE_PHRASES, ...BODY_SECTION_PHRASES].join("|")})\\s*:?$`,
+  "i",
+);
 
 const HEADER_DIVIDER = /\s*[|│•·]\s*/;
 

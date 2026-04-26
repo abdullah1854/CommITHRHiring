@@ -59,6 +59,35 @@ abdullah@example.com`;
   assert.equal(extractCandidateNameFromResumeText(headerThenName), "Abdullah Sarfaraz");
 });
 
+test("section headings like 'Core Strengths' do not become the candidate name", () => {
+  // Section markers must be skipped as section headings, not parsed as names.
+  assert.equal(isLikelyCorruptExtractedName("Core Strengths"), true);
+  assert.equal(isLikelyCorruptExtractedName("Career Profile"), true);
+  assert.equal(isLikelyCorruptExtractedName("Areas of Expertise"), true);
+
+  // Resume body where the headline + name come above a "Core Strengths" block.
+  const cv = `AI Innovation Leader
+Abdullah Sarfaraz
+Singapore  ·  abdullah@example.com  ·  +65 9000 0000
+
+Core Strengths
+- Project delivery
+- Stakeholder management`;
+  assert.equal(extractCandidateNameFromResumeText(cv), "Abdullah Sarfaraz");
+
+  // And the full resolution path falls through to the AI-extracted name when
+  // the header parser picks up nothing usable.
+  assert.equal(
+    resolveCandidateDisplayName({
+      override: null,
+      aiFullName: "Abdullah Sarfaraz",
+      resumeText: "Core Strengths\nProject delivery, stakeholder management.",
+      filename: "Abdullah_Sarfaraz_CV.pdf",
+    }),
+    "Abdullah Sarfaraz",
+  );
+});
+
 test("sanitizeExtractedSkills removes candidate names and section headings", () => {
   const cleaned = sanitizeExtractedSkills(
     ["Balaraj Maruthur", "Core Skills", "Power BI", "Finance Process Improvement", "power bi"],
