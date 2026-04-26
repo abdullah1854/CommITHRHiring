@@ -9,7 +9,7 @@ import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
-import { Loader2, Briefcase, Users, Star, TrendingUp } from "lucide-react";
+import { Download, FileText, Loader2, Briefcase, Users, Star, TrendingUp } from "lucide-react";
 
 function formatChartDate(value: string) {
   if (!value) return "";
@@ -99,8 +99,57 @@ export default function Analytics() {
     },
   ];
 
+  const downloadCsv = (filename: string, rows: Array<Record<string, unknown>>) => {
+    if (rows.length === 0) return;
+    const headers = Object.keys(rows[0] ?? {});
+    const escape = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+    const csv = [
+      headers.join(","),
+      ...rows.map((row) => headers.map((h) => escape(row[h])).join(",")),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const exportAnalytics = () => {
+    downloadCsv("analytics-job-performance.csv", displayJobs.map((j) => ({
+      jobTitle: j.jobTitle,
+      department: (j as any).department ?? "",
+      status: (j as any).status ?? "",
+      candidateCount: j.candidateCount,
+      averageScore: j.averageScore ?? 0,
+      interviewCount: j.interviewCount,
+    })));
+  };
+
   return (
     <DashboardLayout title="Analytics Dashboard">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <p className="text-sm text-slate-500">Export the current analytics view for reporting or print it as a PDF.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={exportAnalytics}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            <Download className="w-4 h-4" /> Export CSV
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            <FileText className="w-4 h-4" /> Print / Save PDF
+          </button>
+        </div>
+      </div>
       {/* KPI Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {kpiCards.map(kpi => (
