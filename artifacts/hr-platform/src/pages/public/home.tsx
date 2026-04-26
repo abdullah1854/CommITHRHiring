@@ -1,7 +1,7 @@
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
-import { Bot, Users, Sparkles, Zap, Shield, ArrowRight } from "lucide-react";
+import { Bot, Users, Sparkles, Zap, ArrowRight } from "lucide-react";
 
 export default function Home() {
   return (
@@ -15,7 +15,7 @@ export default function Home() {
             className="w-full h-full object-cover object-center"
           />
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/40 to-slate-50"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/40 to-background"></div>
         </div>
 
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center pt-20">
@@ -114,7 +114,7 @@ function FeatureCard({ icon, title, description, color }: { icon: React.ReactNod
   };
 
   return (
-    <div className="bg-card p-8 rounded-3xl border border-border shadow-sm shadow-slate-200/50 hover:-translate-y-2 transition-all duration-300">
+    <div className="bg-card p-8 rounded-3xl border border-border shadow-sm hover:-translate-y-2 transition-all duration-300">
       <div className={`w-16 h-16 rounded-2xl ${bgColors[color]} flex items-center justify-center mb-6`}>
         {icon}
       </div>
