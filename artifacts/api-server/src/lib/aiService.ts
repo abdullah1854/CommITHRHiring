@@ -60,7 +60,7 @@ const GENERAL_TEMPERATURE = clampNumber(
 // same input. Override per-tenant if you want a different rotation.
 const SCREEN_SEED = positiveInt(process.env.AI_SCREEN_SEED, 42);
 // Bump this when the screening prompt changes — invalidates the cache below.
-const SCREEN_PROMPT_VERSION = process.env.AI_SCREEN_PROMPT_VERSION || "v3";
+const SCREEN_PROMPT_VERSION = process.env.AI_SCREEN_PROMPT_VERSION || "v4";
 
 // Token budgets per call type
 const SCREEN_MAX_TOKENS = positiveInt(process.env.AI_SCREEN_MAX_TOKENS, 4_000);
@@ -446,6 +446,8 @@ function buildScreeningPrompt(input: ScreeningInput): string {
   const resumeCap = mode === "deep" ? DEEP_RESUME_CONTEXT_CAP : RESUME_CONTEXT_CAP;
   const modeRider = mode === "deep" ? DEEP_SCAN_RIDER : "";
 
+  // Candidate names do not affect job fit, so omit them; parser-assigned names
+  // can vary for identical file bytes and would otherwise perturb the LLM.
   return `Evaluate the candidate against this open requisition. Return strict JSON.${modeRider}
 
 === JOB SPEC ===
@@ -464,7 +466,6 @@ ${(input.qualifications || "").trim() || "(missing)"}
 Spec quality hint: total spec length is ${jobSpecLength} characters. If the spec is sparse or missing entirely, set jobSpecQuality to "sparse" or "missing" and DO NOT punish the candidate for our weak job spec — score them on what the spec does describe.
 
 === CANDIDATE ===
-Name: ${input.candidateName}
 Skills (parsed): ${(input.skills ?? []).join(", ") || "(none parsed)"}
 Resume text:
 ${clipResume(input.resumeText, resumeCap)}

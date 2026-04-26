@@ -8,6 +8,7 @@ import {
   generateInterviewQuestions,
   generateJobDescription,
   improveJobDescription,
+  type ScreeningOutput,
   type ScreeningMode,
 } from "../lib/aiService.js";
 import { candidatePublicSelect } from "../lib/prismaSafeSelects.js";
@@ -57,20 +58,291 @@ async function resolveJobForSummary(candidateId: string, explicitJobId?: string 
 
 interface ScreeningRunOptions {
   mode?: ScreeningMode;
-  // When true, bypass all caches and call the LLM fresh. Use sparingly —
-  // deterministic cache hits are the whole point of this pipeline.
+  // When true, bypass cache reads and call the LLM fresh. For file-backed
+  // screening, an existing immutable durable cache row still wins at write time.
   force?: boolean;
+}
+
+const SCREENING_EXT_COL_RE = /(raw_response|cache_key|resume_file_sha|mode|Invalid column name)/i;
+const SCREENING_CACHE_COL_RE =
+  /(screening_cache|cache_key|resume_file_sha|match_score|fit_label|payload|Invalid column name|Invalid object name|does not exist)/i;
+
+type ScreeningPayload = Pick<
+  ScreeningOutput,
+  | "matchScore"
+  | "fitLabel"
+  | "matchedSkills"
+  | "missingSkills"
+  | "strengths"
+  | "risks"
+  | "reasoning"
+  | "aiRecommendation"
+> & {
+  rawResponse: string | null;
+};
+
+interface ScreeningRunDeps {
+  db?: any;
+  screenCandidate?: typeof screenCandidate;
+}
+
+function isScreeningCacheSchemaErr(err: any): boolean {
+  const msg = String(err?.message ?? "");
+  return err?.code === "P2021" || err?.code === "P2022" || SCREENING_CACHE_COL_RE.test(msg);
+}
+
+function payloadFromResult(result: ScreeningOutput): ScreeningPayload {
+  return {
+    matchScore: result.matchScore,
+    fitLabel: result.fitLabel,
+    matchedSkills: result.matchedSkills,
+    missingSkills: result.missingSkills,
+    strengths: result.strengths,
+    risks: result.risks,
+    reasoning: result.reasoning,
+    aiRecommendation: result.aiRecommendation,
+    rawResponse: result.rawResponse ?? null,
+  };
+}
+
+function payloadFromScreeningRow(row: any): ScreeningPayload {
+  return {
+    matchScore: Number(row.matchScore) || 0,
+    fitLabel: row.fitLabel,
+    matchedSkills: parseList(row.matchedSkills),
+    missingSkills: parseList(row.missingSkills),
+    strengths: parseList(row.strengths),
+    risks: parseList(row.risks),
+    reasoning: row.reasoning ?? "",
+    aiRecommendation: row.aiRecommendation ?? "",
+    rawResponse: row.rawResponse ?? null,
+  };
+}
+
+function payloadFromCacheRow(row: any): ScreeningPayload | null {
+  if (!row) return null;
+  const payload =
+    row.payload && typeof row.payload === "object" && !Array.isArray(row.payload)
+      ? (row.payload as Record<string, unknown>)
+      : {};
+  const matchScore = Number(row.matchScore ?? payload.matchScore);
+  const fitLabel = typeof row.fitLabel === "string" ? row.fitLabel : payload.fitLabel;
+  if (!Number.isFinite(matchScore) || typeof fitLabel !== "string") return null;
+  return {
+    matchScore,
+    fitLabel: fitLabel as ScreeningPayload["fitLabel"],
+    matchedSkills: parseList(payload.matchedSkills),
+    missingSkills: parseList(payload.missingSkills),
+    strengths: parseList(payload.strengths),
+    risks: parseList(payload.risks),
+    reasoning: typeof payload.reasoning === "string" ? payload.reasoning : "",
+    aiRecommendation:
+      typeof payload.aiRecommendation === "string" ? payload.aiRecommendation : "",
+    rawResponse:
+      typeof row.rawResponse === "string"
+        ? row.rawResponse
+        : typeof payload.rawResponse === "string"
+          ? payload.rawResponse
+          : null,
+  };
+}
+
+function screeningRowData(
+  candidateId: string,
+  jobId: string,
+  mode: ScreeningMode,
+  resumeFileSha: string | null,
+  cacheKey: string,
+  payload: ScreeningPayload,
+) {
+  const baseData = {
+    candidateId,
+    jobId,
+    matchScore: payload.matchScore,
+    fitLabel: payload.fitLabel,
+    matchedSkills: serializeList(payload.matchedSkills),
+    missingSkills: serializeList(payload.missingSkills),
+    strengths: serializeList(payload.strengths),
+    risks: serializeList(payload.risks),
+    reasoning: payload.reasoning,
+    aiRecommendation: payload.aiRecommendation,
+    hrDecision: "pending",
+  };
+  const fullData: Record<string, any> = {
+    ...baseData,
+    mode,
+    resumeFileSha,
+    cacheKey,
+    rawResponse: payload.rawResponse ?? null,
+  };
+  return { baseData, fullData };
+}
+
+/** Insert with progressive column stripping when the DB predates extended columns. */
+async function createAiScreeningRow(
+  db: any,
+  tag: string,
+  baseData: Record<string, any>,
+  fullData: Record<string, any>,
+): Promise<any> {
+  async function tryInsert(data: Record<string, any>) {
+    return db.aiScreeningResult.create({ data: data as any });
+  }
+
+  const attempts: Array<{ label: string; data: Record<string, any> }> = [
+    { label: "full", data: fullData },
+    { label: "no raw_response", data: { ...fullData, rawResponse: undefined } },
+    {
+      label: "base only",
+      data: {
+        ...baseData,
+        mode: undefined,
+        resumeFileSha: undefined,
+        cacheKey: undefined,
+        rawResponse: undefined,
+      },
+    },
+  ];
+
+  let insertErr: any = null;
+  for (const attempt of attempts) {
+    try {
+      const data: Record<string, any> = {};
+      for (const [k, v] of Object.entries(attempt.data)) {
+        if (v !== undefined) data[k] = v;
+      }
+      const screening = await tryInsert(data);
+      if (attempt.label !== "full") {
+        console.warn(
+          `${tag} aiScreeningResult.create succeeded with reduced shape (${attempt.label}). ` +
+            "Run prisma db push on this server to add missing columns.",
+        );
+      }
+      return screening;
+    } catch (err: any) {
+      insertErr = err;
+      const msg = String(err?.message ?? "");
+      const code = err?.code;
+      const drift = code === "P2022" || SCREENING_EXT_COL_RE.test(msg);
+      if (!drift) break;
+    }
+  }
+
+  console.error(
+    `${tag} aiScreeningResult.create failed after retries:`,
+    (insertErr as Error)?.stack ?? insertErr,
+  );
+  throw new Error(
+    `Failed to save screening result: ${(insertErr as Error)?.message ?? insertErr}`,
+  );
+}
+
+async function createScreeningFromPayload(
+  db: any,
+  tag: string,
+  candidateId: string,
+  jobId: string,
+  mode: ScreeningMode,
+  resumeFileSha: string | null,
+  cacheKey: string,
+  payload: ScreeningPayload,
+): Promise<any> {
+  const { baseData, fullData } = screeningRowData(
+    candidateId,
+    jobId,
+    mode,
+    resumeFileSha,
+    cacheKey,
+    payload,
+  );
+  return createAiScreeningRow(db, tag, baseData, fullData);
+}
+
+async function findDurableScreeningCache(
+  db: any,
+  tag: string,
+  cacheKey: string,
+  resumeFileSha: string | null,
+): Promise<ScreeningPayload | null> {
+  if (!resumeFileSha || !db.screeningCache) return null;
+  try {
+    const cached = await db.screeningCache.findUnique({ where: { cacheKey } });
+    if (!cached) return null;
+    if (cached.resumeFileSha !== resumeFileSha) {
+      console.warn(`${tag} durable cache sha mismatch for key=${cacheKey.slice(0, 12)}`);
+      return null;
+    }
+    return payloadFromCacheRow(cached);
+  } catch (err: any) {
+    if (!isScreeningCacheSchemaErr(err)) {
+      console.warn(`${tag} durable screening cache lookup failed:`, String(err?.message ?? err));
+    }
+    return null;
+  }
+}
+
+async function rememberDurableScreeningCache(
+  db: any,
+  tag: string,
+  cacheKey: string,
+  jobId: string,
+  resumeFileSha: string | null,
+  mode: ScreeningMode,
+  payload: ScreeningPayload,
+): Promise<ScreeningPayload> {
+  if (!resumeFileSha || !db.screeningCache) return payload;
+  try {
+    await db.screeningCache.create({
+      data: {
+        cacheKey,
+        jobId,
+        resumeFileSha,
+        mode,
+        matchScore: payload.matchScore,
+        fitLabel: payload.fitLabel,
+        payload: {
+          matchScore: payload.matchScore,
+          fitLabel: payload.fitLabel,
+          matchedSkills: payload.matchedSkills,
+          missingSkills: payload.missingSkills,
+          strengths: payload.strengths,
+          risks: payload.risks,
+          reasoning: payload.reasoning,
+          aiRecommendation: payload.aiRecommendation,
+          rawResponse: payload.rawResponse ?? null,
+        },
+        rawResponse: payload.rawResponse ?? null,
+      },
+    });
+    return payload;
+  } catch (err: any) {
+    if (err?.code === "P2002") {
+      const existing = await findDurableScreeningCache(db, tag, cacheKey, resumeFileSha);
+      if (existing) {
+        console.log(
+          `${tag} durable cache already existed; keeping score=${existing.matchScore}`,
+        );
+        return existing;
+      }
+    } else if (!isScreeningCacheSchemaErr(err)) {
+      console.warn(`${tag} durable screening cache write failed:`, String(err?.message ?? err));
+    }
+    return payload;
+  }
 }
 
 /**
  * Internal helper: run AI screening for a single candidate/job pair,
  * persist the result, and mark candidate as reviewing.
  */
-async function runAndPersistScreening(
+export async function runScreeningInternal(
   candidateId: string,
   jobId: string,
   options: ScreeningRunOptions = {},
+  deps: ScreeningRunDeps = {},
 ) {
+  const db = deps.db ?? prisma;
+  const runScreenCandidate = deps.screenCandidate ?? screenCandidate;
   const mode: ScreeningMode = options.mode === "deep" ? "deep" : "standard";
   const force = options.force === true;
   const tag = `[ai:screen ${candidateId.slice(0, 8)}/${jobId.slice(0, 8)} ${mode}${force ? " force" : ""}]`;
@@ -80,11 +352,11 @@ async function runAndPersistScreening(
   let job: any;
   try {
     [candidate, job] = await Promise.all([
-      prisma.candidate.findFirst({
+      db.candidate.findFirst({
         where: { id: candidateId },
         select: candidatePublicSelect,
       }),
-      prisma.job.findFirst({ where: { id: jobId } }),
+      db.job.findFirst({ where: { id: jobId } }),
     ]);
   } catch (err) {
     console.error(`${tag} candidate/job lookup failed:`, (err as Error)?.stack ?? err);
@@ -102,7 +374,7 @@ async function runAndPersistScreening(
 
   let resume: any = null;
   try {
-    resume = await prisma.resume.findFirst({
+    resume = await db.resume.findFirst({
       where: { candidateId },
       orderBy: { uploadedAt: "desc" },
     });
@@ -133,11 +405,12 @@ async function runAndPersistScreening(
   };
 
   // Determinism cache. Layers, in order:
-  //   0. DB lookup by cacheKey column — cheapest hit, works across restarts
-  //      and machines, and is stable regardless of which candidate row holds
-  //      the resume (same file bytes = same key).
-  //   1. DB lookup by (jobId, resumeFileSha, mode) — secondary match on the
-  //      new determinism fields.
+  //   0. Current candidate DB row by cacheKey.
+  //   0a. Durable screening_cache row keyed by the full file+job+mode prompt
+  //       cacheKey; this survives candidate deletion and is the immutable source
+  //       for same resume bytes + same job + same mode.
+  //   0b. Legacy donor clone from ai_screening_results while rows still exist.
+  //   1. Current candidate DB row by (jobId, resumeFileSha, mode, cacheKey).
   //   2. File cache: cacheKey -> aiScreeningResult.id.
   //   3. Legacy: previous result's rawResponse JSON embeds the old cacheKey.
   const inputsCacheKey = screeningCacheKey(screeningInput);
@@ -147,7 +420,7 @@ async function runAndPersistScreening(
   } else {
     // Level 0 — DB cacheKey column (best when schema is up to date).
     try {
-      const byKey = await prisma.aiScreeningResult.findFirst({
+      const byKey = await db.aiScreeningResult.findFirst({
         where: { cacheKey: inputsCacheKey, candidateId, jobId },
         orderBy: { createdAt: "desc" },
       });
@@ -158,7 +431,7 @@ async function runAndPersistScreening(
           jobId,
           matchScore: byKey.matchScore,
         });
-        await prisma.candidate.update({
+        await db.candidate.update({
           where: { id: candidateId },
           data: { status: "reviewing" },
         });
@@ -175,26 +448,134 @@ async function runAndPersistScreening(
       }
     }
 
-    // Level 1 — DB lookup by (jobId, resumeFileSha, mode).
+    // Level 0a — Durable cache row independent from candidate lifecycle.
+    const durablePayload = await findDurableScreeningCache(
+      db,
+      tag,
+      inputsCacheKey,
+      resumeFileSha,
+    );
+    if (durablePayload) {
+      const screening = await createScreeningFromPayload(
+        db,
+        tag,
+        candidateId,
+        jobId,
+        mode,
+        resumeFileSha,
+        inputsCacheKey,
+        durablePayload,
+      );
+      try {
+        rememberScreening(inputsCacheKey, {
+          screeningId: screening.id,
+          candidateId,
+          jobId,
+          matchScore: screening.matchScore,
+        });
+      } catch (cacheWriteErr) {
+        console.warn(`${tag} failed to write screening cache (non-fatal):`, (cacheWriteErr as Error)?.message);
+      }
+      await db.candidate.update({
+        where: { id: candidateId },
+        data: { status: "reviewing" },
+      });
+      console.log(
+        `${tag} cache HIT (durable screening_cache) score=${screening.matchScore}`,
+      );
+      return { screening, candidate, job, cached: true as const };
+    }
+
+    // Level 0b — Same job + identical inputs were already scored for a *different*
+    // candidate row (e.g. repeat upload of the same file without email match
+    // creates a new candidate each time). Clone scores so the AI rating does not
+    // change for the same résumé bytes + job spec.
+    try {
+      const donor = await db.aiScreeningResult.findFirst({
+        where: {
+          jobId,
+          cacheKey: inputsCacheKey,
+          candidateId: { not: candidateId },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      if (donor) {
+        const donorPayload = await rememberDurableScreeningCache(
+          db,
+          tag,
+          inputsCacheKey,
+          jobId,
+          resumeFileSha,
+          mode,
+          payloadFromScreeningRow(donor),
+        );
+        const screening = await createScreeningFromPayload(
+          db,
+          tag,
+          candidateId,
+          jobId,
+          mode,
+          resumeFileSha,
+          inputsCacheKey,
+          donorPayload,
+        );
+        try {
+          rememberScreening(inputsCacheKey, {
+            screeningId: screening.id,
+            candidateId,
+            jobId,
+            matchScore: screening.matchScore,
+          });
+        } catch (cacheWriteErr) {
+          console.warn(`${tag} failed to write screening cache (non-fatal):`, (cacheWriteErr as Error)?.message);
+        }
+        await db.candidate.update({
+          where: { id: candidateId },
+          data: { status: "reviewing" },
+        });
+        console.log(
+          `${tag} cache HIT (global clone from donor=${donor.candidateId.slice(0, 8)}) ` +
+            `score=${screening.matchScore}`,
+        );
+        return { screening, candidate, job, cached: true as const };
+      }
+    } catch (globalErr: any) {
+      const msg = String(globalErr?.message ?? "");
+      if (!(globalErr?.code === "P2022" || /cache_key|Invalid column name/i.test(msg))) {
+        console.warn("[ai] global cacheKey donor lookup failed:", msg);
+      }
+    }
+
+    // Level 1 — DB lookup by (jobId, resumeFileSha, mode, cacheKey).
     if (resumeFileSha) {
       try {
-        const bySha = await prisma.aiScreeningResult.findFirst({
+        const bySha = await db.aiScreeningResult.findFirst({
           where: {
             jobId,
             resumeFileSha,
             mode,
             candidateId,
+            cacheKey: inputsCacheKey,
           },
           orderBy: { createdAt: "desc" },
         });
         if (bySha) {
+          await rememberDurableScreeningCache(
+            db,
+            tag,
+            inputsCacheKey,
+            jobId,
+            resumeFileSha,
+            mode,
+            payloadFromScreeningRow(bySha),
+          );
           rememberScreening(inputsCacheKey, {
             screeningId: bySha.id,
             candidateId,
             jobId,
             matchScore: bySha.matchScore,
           });
-          await prisma.candidate.update({
+          await db.candidate.update({
             where: { id: candidateId },
             data: { status: "reviewing" },
           });
@@ -218,11 +599,11 @@ async function runAndPersistScreening(
     const fileEntry = getCachedScreeningId(inputsCacheKey);
     if (fileEntry?.screeningId) {
       try {
-        const cachedRow = await prisma.aiScreeningResult.findFirst({
+        const cachedRow = await db.aiScreeningResult.findFirst({
           where: { id: fileEntry.screeningId, candidateId, jobId },
         });
         if (cachedRow) {
-          await prisma.candidate.update({
+          await db.candidate.update({
             where: { id: candidateId },
             data: { status: "reviewing" },
           });
@@ -241,7 +622,7 @@ async function runAndPersistScreening(
 
     // Level 3 — legacy DB cache via rawResponse, if the column exists.
     try {
-      const previous = await prisma.aiScreeningResult.findFirst({
+      const previous = await db.aiScreeningResult.findFirst({
         where: { candidateId, jobId },
         orderBy: { createdAt: "desc" },
       });
@@ -249,13 +630,22 @@ async function runAndPersistScreening(
         try {
           const parsed = JSON.parse(previous.rawResponse);
           if (parsed?.cacheKey && parsed.cacheKey === inputsCacheKey) {
+            await rememberDurableScreeningCache(
+              db,
+              tag,
+              inputsCacheKey,
+              jobId,
+              resumeFileSha,
+              mode,
+              payloadFromScreeningRow(previous),
+            );
             rememberScreening(inputsCacheKey, {
               screeningId: previous.id,
               candidateId,
               jobId,
               matchScore: previous.matchScore,
             });
-            await prisma.candidate.update({
+            await db.candidate.update({
               where: { id: candidateId },
               data: { status: "reviewing" },
             });
@@ -282,7 +672,7 @@ async function runAndPersistScreening(
   );
   let result: Awaited<ReturnType<typeof screenCandidate>>;
   try {
-    result = await screenCandidate(screeningInput);
+    result = await runScreenCandidate(screeningInput);
   } catch (err) {
     console.error(`${tag} screenCandidate threw:`, (err as Error)?.stack ?? err);
     throw new Error(`AI screening call failed: ${(err as Error)?.message ?? err}`);
@@ -292,87 +682,31 @@ async function runAndPersistScreening(
       `confidence=${result.confidence} jobSpec=${result.jobSpecQuality}`,
   );
 
-  const baseData = {
+  const payload = await rememberDurableScreeningCache(
+    db,
+    tag,
+    inputsCacheKey,
+    jobId,
+    resumeFileSha,
+    mode,
+    payloadFromResult(result),
+  );
+  if (payload.matchScore !== result.matchScore) {
+    console.log(
+      `${tag} durable cache retained score=${payload.matchScore} after fresh LLM score=${result.matchScore}`,
+    );
+  }
+
+  const screening = await createScreeningFromPayload(
+    db,
+    tag,
     candidateId,
     jobId,
-    matchScore: result.matchScore,
-    fitLabel: result.fitLabel,
-    matchedSkills: serializeList(result.matchedSkills),
-    missingSkills: serializeList(result.missingSkills),
-    strengths: serializeList(result.strengths),
-    risks: serializeList(result.risks),
-    reasoning: result.reasoning,
-    aiRecommendation: result.aiRecommendation,
-    hrDecision: "pending",
-  };
-
-  // Extended fields (mode, resumeFileSha, cacheKey, rawResponse) are tolerant
-  // of schema drift — older DBs may not have the columns yet. We try the full
-  // shape first and progressively strip columns if the insert fails with the
-  // well-known "Invalid column name" error (Prisma code P2022).
-  const fullData: Record<string, any> = {
-    ...baseData,
     mode,
     resumeFileSha,
-    cacheKey: inputsCacheKey,
-    rawResponse: result.rawResponse ?? null,
-  };
-  const EXTENDED_COLUMN_RE = /(raw_response|cache_key|resume_file_sha|mode|Invalid column name)/i;
-
-  async function tryInsert(data: Record<string, any>) {
-    return prisma.aiScreeningResult.create({ data: data as any });
-  }
-
-  let screening: any;
-  const attempts: Array<{ label: string; data: Record<string, any> }> = [
-    { label: "full", data: fullData },
-    { label: "no raw_response", data: { ...fullData, rawResponse: undefined } },
-    {
-      label: "base only",
-      data: {
-        ...baseData,
-        mode: undefined,
-        resumeFileSha: undefined,
-        cacheKey: undefined,
-        rawResponse: undefined,
-      },
-    },
-  ];
-
-  let insertErr: any = null;
-  for (const attempt of attempts) {
-    try {
-      const data: Record<string, any> = {};
-      for (const [k, v] of Object.entries(attempt.data)) {
-        if (v !== undefined) data[k] = v;
-      }
-      screening = await tryInsert(data);
-      if (attempt.label !== "full") {
-        console.warn(
-          `${tag} aiScreeningResult.create succeeded with reduced shape (${attempt.label}). ` +
-            "Run prisma db push on this server to add missing columns.",
-        );
-      }
-      insertErr = null;
-      break;
-    } catch (err: any) {
-      insertErr = err;
-      const msg = String(err?.message ?? "");
-      const code = err?.code;
-      const drift = code === "P2022" || EXTENDED_COLUMN_RE.test(msg);
-      if (!drift) break;
-    }
-  }
-
-  if (!screening) {
-    console.error(
-      `${tag} aiScreeningResult.create failed after retries:`,
-      (insertErr as Error)?.stack ?? insertErr,
-    );
-    throw new Error(
-      `Failed to save screening result: ${(insertErr as Error)?.message ?? insertErr}`,
-    );
-  }
+    inputsCacheKey,
+    payload,
+  );
   console.log(`${tag} persisted screeningId=${screening.id}`);
 
   try {
@@ -390,7 +724,7 @@ async function runAndPersistScreening(
   }
 
   try {
-    await prisma.candidate.update({
+    await db.candidate.update({
       where: { id: candidateId },
       data: { status: "reviewing" },
     });
@@ -419,7 +753,7 @@ router.post("/screen", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "Bad Request", message: "jobId is required" });
     }
 
-    const out = await runAndPersistScreening(candidateId, jobId, {
+    const out = await runScreeningInternal(candidateId, jobId, {
       mode: parseScreeningMode(mode),
       force: parseBooleanFlag(force),
     });
@@ -430,7 +764,7 @@ router.post("/screen", requireAuth, async (req, res) => {
       return res.status(404).json({ error: "Not Found", message: "Job not found" });
     }
 
-    res.json({
+    return res.json({
       ...out.screening,
       matchedSkills: parseList(out.screening.matchedSkills),
       missingSkills: parseList(out.screening.missingSkills),
@@ -439,7 +773,7 @@ router.post("/screen", requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("[ai] /screen failed:", (err as Error)?.stack ?? err);
-    res.status(500).json({
+    return res.status(500).json({
       error: "Internal Server Error",
       message: (err as Error)?.message ?? "AI screening failed",
     });
@@ -455,7 +789,7 @@ router.post("/screen/:candidateId/:jobId", requireAuth, async (req, res) => {
     if (!candidateId) return res.status(400).json({ error: "Bad Request", message: "candidateId is required" });
     if (!jobId) return res.status(400).json({ error: "Bad Request", message: "jobId is required" });
 
-    const out = await runAndPersistScreening(candidateId, jobId, {
+    const out = await runScreeningInternal(candidateId, jobId, {
       mode: parseScreeningMode(req.body?.mode ?? req.query?.mode),
       force: parseBooleanFlag(req.body?.force ?? req.query?.force),
     });
@@ -466,7 +800,7 @@ router.post("/screen/:candidateId/:jobId", requireAuth, async (req, res) => {
       return res.status(404).json({ error: "Not Found", message: "Job not found" });
     }
 
-    res.json({
+    return res.json({
       ...out.screening,
       matchedSkills: parseList(out.screening.matchedSkills),
       missingSkills: parseList(out.screening.missingSkills),
@@ -475,7 +809,7 @@ router.post("/screen/:candidateId/:jobId", requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("[ai] /screen (path-param) failed:", (err as Error)?.stack ?? err);
-    res.status(500).json({
+    return res.status(500).json({
       error: "Internal Server Error",
       message: (err as Error)?.message ?? "AI screening failed",
     });
@@ -531,7 +865,7 @@ router.get("/rank/:jobId", requireAuth, async (req, res) => {
         await Promise.all(
           batch.map(async (c) => {
             try {
-              await runAndPersistScreening(c.id, jobId, { mode, force });
+              await runScreeningInternal(c.id, jobId, { mode, force });
             } catch (e) {
               console.error(`Auto-screen failed for candidate ${c.id}:`, e);
             }
@@ -584,10 +918,10 @@ router.get("/rank/:jobId", requireAuth, async (req, res) => {
       .sort((a, b) => b.score - a.score)
       .map((r, i) => ({ rank: i + 1, ...r }));
 
-    res.json({ jobId, jobTitle: job.title, rankings });
+    return res.json({ jobId, jobTitle: job.title, rankings });
   } catch (err) {
     console.error("Ranking error:", err);
-    res.status(500).json({ error: "Internal Server Error", message: "Ranking failed" });
+    return res.status(500).json({ error: "Internal Server Error", message: "Ranking failed" });
   }
 });
 
@@ -661,7 +995,7 @@ router.post("/summary", requireAuth, async (req, res) => {
     });
 
     // Return hydrated arrays (not raw JSON strings) so the client never receives serialized list fields.
-    res.json({
+    return res.json({
       ...saved,
       candidateId,
       strengths: summary.strengths,
@@ -671,7 +1005,7 @@ router.post("/summary", requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("Summary error:", err);
-    res.status(500).json({ error: "Internal Server Error", message: "Summary generation failed" });
+    return res.status(500).json({ error: "Internal Server Error", message: "Summary generation failed" });
   }
 });
 
@@ -742,7 +1076,7 @@ router.post("/summary/:candidateId", requireAuth, async (req, res) => {
       },
     });
 
-    res.json({
+    return res.json({
       ...saved,
       candidateId,
       strengths: summary.strengths,
@@ -752,7 +1086,7 @@ router.post("/summary/:candidateId", requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error("Summary error:", err);
-    res.status(500).json({ error: "Internal Server Error", message: "Summary generation failed" });
+    return res.status(500).json({ error: "Internal Server Error", message: "Summary generation failed" });
   }
 });
 
@@ -978,10 +1312,10 @@ router.post("/interview-questions", requireAuth, async (req, res) => {
       }
       return res.status(404).json({ error: "Not Found", message: "Job not found" });
     }
-    res.json(out);
+    return res.json(out);
   } catch (err) {
     console.error("Interview questions error:", err);
-    res.status(500).json({ error: "Internal Server Error", message: "Interview question generation failed" });
+    return res.status(500).json({ error: "Internal Server Error", message: "Interview question generation failed" });
   }
 });
 
@@ -1011,10 +1345,10 @@ router.post("/interview-questions/:candidateId/:jobId", requireAuth, async (req,
       }
       return res.status(404).json({ error: "Not Found", message: "Job not found" });
     }
-    res.json(out);
+    return res.json(out);
   } catch (err) {
     console.error("Interview questions error:", err);
-    res.status(500).json({ error: "Internal Server Error", message: "Interview question generation failed" });
+    return res.status(500).json({ error: "Internal Server Error", message: "Interview question generation failed" });
   }
 });
 
@@ -1062,7 +1396,7 @@ router.get("/interview-questions/:candidateId/:jobId", requireAuth, async (req, 
     }
   } catch (err) {
     console.error("Interview questions fetch error:", err);
-    res.status(500).json({ error: "Internal Server Error", message: "Failed to fetch interview questions" });
+    return res.status(500).json({ error: "Internal Server Error", message: "Failed to fetch interview questions" });
   }
 });
 
@@ -1078,10 +1412,10 @@ router.post("/generate-jd", requireAuth, async (req, res) => {
     }
 
     const result = await generateJobDescription({ prompt, department, seniority, employmentType });
-    res.json(result);
+    return res.json(result);
   } catch (err) {
     console.error("JD generation error:", err);
-    res.status(500).json({ error: "Internal Server Error", message: "JD generation failed" });
+    return res.status(500).json({ error: "Internal Server Error", message: "JD generation failed" });
   }
 });
 
@@ -1097,10 +1431,10 @@ router.post("/improve-jd", requireAuth, async (req, res) => {
     }
 
     const result = await improveJobDescription({ existingJD, focusAreas });
-    res.json(result);
+    return res.json(result);
   } catch (err) {
     console.error("JD improve error:", err);
-    res.status(500).json({ error: "Internal Server Error", message: "JD improvement failed" });
+    return res.status(500).json({ error: "Internal Server Error", message: "JD improvement failed" });
   }
 });
 
@@ -1120,10 +1454,10 @@ router.get("/screening-results/:candidateId/:jobId", requireAuth, async (req, re
     });
 
     if (!screening) return res.status(404).json({ error: "Not Found", message: "No screening result found" });
-    res.json(screening);
+    return res.json(screening);
   } catch (err) {
     console.error("Fetch screening error:", err);
-    res.status(500).json({ error: "Internal Server Error", message: "Failed to fetch screening result" });
+    return res.status(500).json({ error: "Internal Server Error", message: "Failed to fetch screening result" });
   }
 });
 

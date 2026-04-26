@@ -164,6 +164,25 @@ model AiScreeningResult {
   @@schema("commit_hr")
 }
 
+model ScreeningCache {
+  cacheKey      String   @id @map("cache_key") @db.VarChar(128)
+  jobId         String   @map("job_id") @db.Uuid
+  resumeFileSha String   @map("resume_file_sha") @db.VarChar(64)
+  mode          String   @default("standard") @db.VarChar(20)
+  matchScore    Float    @map("match_score") @db.Real
+  fitLabel      String   @map("fit_label") @db.VarChar(50)
+  payload       Json
+  rawResponse   String?  @map("raw_response")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([jobId, resumeFileSha, mode])
+  @@index([resumeFileSha])
+  @@index([createdAt])
+  @@map("screening_cache")
+  @@schema("commit_hr")
+}
+
 model AiCandidateSummary {
   id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   candidateId           String    @map("candidate_id") @db.Uuid
