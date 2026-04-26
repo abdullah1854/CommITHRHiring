@@ -379,7 +379,7 @@ function ScorecardPanel({ interview }: { interview: any }) {
         </div>
         <label className="text-xs font-semibold text-slate-600 lg:w-48">
           Recommendation
-          <select value={recommendation} onChange={(e) => setRecommendation(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm">
+          <select value={recommendation} onChange={(e) => setRecommendation(e.target.value)} className="mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-2 text-sm">
             <option value="strong_yes">Strong Yes</option>
             <option value="yes">Yes</option>
             <option value="hold">Hold</option>

@@ -55,7 +55,7 @@ export default function Careers() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJobs.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`}>
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-300 h-full flex flex-col cursor-pointer group">
+                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-sm hover:border-primary/30 transition-all duration-300 h-full flex flex-col cursor-pointer group">
                   <div className="flex justify-between items-start mb-4">
                     <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold uppercase tracking-wider">
                       {job.department}

@@ -379,7 +379,7 @@ export default function CandidateProfile() {
             <div className="h-24 bg-gradient-to-r from-blue-600 to-indigo-600" />
             <div className="px-6 pb-6">
               <div className="flex items-end -mt-10 mb-5">
-                <div className="w-20 h-20 rounded-2xl bg-white p-1 shadow-lg shrink-0">
+                <div className="w-20 h-20 rounded-2xl bg-white p-1 shadow-sm shrink-0">
                   <div className="w-full h-full rounded-xl bg-slate-100 flex items-center justify-center text-2xl font-bold text-primary">
                     {getInitials(candidate.fullName)}
                   </div>
@@ -450,7 +450,7 @@ export default function CandidateProfile() {
           </div>
 
           {latestScreening && (
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-800 shadow-xl p-6 text-white">
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-800 shadow-sm p-6 text-white">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold flex items-center"><Sparkles className="w-4 h-4 mr-2 text-blue-400" /> AI Score</h3>
                 <FitLabelBadge fitLabel={latestScreening.fitLabel} />
@@ -589,7 +589,7 @@ export default function CandidateProfile() {
                   <section>
                     <h3 className="text-lg font-bold text-slate-900 mb-3">Recruiter Notes</h3>
                     <textarea
-                      className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900 placeholder:text-yellow-700/50"
+                      className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900 placeholder:text-yellow-700/50"
                       rows={4}
                       placeholder="Add private plain-text notes here. Keep it concise (recommended under 2,000 characters); saves automatically on blur."
                       defaultValue={candidate.recruiterNotes || ""}
@@ -1052,7 +1052,7 @@ export default function CandidateProfile() {
       </div>
       {isResumePreviewOpen && candidate.resume && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 p-4 flex items-center justify-center" onClick={() => setIsResumePreviewOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-sm w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="p-4 border-b border-slate-200 flex items-center justify-between">
               <h3 className="font-bold text-slate-900">Resume Preview</h3>
               <button type="button" onClick={() => setIsResumePreviewOpen(false)} className="text-sm font-semibold text-slate-500 hover:text-slate-900">Close</button>

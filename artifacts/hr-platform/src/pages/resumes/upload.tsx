@@ -178,7 +178,7 @@ export default function UploadResume() {
               <button
                 onClick={handleUpload}
                 disabled={isPending || !file || !jobId}
-                className="w-full py-4 bg-primary hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-lg shadow-primary/20 transition-all flex items-center justify-center text-lg"
+                className="w-full py-4 bg-primary hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold shadow-sm shadow-primary/20 transition-all flex items-center justify-center text-lg"
               >
                 {isPending ? <Loader2 className="w-6 h-6 mr-2 animate-spin" /> : <UploadCloud className="w-6 h-6 mr-2" />}
                 {isPending ? "Processing..." : "Upload & Create Candidate"}

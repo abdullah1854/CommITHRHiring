@@ -212,7 +212,7 @@ export default function Admin() {
 
       {isAddUserOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-sm">
             <h3 className="text-xl font-bold text-slate-900 mb-1">Add New User</h3>
             <p className="text-sm text-slate-500 mb-6">Send them an invite to join your GIQ workspace.</p>
             <form onSubmit={handleCreateUser} className="space-y-4">
@@ -221,7 +221,7 @@ export default function Admin() {
                 <input
                   required
                   type="text"
-                  className="w-full p-2.5 border border-slate-200 rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-full p-2.5 border border-slate-200 rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder="e.g. Jane Smith"
                   value={newUser.name}
                   onChange={e => setNewUser({ ...newUser, name: e.target.value })}
@@ -232,7 +232,7 @@ export default function Admin() {
                 <input
                   required
                   type="email"
-                  className="w-full p-2.5 border border-slate-200 rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-full p-2.5 border border-slate-200 rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder="jane@company.com"
                   value={newUser.email}
                   onChange={e => setNewUser({ ...newUser, email: e.target.value })}
@@ -241,7 +241,7 @@ export default function Admin() {
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Role</label>
                 <select
-                  className="w-full p-2.5 border border-slate-200 rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-full p-2.5 border border-slate-200 rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   value={newUser.role}
                   onChange={e => setNewUser({ ...newUser, role: e.target.value as Role })}
                 >
@@ -253,7 +253,7 @@ export default function Admin() {
                 <label className="block text-sm font-semibold text-slate-700 mb-1">Temporary Password <span className="font-normal text-slate-400">(optional)</span></label>
                 <input
                   type="password"
-                  className="w-full p-2.5 border border-slate-200 rounded-lg outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  className="w-full p-2.5 border border-slate-200 rounded-md outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                   placeholder="Leave blank to send an invite link"
                   value={newUser.password}
                   onChange={e => setNewUser({ ...newUser, password: e.target.value })}
@@ -275,7 +275,7 @@ export default function Admin() {
 
       {editingUserId && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setEditingUserId(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-sm" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-bold text-slate-900 mb-1">Change Role</h3>
             <p className="text-sm text-slate-500 mb-6">Update this user's permission level.</p>
             <div className="space-y-2">

@@ -309,7 +309,7 @@ export default function Candidates() {
                             e.dataTransfer.effectAllowed = "move";
                           }}
                           onDragEnd={() => setDraggingCandidateId(null)}
-                          className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+                          className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-sm transition-shadow"
                         >
                           <div className="flex items-start gap-3">
                             <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">

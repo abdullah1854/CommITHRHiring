@@ -43,7 +43,7 @@ export default function JobCandidates() {
         <button 
           onClick={() => refetchRankings()}
           disabled={isLoadingRankings}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center shadow-md shadow-indigo-200 transition-all"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center shadow-sm shadow-indigo-200 transition-all"
         >
           {isLoadingRankings ? <Bot className="w-4 h-4 mr-2 animate-pulse" /> : <Zap className="w-4 h-4 mr-2" />}
           {isLoadingRankings ? "Ranking..." : "AI Rank All"}

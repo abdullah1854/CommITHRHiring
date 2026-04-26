@@ -24,11 +24,11 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-sm font-medium backdrop-blur-md border border-white/20 mb-8 shadow-2xl">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-sm font-medium backdrop-blur-md border border-white/20 mb-8 shadow-sm">
               <Sparkles className="w-4 h-4 text-blue-300" />
               Introducing GIQ AI Recruitment
             </span>
-            <h1 className="text-5xl md:text-7xl font-display font-extrabold text-white leading-tight mb-6 drop-shadow-lg">
+            <h1 className="text-5xl md:text-7xl font-display font-extrabold text-white leading-tight mb-6 drop-shadow-sm">
               Hire the <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">perfect candidate</span> <br className="hidden md:block"/> in record time.
             </h1>
             <p className="text-lg md:text-xl text-slate-200 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
@@ -36,7 +36,7 @@ export default function Home() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/careers" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-white font-semibold text-lg shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
+              <Link href="/careers" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-white font-semibold text-lg shadow-sm shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all flex items-center justify-center gap-2">
                 View Open Positions
                 <ArrowRight className="w-5 h-5" />
               </Link>
@@ -82,7 +82,7 @@ export default function Home() {
       {/* Stats Section */}
       <div className="py-24 bg-white border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="bg-slate-900 rounded-3xl p-12 relative overflow-hidden shadow-2xl">
+          <div className="bg-slate-900 rounded-3xl p-12 relative overflow-hidden shadow-sm">
             <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-primary rounded-full blur-[100px] opacity-30"></div>
             
             <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-12 text-center divide-y md:divide-y-0 md:divide-x divide-slate-800">
@@ -114,7 +114,7 @@ function FeatureCard({ icon, title, description, color }: { icon: React.ReactNod
   };
 
   return (
-    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-lg shadow-slate-200/50 hover:-translate-y-2 transition-all duration-300">
+    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm shadow-slate-200/50 hover:-translate-y-2 transition-all duration-300">
       <div className={`w-16 h-16 rounded-2xl ${bgColors[color]} flex items-center justify-center mb-6`}>
         {icon}
       </div>

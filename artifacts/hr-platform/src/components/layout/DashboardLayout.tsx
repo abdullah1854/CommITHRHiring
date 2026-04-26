@@ -82,7 +82,7 @@ export function DashboardLayout({ actions, children, subtitle, title }: Dashboar
         ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}>
         <div className="p-6 hidden md:flex items-center gap-3 flex-shrink-0">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm shadow-primary/20">
             <img src={`${import.meta.env.BASE_URL}images/logo-icon.png`} alt="GIQ" className="w-6 h-6 filter brightness-0 invert" />
           </div>
           <span className="font-display font-bold text-2xl text-white">GIQ</span>
@@ -100,7 +100,7 @@ export function DashboardLayout({ actions, children, subtitle, title }: Dashboar
                 <div className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm
                   ${isActive
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
                 `}>
                   {item.icon}

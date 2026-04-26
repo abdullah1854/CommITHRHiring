@@ -331,7 +331,7 @@ export default function EditJob() {
             <label className="block text-sm font-bold text-slate-700 mb-2">Job Title</label>
             <input
               {...register("title")}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
           </div>
@@ -339,21 +339,21 @@ export default function EditJob() {
             <label className="block text-sm font-bold text-slate-700 mb-2">Department</label>
             <input
               {...register("department")}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-2">Location</label>
             <input
               {...register("location")}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-2">Employment Type</label>
             <select
               {...register("employmentType")}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             >
               <option value="full_time">Full Time</option>
               <option value="part_time">Part Time</option>
@@ -365,7 +365,7 @@ export default function EditJob() {
             <label className="block text-sm font-bold text-slate-700 mb-2">Seniority</label>
             <select
               {...register("seniority")}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             >
               <option value="entry">Entry Level</option>
               <option value="mid">Mid Level</option>
@@ -378,7 +378,7 @@ export default function EditJob() {
             <label className="block text-sm font-bold text-slate-700 mb-2">Status</label>
             <select
               {...register("status")}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             >
               <option value="draft">Draft</option>
               <option value="open">Open</option>
@@ -390,7 +390,7 @@ export default function EditJob() {
             <label className="block text-sm font-bold text-slate-700 mb-2">Required Skills (comma separated)</label>
             <input
               {...register("requiredSkills")}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {errors.requiredSkills && <p className="text-red-500 text-xs mt-1">{errors.requiredSkills.message}</p>}
             {canUseSuggestedSkills && (
@@ -412,7 +412,7 @@ export default function EditJob() {
             <label className="block text-sm font-bold text-slate-700 mb-2">Preferred Skills (comma separated)</label>
             <input
               {...register("preferredSkills")}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <div>
@@ -421,7 +421,7 @@ export default function EditJob() {
               type="number"
               min={0}
               {...register("minExperience")}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <div>
@@ -430,7 +430,7 @@ export default function EditJob() {
               type="number"
               min={0}
               {...register("maxExperience")}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {errors.maxExperience && <p className="text-red-500 text-xs mt-1">{errors.maxExperience.message}</p>}
             <p className="text-xs text-slate-400 mt-1">Required for open roles when a minimum is set.</p>
@@ -443,7 +443,7 @@ export default function EditJob() {
             <textarea
               {...register("description")}
               rows={5}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
           </div>
@@ -452,7 +452,7 @@ export default function EditJob() {
             <textarea
               {...register("responsibilities")}
               rows={5}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {errors.responsibilities && <p className="text-red-500 text-xs mt-1">{errors.responsibilities.message}</p>}
           </div>
@@ -461,7 +461,7 @@ export default function EditJob() {
             <textarea
               {...register("qualifications")}
               rows={5}
-              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
             {errors.qualifications && <p className="text-red-500 text-xs mt-1">{errors.qualifications.message}</p>}
           </div>
@@ -480,7 +480,7 @@ export default function EditJob() {
           <button
             type="submit"
             disabled={isSaving || !isDirty}
-            className="bg-primary hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 transition-all flex items-center"
+            className="bg-primary hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-8 py-3 rounded-xl font-bold shadow-sm shadow-primary/20 transition-all flex items-center"
           >
             {isSaving ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
             {isSaving ? "Saving..." : "Save Changes"}

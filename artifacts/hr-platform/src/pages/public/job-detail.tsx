@@ -87,7 +87,7 @@ export default function JobDetail() {
             
             <Link 
               href={`/upload-resume?jobId=${job.id}`}
-              className={`px-8 py-4 rounded-xl font-bold shadow-lg flex items-center shrink-0 transition-all ${
+              className={`px-8 py-4 rounded-xl font-bold shadow-sm flex items-center shrink-0 transition-all ${
                 job.status === "open" 
                   ? "bg-primary text-white hover:bg-blue-600 hover:-translate-y-1 hover:shadow-primary/30" 
                   : "bg-slate-800 text-slate-500 cursor-not-allowed"

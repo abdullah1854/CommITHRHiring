@@ -5,7 +5,7 @@ export default function NotFound() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50 px-4">
       <div className="max-w-lg w-full text-center">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-indigo-600 shadow-xl shadow-primary/30 mb-6">
+        <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-indigo-600 shadow-sm shadow-primary/30 mb-6">
           <Compass className="w-10 h-10 text-white" />
         </div>
         <p className="text-sm font-semibold tracking-wider text-primary uppercase mb-2">Error 404</p>
@@ -18,7 +18,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link
             href="/"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-semibold shadow-md hover:bg-slate-800 transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-semibold shadow-sm hover:bg-slate-800 transition-all"
           >
             <Home className="w-4 h-4" />
             Back Home

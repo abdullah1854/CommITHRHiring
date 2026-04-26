@@ -195,7 +195,7 @@ export default function Dashboard() {
 
 function StatCard({ title, value, icon, trend, bg }: { title: string; value: number; icon: React.ReactNode; trend: string; bg: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-sm transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-xl ${bg}`}>{icon}</div>
         <div className="flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
