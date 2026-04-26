@@ -33,7 +33,7 @@ export function PublicLayout({ children, transparent = false }: { children: Reac
           <div className="flex items-center gap-4">
             <ThemeToggle variant={transparent ? "transparent" : "default"} />
             {user ? (
-              <Link href="/dashboard" className="px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-semibold shadow-md hover:bg-slate-800 hover:-translate-y-0.5 transition-all">
+              <Link href="/dashboard" className="px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-semibold shadow-sm hover:bg-slate-800 hover:-translate-y-0.5 transition-all">
                 Recruiter Dashboard
               </Link>
             ) : (
@@ -41,7 +41,7 @@ export function PublicLayout({ children, transparent = false }: { children: Reac
                 "px-5 py-2.5 rounded-full text-sm font-semibold transition-all",
                 transparent 
                   ? "bg-white/10 text-white hover:bg-white/20 backdrop-blur-md" 
-                  : "bg-slate-900 text-white hover:bg-slate-800 shadow-md"
+                  : "bg-slate-900 text-white hover:bg-slate-800 shadow-sm"
               )}>
                 Internal Login
               </Link>

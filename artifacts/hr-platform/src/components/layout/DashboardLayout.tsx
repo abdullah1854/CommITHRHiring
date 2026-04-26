@@ -18,13 +18,16 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 interface DashboardLayoutProps {
+  actions?: ReactNode;
   children: ReactNode;
+  subtitle?: ReactNode;
   title: string;
 }
 
-export function DashboardLayout({ children, title }: DashboardLayoutProps) {
+export function DashboardLayout({ actions, children, subtitle, title }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -76,7 +79,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}>
         <div className="p-6 hidden md:flex items-center gap-3 flex-shrink-0">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-sm shadow-primary/20">
             <img src={`${import.meta.env.BASE_URL}images/logo-icon.png`} alt="GIQ" className="w-6 h-6 filter brightness-0 invert" />
           </div>
           <span className="font-display font-bold text-2xl text-white">GIQ</span>
@@ -94,7 +97,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
                 <div className={`
                   flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-sm
                   ${isActive
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
                     : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}
                 `}>
                   {item.icon}
@@ -147,10 +150,10 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="hidden md:flex items-center justify-between px-8 py-5 border-b border-border bg-card flex-shrink-0">
-          <h1 className="text-2xl font-display font-bold text-foreground">{title}</h1>
+          <PageHeader title={title} subtitle={subtitle} actions={actions} className="w-full" />
         </header>
         <div className="md:hidden px-4 py-3 border-b border-border bg-card flex-shrink-0">
-          <h1 className="text-lg font-display font-bold text-foreground truncate">{title}</h1>
+          <PageHeader title={title} subtitle={subtitle} actions={actions} />
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">

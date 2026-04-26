@@ -124,7 +124,7 @@ export default function NewInterview() {
               <select
                 required
                 disabled={candidatesLoading}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
                 value={formData.candidateId}
                 onChange={(e) => setFormData({ ...formData, candidateId: e.target.value })}
               >
@@ -145,7 +145,7 @@ export default function NewInterview() {
               <select
                 required
                 disabled={jobsLoading}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
                 value={formData.jobId}
                 onChange={(e) => setFormData({ ...formData, jobId: e.target.value })}
               >
@@ -194,7 +194,7 @@ export default function NewInterview() {
               <input
                 required
                 type="datetime-local"
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 value={formData.scheduledAt}
                 onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
               />
@@ -207,7 +207,7 @@ export default function NewInterview() {
                 type="number"
                 min={15}
                 step={15}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 value={formData.durationMinutes}
                 onChange={(e) =>
                   setFormData({ ...formData, durationMinutes: Number(e.target.value) })
@@ -223,7 +223,7 @@ export default function NewInterview() {
                 required
                 type="text"
                 placeholder="e.g. Jane Doe"
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 value={formData.interviewerName}
                 onChange={(e) => setFormData({ ...formData, interviewerName: e.target.value })}
               />
@@ -237,7 +237,7 @@ export default function NewInterview() {
                 <input
                   type="text"
                   placeholder="e.g. HQ — Meeting Room 3"
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                  className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 />
@@ -245,7 +245,7 @@ export default function NewInterview() {
                 <input
                   type="url"
                   placeholder="https://zoom.us/j/..."
-                  className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                  className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                   value={formData.meetingLink}
                   onChange={(e) => setFormData({ ...formData, meetingLink: e.target.value })}
                 />
@@ -257,7 +257,7 @@ export default function NewInterview() {
               <textarea
                 rows={3}
                 placeholder="Interview focus areas, talking points..."
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                className="w-full p-3 border border-slate-200 rounded-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               />

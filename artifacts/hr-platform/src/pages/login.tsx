@@ -38,7 +38,7 @@ export default function Login() {
       >
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-primary/30">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-indigo-600 rounded-2xl flex items-center justify-center shadow-sm shadow-primary/30">
               <img src={`${import.meta.env.BASE_URL}images/logo-icon.png`} alt="Logo" className="w-10 h-10 filter brightness-0 invert" />
             </div>
           </div>
@@ -46,7 +46,7 @@ export default function Login() {
           <p className="text-slate-500 mt-2">Sign in to your COMM-iT hiring dashboard</p>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
+        <div className="bg-white p-8 rounded-3xl shadow-sm shadow-slate-200/50 border border-slate-100">
 
           {isBackendDown && (
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3">
@@ -100,7 +100,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoggingIn}
-              className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold shadow-md transition-all disabled:opacity-60 flex items-center justify-center"
+              className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold shadow-sm transition-all disabled:opacity-60 flex items-center justify-center"
             >
               {isLoggingIn
                 ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Signing In...</>

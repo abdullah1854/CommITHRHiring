@@ -287,20 +287,20 @@ export default function CreateJob() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Job Title</label>
-                <input {...register("title")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="e.g. Senior Frontend Engineer" />
+                <input {...register("title")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="e.g. Senior Frontend Engineer" />
                 {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Department</label>
-                <input {...register("department")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="e.g. Engineering" />
+                <input {...register("department")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="e.g. Engineering" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Location</label>
-                <input {...register("location")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="e.g. Remote, NY" />
+                <input {...register("location")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="e.g. Remote, NY" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Employment Type</label>
-                <select {...register("employmentType")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                <select {...register("employmentType")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                   <option value="full_time">Full Time</option>
                   <option value="part_time">Part Time</option>
                   <option value="contract">Contract</option>
@@ -309,7 +309,7 @@ export default function CreateJob() {
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Seniority</label>
-                <select {...register("seniority")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                <select {...register("seniority")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                   <option value="entry">Entry Level</option>
                   <option value="mid">Mid Level</option>
                   <option value="senior">Senior</option>
@@ -319,12 +319,12 @@ export default function CreateJob() {
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Required Skills (comma separated)</label>
-                <input {...register("requiredSkills")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="React, TypeScript, Node.js" />
+                <input {...register("requiredSkills")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="React, TypeScript, Node.js" />
                 {errors.requiredSkills && <p className="text-red-500 text-xs mt-1">{errors.requiredSkills.message as string}</p>}
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Preferred Skills (comma separated)</label>
-                <input {...register("preferredSkills")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="GraphQL, AWS, Docker" />
+                <input {...register("preferredSkills")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="GraphQL, AWS, Docker" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Min Experience (years)</label>
@@ -332,7 +332,7 @@ export default function CreateJob() {
                   type="number"
                   min={0}
                   {...register("minExperience")}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   placeholder="e.g. 2"
                 />
                 {errors.minExperience && <p className="text-red-500 text-xs mt-1">{errors.minExperience.message as string}</p>}
@@ -343,7 +343,7 @@ export default function CreateJob() {
                   type="number"
                   min={0}
                   {...register("maxExperience")}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   placeholder="e.g. 5"
                 />
                 {errors.maxExperience && <p className="text-red-500 text-xs mt-1">{errors.maxExperience.message as string}</p>}
@@ -357,15 +357,15 @@ export default function CreateJob() {
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">Job Description</label>
-                  <textarea {...register("description")} rows={5} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                  <textarea {...register("description")} rows={5} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">Responsibilities</label>
-                  <textarea {...register("responsibilities")} rows={5} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                  <textarea {...register("responsibilities")} rows={5} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-2">Qualifications</label>
-                  <textarea {...register("qualifications")} rows={5} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                  <textarea {...register("qualifications")} rows={5} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
                 </div>
               </div>
             </div>
@@ -373,7 +373,7 @@ export default function CreateJob() {
             <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <label className="block text-sm font-bold text-slate-700 mr-4">Status</label>
-                <select {...register("status")} className="p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                <select {...register("status")} className="p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
                   <option value="draft">Save as Draft</option>
                   <option value="open">Publish (Open)</option>
                 </select>
@@ -381,7 +381,7 @@ export default function CreateJob() {
               <button 
                 type="submit" 
                 disabled={isCreating}
-                className="bg-primary hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 transition-all flex items-center"
+                className="bg-primary hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold shadow-sm shadow-primary/20 transition-all flex items-center"
               >
                 {isCreating ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : null}
                 {isCreating ? "Creating..." : "Create Job Posting"}

@@ -9,6 +9,7 @@ import { Briefcase, Users, Calendar, Sparkles, TrendingUp, ArrowRight, UploadClo
 import { Link } from "wouter";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatDistanceToNow } from "date-fns";
+import { EmptyState } from "@/components/ui/empty-state";
 
 function formatChartDate(value: string | number) {
   const raw = String(value);
@@ -140,9 +141,13 @@ export default function Dashboard() {
             <div className="animate-spin w-6 h-6 border-4 border-primary border-t-transparent rounded-full" />
           </div>
         ) : (candidatesData?.candidates?.length ?? 0) === 0 ? (
-          <div className="py-10 text-center text-slate-500 text-sm">
-            No candidates yet. <Link href="/upload-resume" className="text-primary font-medium hover:underline">Upload a resume</Link> to get started.
-          </div>
+          <EmptyState
+            icon={<Users className="w-6 h-6" />}
+            headline="No candidates yet"
+            description="Upload a resume to start building your candidate pipeline."
+            action={<Link href="/upload-resume" className="text-primary font-medium hover:underline">Upload a resume</Link>}
+            className="py-8"
+          />
         ) : (
           <ul className="divide-y divide-slate-100">
             {candidatesData!.candidates.slice(0, 5).map((c) => (
@@ -190,7 +195,7 @@ export default function Dashboard() {
 
 function StatCard({ title, value, icon, trend, bg }: { title: string; value: number; icon: React.ReactNode; trend: string; bg: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-sm transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-xl ${bg}`}>{icon}</div>
         <div className="flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">

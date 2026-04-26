@@ -211,7 +211,7 @@ export default function AITools() {
                       required
                       rows={5}
                       placeholder={promptExample}
-                      className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-900"
+                      className="w-full p-4 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-900"
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}
                     />
@@ -224,7 +224,7 @@ export default function AITools() {
                       </label>
                       <input
                         type="text"
-                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary"
+                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary"
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
                       />
@@ -234,7 +234,7 @@ export default function AITools() {
                         Seniority
                       </label>
                       <select
-                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary"
+                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary"
                         value={seniority}
                         onChange={(e) => setSeniority(e.target.value)}
                       >
@@ -250,7 +250,7 @@ export default function AITools() {
                         Employment Type
                       </label>
                       <select
-                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary"
+                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary"
                         value={employmentType}
                         onChange={(e) => setEmploymentType(e.target.value)}
                       >
@@ -266,7 +266,7 @@ export default function AITools() {
                   <button
                     type="submit"
                     disabled={isGenerating || !prompt.trim()}
-                    className="w-full py-3.5 bg-primary hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold shadow-md transition-all flex justify-center items-center gap-2"
+                    className="w-full py-3.5 bg-primary hover:bg-blue-700 disabled:opacity-50 text-white rounded-xl font-bold shadow-sm transition-all flex justify-center items-center gap-2"
                   >
                     {isGenerating ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -313,7 +313,7 @@ export default function AITools() {
                 <form onSubmit={handleImprove} className="flex-1 flex flex-col gap-4">
                   <textarea
                     required
-                    className="flex-1 min-h-[220px] w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 resize-none"
+                    className="flex-1 min-h-[220px] w-full p-4 bg-slate-50 border border-slate-200 rounded-md focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-900 resize-none"
                     placeholder="Paste your current JD text here..."
                     value={existingJD}
                     onChange={(e) => setExistingJD(e.target.value)}
@@ -346,7 +346,7 @@ export default function AITools() {
                       <input
                         type="text"
                         placeholder="Add a focus area and press Enter"
-                        className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500"
+                        className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-md text-sm focus:outline-none focus:border-indigo-500"
                         value={focusInput}
                         onChange={(e) => setFocusInput(e.target.value)}
                         onKeyDown={(e) => {
@@ -382,7 +382,7 @@ export default function AITools() {
                   <button
                     type="submit"
                     disabled={isImproving || !existingJD.trim()}
-                    className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold shadow-md transition-all flex justify-center items-center gap-2"
+                    className="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl font-bold shadow-sm transition-all flex justify-center items-center gap-2"
                   >
                     {isImproving ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
