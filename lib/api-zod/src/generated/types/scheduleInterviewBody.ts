@@ -5,6 +5,7 @@
  * GIQ HR Recruitment Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { ScheduleInterviewBodyInterviewFormat } from "./scheduleInterviewBodyInterviewFormat";
 import type { ScheduleInterviewBodyInterviewType } from "./scheduleInterviewBodyInterviewType";
 
 export interface ScheduleInterviewBody {
@@ -12,6 +13,8 @@ export interface ScheduleInterviewBody {
   jobId: string;
   interviewerName: string;
   interviewType: ScheduleInterviewBodyInterviewType;
+  /** Optional delivery medium used by the frontend; persisted as location/meeting context by older APIs. */
+  interviewFormat?: ScheduleInterviewBodyInterviewFormat;
   scheduledAt: Date;
   durationMinutes: number;
   location?: string;

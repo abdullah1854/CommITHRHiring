@@ -15,6 +15,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 
+function commaList(value: string | undefined): string[] {
+  return (value || "").split(",").map(s => s.trim()).filter(Boolean);
+}
+
 const formSchema = z.object({
   title: z.string().min(2, "Title is required"),
   department: z.string().min(2, "Department is required"),
@@ -35,6 +39,30 @@ const formSchema = z.object({
     (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
     z.number().int().min(0).optional(),
   ),
+}).superRefine((data, ctx) => {
+  if (data.maxExperience !== undefined && data.minExperience !== undefined && data.maxExperience < data.minExperience) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["maxExperience"],
+      message: "Max experience must be greater than or equal to min experience",
+    });
+  }
+  if (data.status === "open") {
+    if (commaList(data.requiredSkills).length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["requiredSkills"],
+        message: "Add at least one required skill before publishing",
+      });
+    }
+    if (data.minExperience !== undefined && data.maxExperience === undefined) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["maxExperience"],
+        message: "Set max experience before publishing, or save as draft",
+      });
+    }
+  }
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -257,6 +285,7 @@ export default function CreateJob() {
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Required Skills (comma separated)</label>
                 <input {...register("requiredSkills")} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" placeholder="React, TypeScript, Node.js" />
+                {errors.requiredSkills && <p className="text-red-500 text-xs mt-1">{errors.requiredSkills.message as string}</p>}
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 mb-2">Preferred Skills (comma separated)</label>
@@ -283,6 +312,7 @@ export default function CreateJob() {
                   placeholder="e.g. 5"
                 />
                 {errors.maxExperience && <p className="text-red-500 text-xs mt-1">{errors.maxExperience.message as string}</p>}
+                <p className="text-xs text-slate-400 mt-1">Required for open roles when a minimum is set.</p>
               </div>
             </div>
 

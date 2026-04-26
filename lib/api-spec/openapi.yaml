@@ -265,6 +265,11 @@ paths:
           required: true
           schema:
             type: string
+        - name: public
+          in: query
+          description: When true, allow unauthenticated access but only return open jobs.
+          schema:
+            type: boolean
       responses:
         "200":
           description: Job posting
@@ -526,7 +531,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CandidateDetail"
+                allOf:
+                  - $ref: "#/components/schemas/CandidateDetail"
+                  - type: object
+                    properties:
+                      candidateId:
+                        type: string
+                    required:
+                      - candidateId
 
   /resumes/{id}:
     get:
@@ -1098,6 +1110,11 @@ components:
           nullable: true
         candidateCount:
           type: integer
+        suggestedRequiredSkills:
+          type: array
+          items:
+            type: string
+          description: Conservative suggestions derived from the JD when requiredSkills is empty.
         createdAt:
           type: string
           format: date-time
@@ -1118,6 +1135,7 @@ components:
         - qualifications
         - status
         - candidateCount
+        - suggestedRequiredSkills
         - createdAt
         - updatedAt
 
@@ -1678,6 +1696,9 @@ components:
         interviewType:
           type: string
           enum: [phone_screen, technical, behavioral, final, panel]
+        interviewFormat:
+          type: string
+          enum: [video_call, phone_call, in_person]
         scheduledAt:
           type: string
           format: date-time
@@ -1743,6 +1764,10 @@ components:
         interviewType:
           type: string
           enum: [phone_screen, technical, behavioral, final, panel]
+        interviewFormat:
+          type: string
+          enum: [video_call, phone_call, in_person]
+          description: Optional delivery medium used by the frontend; persisted as location/meeting context by older APIs.
         scheduledAt:
           type: string
           format: date-time

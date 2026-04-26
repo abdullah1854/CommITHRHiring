@@ -13,7 +13,7 @@ export default function JobCandidates() {
   const { data: job } = useGetJob(jobId);
   const { data: candidatesData, isLoading: isLoadingCandidates } = useListCandidates({ jobId, limit: 100 });
   const { data: rankings, isFetching: isLoadingRankings, refetch: refetchRankings } = useRankCandidates(jobId, {
-    query: { enabled: false, retry: false },
+    query: { enabled: false, retry: false } as any,
   });
 
   // If rankings exist, we merge them, otherwise we just show normal candidates

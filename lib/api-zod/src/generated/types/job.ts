@@ -31,6 +31,8 @@ export interface Job {
   createdById?: string | null;
   createdBy?: User | null;
   candidateCount: number;
+  /** Conservative suggestions derived from the JD when requiredSkills is empty. */
+  suggestedRequiredSkills: string[];
   createdAt: Date;
   updatedAt: Date;
 }

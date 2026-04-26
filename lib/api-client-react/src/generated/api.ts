@@ -31,6 +31,7 @@ import type {
   GeneratedJDResponse,
   GetActivityTrendsParams,
   GetJobCandidatesParams,
+  GetJobParams,
   HealthStatus,
   ImproveJDBody,
   Interview,
@@ -55,6 +56,7 @@ import type {
   UpdateInterviewBody,
   UpdateJobBody,
   UpdateUserBody,
+  UploadResume201,
   UploadResumeBody,
   User,
   UserListResponse,
@@ -899,22 +901,35 @@ export const useCreateJob = <
 /**
  * @summary Get job posting by ID
  */
-export const getGetJobUrl = (id: string) => {
-  return `/api/jobs/${id}`;
+export const getGetJobUrl = (id: string, params?: GetJobParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/jobs/${id}?${stringifiedParams}`
+    : `/api/jobs/${id}`;
 };
 
 export const getJob = async (
   id: string,
+  params?: GetJobParams,
   options?: RequestInit,
 ): Promise<Job> => {
-  return customFetch<Job>(getGetJobUrl(id), {
+  return customFetch<Job>(getGetJobUrl(id, params), {
     ...options,
     method: "GET",
   });
 };
 
-export const getGetJobQueryKey = (id: string) => {
-  return [`/api/jobs/${id}`] as const;
+export const getGetJobQueryKey = (id: string, params?: GetJobParams) => {
+  return [`/api/jobs/${id}`, ...(params ? [params] : [])] as const;
 };
 
 export const getGetJobQueryOptions = <
@@ -922,6 +937,7 @@ export const getGetJobQueryOptions = <
   TError = ErrorType<ErrorResponse>,
 >(
   id: string,
+  params?: GetJobParams,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData>;
     request?: SecondParameter<typeof customFetch>;
@@ -929,11 +945,11 @@ export const getGetJobQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {};
 
-  const queryKey = queryOptions?.queryKey ?? getGetJobQueryKey(id);
+  const queryKey = queryOptions?.queryKey ?? getGetJobQueryKey(id, params);
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getJob>>> = ({
     signal,
-  }) => getJob(id, { signal, ...requestOptions });
+  }) => getJob(id, params, { signal, ...requestOptions });
 
   return {
     queryKey,
@@ -957,12 +973,13 @@ export function useGetJob<
   TError = ErrorType<ErrorResponse>,
 >(
   id: string,
+  params?: GetJobParams,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getJob>>, TError, TData>;
     request?: SecondParameter<typeof customFetch>;
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-  const queryOptions = getGetJobQueryOptions(id, options);
+  const queryOptions = getGetJobQueryOptions(id, params, options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
@@ -1788,7 +1805,7 @@ export const getUploadResumeUrl = () => {
 export const uploadResume = async (
   uploadResumeBody: UploadResumeBody,
   options?: RequestInit,
-): Promise<CandidateDetail> => {
+): Promise<UploadResume201> => {
   const formData = new FormData();
   formData.append(`file`, uploadResumeBody.file);
   formData.append(`jobId`, uploadResumeBody.jobId);
@@ -1796,7 +1813,7 @@ export const uploadResume = async (
     formData.append(`candidateName`, uploadResumeBody.candidateName);
   }
 
-  return customFetch<CandidateDetail>(getUploadResumeUrl(), {
+  return customFetch<UploadResume201>(getUploadResumeUrl(), {
     ...options,
     method: "POST",
     body: formData,

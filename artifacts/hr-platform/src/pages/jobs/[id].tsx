@@ -24,27 +24,60 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
-const formSchema = z.object({
-  title: z.string().min(2, "Title is required"),
-  department: z.string().min(2, "Department is required"),
-  location: z.string().min(2, "Location is required"),
-  employmentType: z.enum(["full_time", "part_time", "contract", "internship"]),
-  seniority: z.enum(["entry", "mid", "senior", "lead", "executive"]),
-  description: z.string().min(10, "Description is required"),
-  responsibilities: z.string().min(10, "Responsibilities are required"),
-  qualifications: z.string().min(10, "Qualifications are required"),
-  status: z.enum(["draft", "open", "closed", "archived"]),
-  requiredSkills: z.string(),
-  preferredSkills: z.string().optional(),
-  minExperience: z.preprocess(
-    (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
-    z.number().int().min(0).optional(),
-  ),
-  maxExperience: z.preprocess(
-    (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
-    z.number().int().min(0).optional(),
-  ),
-});
+const formSchema = z
+  .object({
+    title: z.string().min(2, "Title is required"),
+    department: z.string().min(2, "Department is required"),
+    location: z.string().min(2, "Location is required"),
+    employmentType: z.enum(["full_time", "part_time", "contract", "internship"]),
+    seniority: z.enum(["entry", "mid", "senior", "lead", "executive"]),
+    description: z.string().min(10, "Description is required"),
+    responsibilities: z.string().min(10, "Responsibilities are required"),
+    qualifications: z.string().min(10, "Qualifications are required"),
+    status: z.enum(["draft", "open", "closed", "archived"]),
+    requiredSkills: z.string(),
+    preferredSkills: z.string().optional(),
+    minExperience: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
+      z.number().int().min(0).optional(),
+    ),
+    maxExperience: z.preprocess(
+      (v) => (v === "" || v === null || v === undefined ? undefined : Number(v)),
+      z.number().int().min(0).optional(),
+    ),
+  })
+  .superRefine((data, ctx) => {
+    const requiredSkills = data.requiredSkills.split(",").map((s) => s.trim()).filter(Boolean);
+    if (data.status === "open" && requiredSkills.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["requiredSkills"],
+        message: "Add at least one required skill before publishing this job.",
+      });
+    }
+    if (
+      data.status === "open" &&
+      data.minExperience !== undefined &&
+      data.maxExperience === undefined
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["maxExperience"],
+        message: "Set max experience for open roles, or save as draft while criteria are incomplete.",
+      });
+    }
+    if (
+      data.minExperience !== undefined &&
+      data.maxExperience !== undefined &&
+      data.maxExperience < data.minExperience
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["maxExperience"],
+        message: "Max experience must be greater than or equal to min experience.",
+      });
+    }
+  });
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -54,7 +87,7 @@ export default function EditJob() {
   const queryClient = useQueryClient();
   const jobId = params?.id || "";
 
-  const { data: job, isLoading } = useGetJob(jobId, {
+  const { data: job, isLoading } = useGetJob(jobId, undefined, {
     query: { enabled: Boolean(jobId) } as any,
   });
   const { mutate: updateJob, isPending: isSaving } = useUpdateJob();
@@ -86,6 +119,10 @@ export default function EditJob() {
   });
 
   const [populatedJobId, setPopulatedJobId] = useState<string | null>(null);
+
+  const suggestedSkills = job?.suggestedRequiredSkills ?? [];
+  const currentRequiredSkills = watch("requiredSkills");
+  const canUseSuggestedSkills = suggestedSkills.length > 0 && currentRequiredSkills.trim().length === 0;
 
   useEffect(() => {
     if (job && job.id !== populatedJobId) {
@@ -320,6 +357,21 @@ export default function EditJob() {
               {...register("requiredSkills")}
               className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
+            {errors.requiredSkills && <p className="text-red-500 text-xs mt-1">{errors.requiredSkills.message}</p>}
+            {canUseSuggestedSkills && (
+              <div className="mt-2 rounded-lg border border-blue-100 bg-blue-50 p-3">
+                <p className="text-xs font-semibold text-blue-900 mb-2">
+                  Suggested from JD: {suggestedSkills.join(", ")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setValue("requiredSkills", suggestedSkills.join(", "), { shouldDirty: true })}
+                  className="text-xs font-bold text-blue-700 hover:text-blue-900"
+                >
+                  Use suggestions
+                </button>
+              </div>
+            )}
           </div>
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-2">Preferred Skills (comma separated)</label>
@@ -345,6 +397,8 @@ export default function EditJob() {
               {...register("maxExperience")}
               className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
+            {errors.maxExperience && <p className="text-red-500 text-xs mt-1">{errors.maxExperience.message}</p>}
+            <p className="text-xs text-slate-400 mt-1">Required for open roles when a minimum is set.</p>
           </div>
         </div>
 

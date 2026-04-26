@@ -9,6 +9,29 @@ const router = Router();
 const VALID_JOB_STATUSES = new Set(["draft", "open", "closed", "archived"]);
 const VALID_EMPLOYMENT_TYPES = new Set(["full_time", "part_time", "contract", "internship"]);
 const VALID_SENIORITIES = new Set(["entry", "mid", "senior", "lead", "executive"]);
+const PROJECT_ROLE_SKILL_KEYWORDS = [
+  "PMP",
+  "PMO",
+  "Agile",
+  "Scrum",
+  "Kanban",
+  "ERP",
+  "SAP",
+  "Oracle",
+  "Dynamics 365",
+  "D365",
+  "Maximo",
+  "Workday",
+  "Jira",
+  "Prince2",
+  "Risk Management",
+  "Stakeholder Management",
+  "Vendor Management",
+  "Change Management",
+  "Budget Management",
+  "Program Management",
+  "Project Governance",
+];
 
 function normalizeEnum(raw: unknown): string | undefined {
   if (raw === undefined || raw === null) return undefined;
@@ -19,10 +42,14 @@ function normalizeEnum(raw: unknown): string | undefined {
 
 function hydrateJob<T extends { requiredSkills?: unknown; preferredSkills?: unknown } | null | undefined>(j: T): T {
   if (!j) return j;
+  const requiredSkills = parseList((j as any).requiredSkills);
+  const preferredSkills = parseList((j as any).preferredSkills);
   return {
     ...(j as any),
-    requiredSkills: parseList((j as any).requiredSkills),
-    preferredSkills: parseList((j as any).preferredSkills),
+    requiredSkills,
+    preferredSkills,
+    suggestedRequiredSkills:
+      requiredSkills.length === 0 ? suggestSkillsFromJobText(j as any) : [],
   } as T;
 }
 
@@ -35,6 +62,81 @@ function sanitizeUser(user: any) {
 function sanitizePublicJob(job: any) {
   const { minSalary, maxSalary, salaryCurrency, ...safe } = job;
   return safe;
+}
+
+function normalizeOptionalInt(value: unknown, field: string): { value?: number | null; error?: string } {
+  if (value === undefined) return { value: undefined };
+  if (value === null || value === "") return { value: null };
+  const num = Number(value);
+  if (!Number.isInteger(num) || num < 0) {
+    return { error: `${field} must be a non-negative whole number` };
+  }
+  return { value: num };
+}
+
+function normalizeSkillList(value: unknown): string[] {
+  return parseList(serializeList(value));
+}
+
+function validateExperienceAndSkills(input: {
+  status?: unknown;
+  requiredSkills?: unknown;
+  minExperience?: unknown;
+  maxExperience?: unknown;
+  existingRequiredSkills?: unknown;
+  existingMinExperience?: unknown;
+  existingMaxExperience?: unknown;
+}): { normalized: { requiredSkills?: string[]; minExperience?: number | null; maxExperience?: number | null }; error?: string } {
+  const normalized: { requiredSkills?: string[]; minExperience?: number | null; maxExperience?: number | null } = {};
+
+  if (input.requiredSkills !== undefined) {
+    normalized.requiredSkills = normalizeSkillList(input.requiredSkills);
+  }
+
+  const min = normalizeOptionalInt(input.minExperience, "minExperience");
+  if (min.error) return { normalized, error: min.error };
+  const max = normalizeOptionalInt(input.maxExperience, "maxExperience");
+  if (max.error) return { normalized, error: max.error };
+  if (min.value !== undefined) normalized.minExperience = min.value;
+  if (max.value !== undefined) normalized.maxExperience = max.value;
+
+  const minValue = normalized.minExperience ?? normalizeOptionalInt(input.existingMinExperience, "minExperience").value;
+  const maxValue = normalized.maxExperience ?? normalizeOptionalInt(input.existingMaxExperience, "maxExperience").value;
+  if (typeof minValue === "number" && typeof maxValue === "number" && minValue > maxValue) {
+    return { normalized, error: "Max experience must be greater than or equal to min experience" };
+  }
+
+  const status = normalizeEnum(input.status);
+  if (status === "open") {
+    const effectiveRequiredSkills =
+      normalized.requiredSkills ?? normalizeSkillList(input.existingRequiredSkills);
+    if (effectiveRequiredSkills.length === 0) {
+      return { normalized, error: "At least one required skill is needed before publishing an open job" };
+    }
+    if (typeof minValue === "number" && maxValue == null) {
+      return { normalized, error: "Max experience is required when min experience is set for an open job" };
+    }
+  }
+
+  return { normalized };
+}
+
+function suggestSkillsFromJobText(job: Pick<Job, "title" | "description" | "responsibilities" | "qualifications" | "department">): string[] {
+  const haystack = [
+    job.title,
+    job.department,
+    job.description,
+    job.responsibilities,
+    job.qualifications,
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const lowerHaystack = haystack.toLowerCase();
+  const suggestions: string[] = [];
+  for (const keyword of PROJECT_ROLE_SKILL_KEYWORDS) {
+    if (lowerHaystack.includes(keyword.toLowerCase())) suggestions.push(keyword);
+  }
+  return suggestions.slice(0, 10);
 }
 
 /**

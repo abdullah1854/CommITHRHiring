@@ -7,7 +7,10 @@ import { formatCurrency } from "@/lib/utils";
 
 export default function JobDetail() {
   const [, params] = useRoute("/jobs/:id");
-  const { data: job, isLoading, isError } = useGetJob(params?.id || "");
+  const { data: job, isLoading, isError } = useGetJob(params?.id || "", { public: true }, {
+    request: { query: { public: "true" } } as any,
+    query: { retry: false } as any,
+  });
 
   if (isLoading) {
     return (
@@ -32,6 +35,9 @@ export default function JobDetail() {
       </PublicLayout>
     );
   }
+
+  const requiredSkills = job.requiredSkills ?? [];
+  const preferredSkills = job.preferredSkills ?? [];
 
   return (
     <PublicLayout>
@@ -126,18 +132,24 @@ export default function JobDetail() {
               Required Skills
             </h3>
             <div className="flex flex-wrap gap-2">
-              {job.requiredSkills.map(skill => (
-                <span key={skill} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg">
-                  {skill}
-                </span>
-              ))}
+              {requiredSkills.length > 0 ? (
+                requiredSkills.map(skill => (
+                  <span key={skill} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-sm font-medium rounded-lg">
+                    {skill}
+                  </span>
+                ))
+              ) : (
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  Skills to be confirmed by the recruiter. Apply with your relevant experience and the team will review fit.
+                </p>
+              )}
             </div>
             
-            {job.preferredSkills && job.preferredSkills.length > 0 && (
+            {preferredSkills.length > 0 && (
               <>
                 <h3 className="font-bold text-slate-900 mt-8 mb-4">Preferred Skills</h3>
                 <div className="flex flex-wrap gap-2">
-                  {job.preferredSkills.map(skill => (
+                  {preferredSkills.map(skill => (
                     <span key={skill} className="px-3 py-1.5 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg">
                       {skill}
                     </span>

@@ -127,6 +127,8 @@ export interface Job {
   createdById?: string | null;
   createdBy?: User | null;
   candidateCount: number;
+  /** Conservative suggestions derived from the JD when requiredSkills is empty. */
+  suggestedRequiredSkills: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -325,6 +327,15 @@ export const InterviewInterviewType = {
   panel: "panel",
 } as const;
 
+export type InterviewInterviewFormat =
+  (typeof InterviewInterviewFormat)[keyof typeof InterviewInterviewFormat];
+
+export const InterviewInterviewFormat = {
+  video_call: "video_call",
+  phone_call: "phone_call",
+  in_person: "in_person",
+} as const;
+
 export type InterviewStatus =
   (typeof InterviewStatus)[keyof typeof InterviewStatus];
 
@@ -343,6 +354,7 @@ export interface Interview {
   job?: Job | null;
   interviewerName: string;
   interviewType: InterviewInterviewType;
+  interviewFormat?: InterviewInterviewFormat;
   scheduledAt: string;
   durationMinutes: number;
   location?: string | null;
@@ -519,11 +531,25 @@ export const ScheduleInterviewBodyInterviewType = {
   panel: "panel",
 } as const;
 
+/**
+ * Optional delivery medium used by the frontend; persisted as location/meeting context by older APIs.
+ */
+export type ScheduleInterviewBodyInterviewFormat =
+  (typeof ScheduleInterviewBodyInterviewFormat)[keyof typeof ScheduleInterviewBodyInterviewFormat];
+
+export const ScheduleInterviewBodyInterviewFormat = {
+  video_call: "video_call",
+  phone_call: "phone_call",
+  in_person: "in_person",
+} as const;
+
 export interface ScheduleInterviewBody {
   candidateId: string;
   jobId: string;
   interviewerName: string;
   interviewType: ScheduleInterviewBodyInterviewType;
+  /** Optional delivery medium used by the frontend; persisted as location/meeting context by older APIs. */
+  interviewFormat?: ScheduleInterviewBodyInterviewFormat;
   scheduledAt: string;
   durationMinutes: number;
   location?: string;
@@ -669,6 +695,13 @@ export const ListJobsStatus = {
   archived: "archived",
 } as const;
 
+export type GetJobParams = {
+  /**
+   * When true, allow unauthenticated access but only return open jobs.
+   */
+  public?: boolean;
+};
+
 export type GetJobCandidatesParams = {
   status?: string;
   sortBy?: GetJobCandidatesSortBy;
@@ -695,6 +728,10 @@ export type UploadResumeBody = {
   file: Blob;
   jobId: string;
   candidateName?: string;
+};
+
+export type UploadResume201 = CandidateDetail & {
+  candidateId: string;
 };
 
 export type ListInterviewsParams = {

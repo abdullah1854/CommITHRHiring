@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { Candidate } from "./candidate";
+import type { InterviewInterviewFormat } from "./interviewInterviewFormat";
 import type { InterviewInterviewType } from "./interviewInterviewType";
 import type { InterviewStatus } from "./interviewStatus";
 import type { Job } from "./job";
@@ -18,6 +19,7 @@ export interface Interview {
   job?: Job | null;
   interviewerName: string;
   interviewType: InterviewInterviewType;
+  interviewFormat?: InterviewInterviewFormat;
   scheduledAt: Date;
   durationMinutes: number;
   location?: string | null;

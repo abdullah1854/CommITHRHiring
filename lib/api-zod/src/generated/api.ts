@@ -187,6 +187,11 @@ export const ListJobsResponse = zod.object({
         })
         .nullish(),
       candidateCount: zod.number(),
+      suggestedRequiredSkills: zod
+        .array(zod.string())
+        .describe(
+          "Conservative suggestions derived from the JD when requiredSkills is empty.",
+        ),
       createdAt: zod.date(),
       updatedAt: zod.date(),
     }),
@@ -243,6 +248,15 @@ export const GetJobParams = zod.object({
   id: zod.coerce.string(),
 });
 
+export const GetJobQueryParams = zod.object({
+  public: zod.coerce
+    .boolean()
+    .optional()
+    .describe(
+      "When true, allow unauthenticated access but only return open jobs.",
+    ),
+});
+
 export const GetJobResponse = zod.object({
   id: zod.string(),
   title: zod.string(),
@@ -280,6 +294,11 @@ export const GetJobResponse = zod.object({
     })
     .nullish(),
   candidateCount: zod.number(),
+  suggestedRequiredSkills: zod
+    .array(zod.string())
+    .describe(
+      "Conservative suggestions derived from the JD when requiredSkills is empty.",
+    ),
   createdAt: zod.date(),
   updatedAt: zod.date(),
 });
@@ -351,6 +370,11 @@ export const UpdateJobResponse = zod.object({
     })
     .nullish(),
   candidateCount: zod.number(),
+  suggestedRequiredSkills: zod
+    .array(zod.string())
+    .describe(
+      "Conservative suggestions derived from the JD when requiredSkills is empty.",
+    ),
   createdAt: zod.date(),
   updatedAt: zod.date(),
 });
@@ -607,6 +631,11 @@ export const GetCandidateResponse = zod
                   })
                   .nullish(),
                 candidateCount: zod.number(),
+                suggestedRequiredSkills: zod
+                  .array(zod.string())
+                  .describe(
+                    "Conservative suggestions derived from the JD when requiredSkills is empty.",
+                  ),
                 createdAt: zod.date(),
                 updatedAt: zod.date(),
               })
@@ -619,6 +648,9 @@ export const GetCandidateResponse = zod
               "final",
               "panel",
             ]),
+            interviewFormat: zod
+              .enum(["video_call", "phone_call", "in_person"])
+              .optional(),
             scheduledAt: zod.date(),
             durationMinutes: zod.number(),
             location: zod.string().nullish(),
@@ -686,6 +718,11 @@ export const GetCandidateResponse = zod
                   })
                   .nullish(),
                 candidateCount: zod.number(),
+                suggestedRequiredSkills: zod
+                  .array(zod.string())
+                  .describe(
+                    "Conservative suggestions derived from the JD when requiredSkills is empty.",
+                  ),
                 createdAt: zod.date(),
                 updatedAt: zod.date(),
               })
@@ -871,6 +908,11 @@ export const UpdateCandidateResponse = zod
                   })
                   .nullish(),
                 candidateCount: zod.number(),
+                suggestedRequiredSkills: zod
+                  .array(zod.string())
+                  .describe(
+                    "Conservative suggestions derived from the JD when requiredSkills is empty.",
+                  ),
                 createdAt: zod.date(),
                 updatedAt: zod.date(),
               })
@@ -883,6 +925,9 @@ export const UpdateCandidateResponse = zod
               "final",
               "panel",
             ]),
+            interviewFormat: zod
+              .enum(["video_call", "phone_call", "in_person"])
+              .optional(),
             scheduledAt: zod.date(),
             durationMinutes: zod.number(),
             location: zod.string().nullish(),
@@ -950,6 +995,11 @@ export const UpdateCandidateResponse = zod
                   })
                   .nullish(),
                 candidateCount: zod.number(),
+                suggestedRequiredSkills: zod
+                  .array(zod.string())
+                  .describe(
+                    "Conservative suggestions derived from the JD when requiredSkills is empty.",
+                  ),
                 createdAt: zod.date(),
                 updatedAt: zod.date(),
               })
@@ -1137,6 +1187,11 @@ export const RejectCandidateResponse = zod
                   })
                   .nullish(),
                 candidateCount: zod.number(),
+                suggestedRequiredSkills: zod
+                  .array(zod.string())
+                  .describe(
+                    "Conservative suggestions derived from the JD when requiredSkills is empty.",
+                  ),
                 createdAt: zod.date(),
                 updatedAt: zod.date(),
               })
@@ -1149,6 +1204,9 @@ export const RejectCandidateResponse = zod
               "final",
               "panel",
             ]),
+            interviewFormat: zod
+              .enum(["video_call", "phone_call", "in_person"])
+              .optional(),
             scheduledAt: zod.date(),
             durationMinutes: zod.number(),
             location: zod.string().nullish(),
@@ -1216,6 +1274,11 @@ export const RejectCandidateResponse = zod
                   })
                   .nullish(),
                 candidateCount: zod.number(),
+                suggestedRequiredSkills: zod
+                  .array(zod.string())
+                  .describe(
+                    "Conservative suggestions derived from the JD when requiredSkills is empty.",
+                  ),
                 createdAt: zod.date(),
                 updatedAt: zod.date(),
               })
@@ -1391,6 +1454,11 @@ export const ShortlistCandidateResponse = zod
                   })
                   .nullish(),
                 candidateCount: zod.number(),
+                suggestedRequiredSkills: zod
+                  .array(zod.string())
+                  .describe(
+                    "Conservative suggestions derived from the JD when requiredSkills is empty.",
+                  ),
                 createdAt: zod.date(),
                 updatedAt: zod.date(),
               })
@@ -1403,6 +1471,9 @@ export const ShortlistCandidateResponse = zod
               "final",
               "panel",
             ]),
+            interviewFormat: zod
+              .enum(["video_call", "phone_call", "in_person"])
+              .optional(),
             scheduledAt: zod.date(),
             durationMinutes: zod.number(),
             location: zod.string().nullish(),
@@ -1470,6 +1541,11 @@ export const ShortlistCandidateResponse = zod
                   })
                   .nullish(),
                 candidateCount: zod.number(),
+                suggestedRequiredSkills: zod
+                  .array(zod.string())
+                  .describe(
+                    "Conservative suggestions derived from the JD when requiredSkills is empty.",
+                  ),
                 createdAt: zod.date(),
                 updatedAt: zod.date(),
               })
@@ -1794,6 +1870,11 @@ export const ListInterviewsResponse = zod.object({
             })
             .nullish(),
           candidateCount: zod.number(),
+          suggestedRequiredSkills: zod
+            .array(zod.string())
+            .describe(
+              "Conservative suggestions derived from the JD when requiredSkills is empty.",
+            ),
           createdAt: zod.date(),
           updatedAt: zod.date(),
         })
@@ -1806,6 +1887,9 @@ export const ListInterviewsResponse = zod.object({
         "final",
         "panel",
       ]),
+      interviewFormat: zod
+        .enum(["video_call", "phone_call", "in_person"])
+        .optional(),
       scheduledAt: zod.date(),
       durationMinutes: zod.number(),
       location: zod.string().nullish(),
@@ -1841,6 +1925,12 @@ export const ScheduleInterviewBody = zod.object({
     "final",
     "panel",
   ]),
+  interviewFormat: zod
+    .enum(["video_call", "phone_call", "in_person"])
+    .optional()
+    .describe(
+      "Optional delivery medium used by the frontend; persisted as location\/meeting context by older APIs.",
+    ),
   scheduledAt: zod.date(),
   durationMinutes: zod.number(),
   location: zod.string().optional(),
@@ -1924,6 +2014,11 @@ export const GetInterviewResponse = zod.object({
         })
         .nullish(),
       candidateCount: zod.number(),
+      suggestedRequiredSkills: zod
+        .array(zod.string())
+        .describe(
+          "Conservative suggestions derived from the JD when requiredSkills is empty.",
+        ),
       createdAt: zod.date(),
       updatedAt: zod.date(),
     })
@@ -1936,6 +2031,9 @@ export const GetInterviewResponse = zod.object({
     "final",
     "panel",
   ]),
+  interviewFormat: zod
+    .enum(["video_call", "phone_call", "in_person"])
+    .optional(),
   scheduledAt: zod.date(),
   durationMinutes: zod.number(),
   location: zod.string().nullish(),
@@ -2037,6 +2135,11 @@ export const UpdateInterviewResponse = zod.object({
         })
         .nullish(),
       candidateCount: zod.number(),
+      suggestedRequiredSkills: zod
+        .array(zod.string())
+        .describe(
+          "Conservative suggestions derived from the JD when requiredSkills is empty.",
+        ),
       createdAt: zod.date(),
       updatedAt: zod.date(),
     })
@@ -2049,6 +2152,9 @@ export const UpdateInterviewResponse = zod.object({
     "final",
     "panel",
   ]),
+  interviewFormat: zod
+    .enum(["video_call", "phone_call", "in_person"])
+    .optional(),
   scheduledAt: zod.date(),
   durationMinutes: zod.number(),
   location: zod.string().nullish(),
