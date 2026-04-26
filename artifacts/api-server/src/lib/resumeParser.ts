@@ -145,7 +145,7 @@ export function extractNameFromFilename(filename: string): string {
 
 /** Lines that look like job titles / summaries — not a person's name */
 const JOB_TITLE_LINE =
-  /\b(analyst|engineer|manager|developer|consultant|specialist|director|lead|officer|associate|coordinator|architect|scientist|designer|administrator|executive|intern|graduate|trainee|business\s+analyst|project\s+manager|product\s+owner|scrum\s+master|data\s+scientist|software|full[\s-]?stack|devops|erp|sap|workday|results[\s-]?driven|transformation)\b/i;
+  /\b(analyst|engineer|manager|developer|consultant|specialist|director|lead(?:er(?:ship)?)?|officer|associate|coordinator|architect|scientist|designer|administrator|executive|intern|graduate|trainee|business\s+analyst|project\s+manager|product\s+owner|scrum\s+master|data\s+scientist|software|full[\s-]?stack|devops|erp|sap|workday|results[\s-]?driven|transformation|innovation|head|chief|principal|founder|owner|president|evangelist|advisor|champion|technician|programmer|professor|researcher|writer|editor|expert)\b/i;
 
 const NOISE_HEADER =
   /^(curriculum vitae|resume|cv|profile|personal details|contact|summary|objective|professional summary|experience|education|skills|work experience)\s*:?$/i;

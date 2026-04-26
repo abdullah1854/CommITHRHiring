@@ -43,6 +43,22 @@ test("isLikelyCorruptExtractedName rejects section headings", () => {
   assert.equal(isLikelyCorruptExtractedName("Core Skills"), true);
 });
 
+test("rejects role headlines that are not personal names", () => {
+  // Resume top-line headlines that are not the candidate's name. Without these
+  // rejections the header parser used to surface them on the candidate card.
+  assert.equal(isLikelyCorruptExtractedName("AI Innovation Leader"), true);
+  assert.equal(isLikelyCorruptExtractedName("Digital Transformation Leader"), true);
+  assert.equal(isLikelyCorruptExtractedName("Head of Engineering"), true);
+
+  const headerThenName = `AI Innovation Leader
+
+Abdullah Sarfaraz
+
+Singapore | +65 …
+abdullah@example.com`;
+  assert.equal(extractCandidateNameFromResumeText(headerThenName), "Abdullah Sarfaraz");
+});
+
 test("sanitizeExtractedSkills removes candidate names and section headings", () => {
   const cleaned = sanitizeExtractedSkills(
     ["Balaraj Maruthur", "Core Skills", "Power BI", "Finance Process Improvement", "power bi"],
