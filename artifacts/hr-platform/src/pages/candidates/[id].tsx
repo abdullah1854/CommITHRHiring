@@ -101,6 +101,10 @@ export default function CandidateProfile() {
   );
   const [educationDraft, setEducationDraft] = useState("");
   const [isEditingEducation, setIsEditingEducation] = useState(false);
+  const [isResumePreviewOpen, setIsResumePreviewOpen] = useState(false);
+  const [communications, setCommunications] = useState<any[] | null>(null);
+  const [isLoadingCommunications, setIsLoadingCommunications] = useState(false);
+  const [expandedCommunicationId, setExpandedCommunicationId] = useState<string | null>(null);
 
   // Derived BEFORE the early returns below so the hooks below always run in
   // the same order (React rule of hooks).
@@ -268,6 +272,23 @@ export default function CandidateProfile() {
     }
   };
 
+  const loadCommunications = async () => {
+    setIsLoadingCommunications(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/candidates/${candidateId}/communications`, {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setCommunications(Array.isArray(data?.communications) ? data.communications : []);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to load communications");
+      setCommunications([]);
+    } finally {
+      setIsLoadingCommunications(false);
+    }
+  };
+
   const handleGenerateQuestions = async () => {
     if (!currentJobId) {
       toast.error("No job associated. Please associate a job first.");
@@ -302,6 +323,8 @@ export default function CandidateProfile() {
   };
 
   const latestScreening = candidate.screeningResults?.[0];
+  const resumeMime = (candidate.resume as any)?.mimeType as string | undefined;
+  const isPdfResume = resumeMime === "application/pdf" || candidate.resume?.fileUrl?.toLowerCase().endsWith(".pdf");
 
   return (
     <DashboardLayout title="Candidate Profile">
@@ -386,11 +409,25 @@ export default function CandidateProfile() {
                     </div>
                   )}
                   {candidate.resume && (
-                    <div className="flex items-center text-sm text-slate-600 pt-3 border-t border-slate-100">
-                      <FileText className="w-4 h-4 mr-3 text-slate-400" />
-                      <a href={candidate.resume.fileUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center">
-                        View Resume <ExternalLink className="w-3 h-3 ml-1" />
-                      </a>
+                    <div className="text-sm text-slate-600 pt-3 border-t border-slate-100">
+                      <div className="flex items-center mb-2">
+                        <FileText className="w-4 h-4 mr-3 text-slate-400" />
+                        <span className="font-semibold text-slate-700">Resume</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 pl-7">
+                        {isPdfResume && (
+                          <button
+                            type="button"
+                            onClick={() => setIsResumePreviewOpen(true)}
+                            className="text-xs font-semibold text-primary hover:underline"
+                          >
+                            Preview PDF
+                          </button>
+                        )}
+                        <a href={candidate.resume.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-slate-600 hover:text-primary hover:underline flex items-center">
+                          Open/download <ExternalLink className="w-3 h-3 ml-1" />
+                        </a>
+                      </div>
                     </div>
                   )}
                   {/* LinkedIn verification status */}
@@ -456,6 +493,15 @@ export default function CandidateProfile() {
                 <HelpCircle className="w-4 h-4 mr-1.5 text-indigo-500" /> Interview Qs
               </TabButton>
               <TabButton active={activeTab === "interviews"} onClick={() => setActiveTab("interviews")}>Interviews</TabButton>
+              <TabButton
+                active={activeTab === "communications"}
+                onClick={() => {
+                  setActiveTab("communications");
+                  if (communications === null) void loadCommunications();
+                }}
+              >
+                Communications
+              </TabButton>
             </div>
 
             <div className="p-4 sm:p-6">
@@ -927,10 +973,86 @@ export default function CandidateProfile() {
                   )}
                 </div>
               )}
+
+              {activeTab === "communications" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900">Communication History</h3>
+                      <p className="text-sm text-slate-500">Emails logged for this candidate's email address.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={loadCommunications}
+                      disabled={isLoadingCommunications}
+                      className="px-3 py-2 text-xs font-bold rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      {isLoadingCommunications ? "Refreshing…" : "Refresh"}
+                    </button>
+                  </div>
+
+                  {isLoadingCommunications && communications === null ? (
+                    <div className="py-10 flex justify-center"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+                  ) : !candidate.email ? (
+                    <div className="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-sm text-slate-500">
+                      Add a candidate email address to track communication history.
+                    </div>
+                  ) : (communications ?? []).length === 0 ? (
+                    <div className="border border-dashed border-slate-200 rounded-2xl p-8 text-center text-sm text-slate-500">
+                      No email communications have been logged yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {(communications ?? []).map((item) => {
+                        const expanded = expandedCommunicationId === item.id;
+                        return (
+                          <div key={item.id} className="border border-slate-200 rounded-xl bg-slate-50 overflow-hidden">
+                            <button
+                              type="button"
+                              onClick={() => setExpandedCommunicationId(expanded ? null : item.id)}
+                              className="w-full p-4 text-left flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 hover:bg-slate-100"
+                            >
+                              <div>
+                                <p className="font-semibold text-slate-900">{item.subject || "(No subject)"}</p>
+                                <p className="text-xs text-slate-500">
+                                  {item.type} • {new Date(item.createdAt).toLocaleString()}
+                                </p>
+                              </div>
+                              <span className={`px-2.5 py-1 rounded-full text-xs font-bold capitalize w-fit ${
+                                item.status === "sent" ? "bg-emerald-100 text-emerald-800" :
+                                item.status === "failed" ? "bg-red-100 text-red-800" :
+                                "bg-blue-100 text-blue-800"
+                              }`}>
+                                {item.status}
+                              </span>
+                            </button>
+                            {expanded && (
+                              <div className="border-t border-slate-200 bg-white p-4">
+                                <div className="prose prose-sm max-w-none text-slate-700" dangerouslySetInnerHTML={{ __html: item.body || "<p>No body recorded.</p>" }} />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
+      {isResumePreviewOpen && candidate.resume && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 p-4 flex items-center justify-center" onClick={() => setIsResumePreviewOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="font-bold text-slate-900">Resume Preview</h3>
+              <button type="button" onClick={() => setIsResumePreviewOpen(false)} className="text-sm font-semibold text-slate-500 hover:text-slate-900">Close</button>
+            </div>
+            <iframe src={candidate.resume.fileUrl} title={`${candidate.fullName} resume`} className="flex-1 w-full bg-slate-100" />
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }

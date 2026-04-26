@@ -153,6 +153,105 @@ router.get("/", requireAuth, async (req, res) => {
   }
 });
 
+router.get("/:id/communications", requireAuth, async (req, res) => {
+  try {
+    const id = req.params.id as string;
+    const candidate = await prisma.candidate.findFirst({
+      where: { id },
+      select: { id: true, email: true, fullName: true },
+    });
+    if (!candidate) {
+      return res.status(404).json({ error: "Not Found", message: "Candidate not found" });
+    }
+    if (!candidate.email) {
+      return res.json({ candidateId: id, communications: [] });
+    }
+
+    const rows = await prisma.emailNotification.findMany({
+      where: { recipientEmail: candidate.email },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+
+    res.json({
+      candidateId: id,
+      communications: rows.map((row) => ({
+        id: row.id,
+        type: row.type,
+        subject: row.subject,
+        body: row.body,
+        status: row.status,
+        recipientEmail: row.recipientEmail,
+        recipientName: row.recipientName,
+        sentAt: row.sentAt,
+        createdAt: row.createdAt,
+      })),
+    });
+  } catch (err) {
+    console.error("[candidates] communications failed:", err);
+    res.status(500).json({ error: "Internal Server Error", message: "Failed to fetch communications" });
+  }
+});
+
+router.get("/:id/email-preview/:type", requireAuth, async (req, res) => {
+  try {
+    const id = req.params.id as string;
+    const type = String(req.params.type ?? "");
+    const candidate = await prisma.candidate.findFirst({
+      where: { id },
+      select: { id: true, fullName: true, email: true, currentJobId: true },
+    });
+    if (!candidate) {
+      return res.status(404).json({ error: "Not Found", message: "Candidate not found" });
+    }
+
+    const jobId = (req.query.jobId as string | undefined) || candidate.currentJobId || undefined;
+    const job = jobId
+      ? await prisma.job.findFirst({ where: { id: jobId }, select: { title: true } })
+      : null;
+    const jobTitle = job?.title ?? "the position";
+
+    if (type === "rejection") {
+      return res.json({
+        type,
+        to: candidate.email,
+        subject: "Update on your application",
+        body: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <p>Dear ${candidate.fullName},</p>
+            <p>Thank you for your interest in ${jobTitle} and for the time you invested in our process.
+            After careful review we have decided to move forward with other candidates at this time.</p>
+            <p>We will keep your profile on file and wish you every success in your search.</p>
+            <p>Best regards,<br/><strong>GIQ Recruitment Team</strong></p>
+          </div>
+        `.trim(),
+      });
+    }
+
+    if (type === "interview_invite") {
+      return res.json({
+        type,
+        to: candidate.email,
+        subject: `Interview Invitation – ${jobTitle}`,
+        body: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #1e40af;">Interview Invitation – ${jobTitle}</h2>
+            <p>Dear ${candidate.fullName},</p>
+            <p>We would like to invite you to interview for <strong>${jobTitle}</strong>.</p>
+            <p>The confirmed date, interviewer, and meeting details will appear in the scheduled invite.</p>
+            <p>Best regards,<br/><strong>GIQ Recruitment Team</strong></p>
+          </div>
+        `.trim(),
+      });
+    }
+
+    return res.status(400).json({ error: "Bad Request", message: "Unsupported preview type" });
+  } catch (err) {
+    console.error("[candidates] email preview failed:", err);
+    res.status(500).json({ error: "Internal Server Error", message: "Failed to generate email preview" });
+  }
+});
+
 router.get("/:id", requireAuth, async (req, res) => {
   try {
     const id = req.params.id as string;
