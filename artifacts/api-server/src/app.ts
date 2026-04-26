@@ -1,7 +1,5 @@
 import express, { type Express } from "express";
 import cors from "cors";
-import cookieParser from "cookie-parser";
-import { sessionMiddleware } from "./lib/session.js";
 import router from "./routes/index.js";
 
 const app: Express = express();
@@ -16,12 +14,12 @@ app.use(cors({
   // In development with no CORS_ORIGIN set, allow all origins.
   // In production with no CORS_ORIGIN set, deny all cross-origin requests (origin: false).
   origin: allowedOrigins.length > 0 ? allowedOrigins : isDev ? true : false,
+  // We no longer use cookie-based sessions, but allow credentials so the
+  // browser can send Authorization headers across origins where needed.
   credentials: true,
 }));
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(sessionMiddleware);
 
 // Disable caching for all /api/* responses. Browsers and reverse-proxies will
 // otherwise serve stale GETs after a mutation (e.g. AI screening) until a

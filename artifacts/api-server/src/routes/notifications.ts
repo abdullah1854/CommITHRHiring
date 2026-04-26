@@ -33,11 +33,11 @@ function toApi(n: EmailNotification) {
  */
 router.get("/", requireAuth, async (req, res) => {
   try {
-    const email = req.session.userEmail;
+    const email = req.user?.email;
     if (!email) {
       return res.status(401).json({
         error: "Unauthorized",
-        message: "Session is missing the user's email",
+        message: "Authenticated user has no email",
       });
     }
 
@@ -64,11 +64,11 @@ router.get("/", requireAuth, async (req, res) => {
  */
 router.put("/:id/read", requireAuth, async (req, res) => {
   try {
-    const email = req.session.userEmail;
+    const email = req.user?.email;
     if (!email) {
       return res.status(401).json({
         error: "Unauthorized",
-        message: "Session is missing the user's email",
+        message: "Authenticated user has no email",
       });
     }
 

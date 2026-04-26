@@ -203,7 +203,7 @@ router.post("/", requireAuth, async (req, res) => {
         responsibilities: responsibilities ?? "",
         qualifications: qualifications ?? "",
         status: normalizedStatus,
-        createdById: req.session?.userId ?? null,
+        createdById: req.user?.id ?? null,
       },
     });
 

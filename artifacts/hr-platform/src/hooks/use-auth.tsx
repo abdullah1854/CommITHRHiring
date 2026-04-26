@@ -1,7 +1,7 @@
-import { createContext, useContext, ReactNode, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { supabase, getAccessToken } from "@/lib/supabase";
 
 interface User {
   id: string;
@@ -16,13 +16,23 @@ interface AuthContextType {
   isLoading: boolean;
   isBackendDown: boolean;
   login: (email: string, password: string) => Promise<void>;
-  loginAsDemo: (role?: "admin" | "recruiter") => Promise<void>;
   logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const ME_QUERY_KEY = ["auth-me"];
+
+async function fetchProfile(): Promise<User | null> {
+  const token = await getAccessToken();
+  if (!token) return null;
+  const res = await fetch("/api/auth/me", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (res.status === 401) return null;
+  if (!res.ok) throw new Error(`profile fetch failed: ${res.status}`);
+  return res.json();
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
@@ -33,17 +43,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryKey: ME_QUERY_KEY,
     queryFn: async () => {
       try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
-        if (res.status === 401) {
-          setIsBackendDown(false);
-          return null;
-        }
-        if (!res.ok) {
-          setIsBackendDown(true);
-          return null;
-        }
+        const profile = await fetchProfile();
         setIsBackendDown(false);
-        return res.json();
+        return profile;
       } catch {
         setIsBackendDown(true);
         return null;
@@ -53,62 +55,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     staleTime: Infinity,
   });
 
-  const login = async (email: string, password: string) => {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ email, password }),
+  // Re-hydrate the profile whenever the Supabase session changes (login,
+  // refresh, sign-out from another tab, etc.) so the UI stays in sync with
+  // the actual auth state.
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange(() => {
+      queryClient.invalidateQueries({ queryKey: ME_QUERY_KEY });
     });
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      throw new Error(body.message || "Invalid credentials");
+    return () => data.subscription.unsubscribe();
+  }, [queryClient]);
+
+  const login = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+    const profile = await fetchProfile();
+    if (!profile) {
+      // Auth succeeded but the backend rejected the user (deactivated, no
+      // mirrored profile, or backend down). Sign them back out so the UI
+      // doesn't get stuck in a half-authenticated state.
+      await supabase.auth.signOut();
+      throw new Error("Account not authorised. Contact your administrator.");
     }
-    const userData = await res.json();
-    queryClient.setQueryData(ME_QUERY_KEY, userData);
+    queryClient.setQueryData(ME_QUERY_KEY, profile);
     setIsBackendDown(false);
     setLocation("/dashboard");
   };
 
-  const loginAsDemo = async (role: "admin" | "recruiter" = "admin") => {
-    try {
-      const res = await fetch("/api/auth/demo-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ role }),
-      });
-      if (res.ok) {
-        const userData = await res.json();
-        queryClient.setQueryData(ME_QUERY_KEY, userData);
-        setIsBackendDown(false);
-        setLocation("/dashboard");
-        return;
-      }
-    } catch {
-      // Fall through to local demo mode
-    }
-    // Fallback: local demo user if backend unavailable
-    const DEMO_USERS: Record<string, User> = {
-      admin: { id: "demo-admin-1", email: "admin@talentiq.demo", name: "Alex Admin", role: "admin", isActive: true },
-      recruiter: { id: "demo-recruiter-1", email: "recruiter@talentiq.demo", name: "Rachel Recruiter", role: "recruiter", isActive: true },
-    };
-    queryClient.setQueryData(ME_QUERY_KEY, DEMO_USERS[role]);
-    setLocation("/dashboard");
-  };
-
   const logout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-    } catch {
-      // Ignore errors
-    }
+    await supabase.auth.signOut();
     queryClient.setQueryData(ME_QUERY_KEY, null);
+    queryClient.clear();
     setLocation("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user: user ?? null, isLoading, isBackendDown, login, loginAsDemo, logout }}>
+    <AuthContext.Provider value={{ user: user ?? null, isLoading, isBackendDown, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -56,3 +56,9 @@ artifacts/api-server/uploads/*
 # Replit
 .cache/
 .local/
+
+# AI screening cache (per-deploy, machine-local)
+.aihr-cache/
+
+# Claude / agent state
+.claude/

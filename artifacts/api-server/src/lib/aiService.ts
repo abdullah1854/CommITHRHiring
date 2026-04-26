@@ -1314,15 +1314,36 @@ interface FullResumeData {
   pastRoles: string | null;
 }
 
+// Words that strongly indicate a job title / headline rather than a person's
+// name. If the extracted "fullName" contains any of these as a whole word, we
+// treat it as a parse error and null the field out so downstream code can
+// surface "Unknown Candidate" rather than a wrong name on a candidate card.
+const TITLE_WORDS_RX = /\b(leader|lead|manager|engineer|developer|designer|consultant|analyst|architect|director|officer|specialist|administrator|executive|president|founder|owner|head|chief|principal|associate|intern|coordinator|supervisor|technician|programmer|scientist|researcher|writer|editor|teacher|professor|attorney|lawyer|nurse|physician|doctor|pharmacist|accountant|auditor|controller|treasurer|secretary)\b/i;
+
+function looksLikePersonName(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+  if (trimmed.length > 60) return false;
+  if (TITLE_WORDS_RX.test(trimmed)) return false;
+  // Must contain at least one whitespace (first + last name) and only letters,
+  // hyphens, apostrophes, dots, spaces. Reject anything with digits.
+  if (/\d/.test(trimmed)) return false;
+  if (!/\s/.test(trimmed)) return false;
+  if (!/^[\p{L}.'\- ]+$/u.test(trimmed)) return false;
+  return true;
+}
+
 export async function extractFullResumeData(resumeText: string): Promise<FullResumeData> {
-  const prompt = `You are an expert resume parser. Analyse this resume and extract structured information accurately.
+  const prompt = `You are an expert resume parser. Extract structured information from the resume below.
+
+The single most important field is fullName — recruiters surface it on the candidate card, so a wrong value (e.g. picking the headline / job title) is highly visible. Read the rules carefully.
 
 RESUME TEXT:
 ${clipResume(resumeText, PARSE_RESUME_CAP)}
 
 Return JSON. Use null for any field you cannot confidently determine:
 {
-  "fullName": "<candidate's full name, exactly as written>",
+  "fullName": "<candidate's full personal name, e.g. 'John Doe' — see rules>",
   "email": "<email address or null>",
   "phone": "<phone number or null>",
   "location": "<city, state/country or null>",
@@ -1334,8 +1355,16 @@ Return JSON. Use null for any field you cannot confidently determine:
   "pastRoles": "<semicolon-separated list of past job titles and companies, e.g. 'Software Engineer at Acme (2019-2021); Frontend Dev at Startup (2021-2023)'>"
 }
 
-Rules:
-- fullName: ONLY the person's name (typically 2–5 words), taken from the header lines where the name appears. NEVER merge the name with a job title, certification, or acronym. Strip trailing certifications (e.g. "(PMP, CSM)").
+Rules for fullName (read all of them):
+- It is a PERSON'S NAME — typically two to five words, all from the Latin or local-script alphabet, no digits. Examples: "Sarah Tan", "Rajesh Kumar Iyer", "Mohammed Al-Farsi".
+- It is NEVER a job title, headline, banner, slogan, role, or department. If the top of the resume reads:
+    > AI Innovation Leader
+    > John Tan
+    > Singapore | +65 ...
+  the correct fullName is "John Tan", NOT "AI Innovation Leader".
+- It is NEVER a job title even when the title is in big bold capitals. Headlines like "Senior Project Manager", "Cloud Architect", "Talent Acquisition Specialist", "AI Innovation Leader" are titles, not names.
+- Strip trailing certifications: "John Tan, PMP, CSM" → "John Tan".
+- If the resume body never reveals a clean personal name (e.g. it's a generic template), return null. A wrong name is worse than a missing name.
 - yearsOfExperience must be a number, not a string.
 - If the resume has very little text (image-based PDF), extract what you can and return nulls for missing fields.`;
 
@@ -1371,8 +1400,16 @@ Rules:
   if (!result) return fallback;
 
   const yoe = result.yearsOfExperience;
+  const rawName = typeof result.fullName === "string" ? result.fullName.trim() : null;
+  // Reject obvious title-as-name parses ("AI Innovation Leader", "Senior PMP")
+  // and anything that doesn't look like a person's name. A null is much better
+  // than a wrong banner showing on the candidate page.
+  const fullName = rawName && looksLikePersonName(rawName) ? rawName : null;
+  if (rawName && !fullName) {
+    console.warn(`[extractFullResumeData] rejecting suspected title-as-name: "${rawName}"`);
+  }
   return {
-    fullName: typeof result.fullName === "string" ? result.fullName : null,
+    fullName,
     email: typeof result.email === "string" ? result.email : null,
     phone: typeof result.phone === "string" ? result.phone : null,
     location: typeof result.location === "string" ? result.location : null,

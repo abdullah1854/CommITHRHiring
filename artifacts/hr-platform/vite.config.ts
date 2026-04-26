@@ -21,6 +21,9 @@ export default defineConfig({
     dedupe: ["react", "react-dom"],
   },
   root: path.resolve(import.meta.dirname),
+  // Workspace shares a single .env at the repo root. Tell Vite to read from
+  // there so VITE_* vars defined in /.env reach the browser bundle.
+  envDir: path.resolve(import.meta.dirname, "..", ".."),
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,

@@ -10,12 +10,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@workspace/db": "workspace:*",
     "@prisma/client": "^6.18.0",
-    "bcryptjs": "^2.4.3"
+    "@workspace/db": "workspace:*"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
     "@types/node": "catalog:",
     "tsx": "catalog:"
   }

@@ -1,29 +1,18 @@
 /**
- * Idempotent seed script for GIQ.
+ * Idempotent seed script for the COMM-iT hiring app.
  *
- * Creates (or leaves in place):
- *  - 1 demo admin   (admin@talentiq.demo / password: demo1234)
- *  - 1 demo recruiter (recruiter@talentiq.demo / password: demo1234)
- *  - 2 sample open jobs
+ * Seeds two sample open jobs against the first admin user in
+ * `commit_hr.users`. Users themselves are NOT seeded here — they are
+ * created in Supabase Auth (Studio → Authentication → Users) and mirrored
+ * into `commit_hr.users` automatically by the `on_auth_user_created`
+ * trigger.
  *
- * Safe to run multiple times — uses existence checks keyed on unique fields.
+ * Safe to run multiple times — uses existence checks keyed on (title,
+ * department) so re-running does not duplicate jobs.
+ *
  * Usage: pnpm --filter @workspace/scripts seed
  */
 import { prisma, serializeList } from "@workspace/db";
-import bcrypt from "bcryptjs";
-
-const DEMO_PASSWORD = "demo1234";
-
-interface DemoUser {
-  email: string;
-  name: string;
-  role: "admin" | "recruiter";
-}
-
-const demoUsers: DemoUser[] = [
-  { email: "admin@talentiq.demo", name: "Alex Admin", role: "admin" },
-  { email: "recruiter@talentiq.demo", name: "Demo Recruiter", role: "recruiter" },
-];
 
 interface SampleJob {
   title: string;
@@ -46,70 +35,58 @@ interface SampleJob {
 
 const sampleJobs: SampleJob[] = [
   {
-    title: "Senior Full-Stack Engineer",
-    department: "Engineering",
-    location: "Remote",
+    title: "Senior IBM Maximo Functional Consultant",
+    department: "EAM Practice",
+    location: "Kuala Lumpur, Malaysia",
     employmentType: "full_time",
     seniority: "senior",
-    requiredSkills: ["TypeScript", "React", "Node.js", "PostgreSQL"],
-    preferredSkills: ["GraphQL", "Docker"],
+    requiredSkills: ["IBM Maximo", "Work Order Management", "Asset Management", "Inventory", "Procurement"],
+    preferredSkills: ["Maximo Mobile", "ACM (Anywhere)", "MIF integrations", "Oil & Gas domain"],
     minExperience: 5,
     maxExperience: 10,
-    minSalary: 120000,
-    maxSalary: 180000,
-    salaryCurrency: "USD",
+    minSalary: 9000,
+    maxSalary: 14000,
+    salaryCurrency: "MYR",
     description:
-      "Build and maintain the GIQ platform end-to-end — React front-end, Express API, and a SQL-backed data layer. You'll own major features from design through ship.",
+      "Lead end-to-end IBM Maximo deployments for ASEAN industrial clients across oil & gas, utilities, and manufacturing. Translate plant operations and asset hierarchies into Maximo configurations that hold up under real workloads.",
     responsibilities:
-      "Design and implement features across the stack; mentor juniors; own reliability and performance of production services.",
+      "Run client workshops, design Maximo solutions covering Work, Asset, Inventory and Procurement; mentor junior consultants; own UAT and go-live for assigned engagements.",
     qualifications:
-      "5+ years building production web apps, strong TypeScript + React + Node, comfortable with SQL databases and REST APIs.",
+      "5+ years hands-on Maximo functional delivery in ASEAN, demonstrable module depth (not surface keyword exposure), strong English client communication, willingness to travel within Malaysia/Singapore/Indonesia.",
     status: "open",
   },
   {
-    title: "Talent Acquisition Partner",
-    department: "People Ops",
-    location: "Singapore",
+    title: "Microsoft Dynamics 365 F&O Technical Consultant",
+    department: "ERP Practice",
+    location: "Singapore / Kuala Lumpur",
     employmentType: "full_time",
     seniority: "mid",
-    requiredSkills: ["Full-cycle recruiting", "ATS", "Stakeholder management"],
-    preferredSkills: ["Boolean search", "LinkedIn Recruiter"],
+    requiredSkills: ["D365 F&O", "X++", "Visual Studio", "DevOps pipelines"],
+    preferredSkills: ["Power Platform", "Azure Logic Apps", "LCS deployments", "Data Management Framework"],
     minExperience: 3,
     maxExperience: 7,
-    minSalary: 60000,
-    maxSalary: 95000,
+    minSalary: 6500,
+    maxSalary: 11000,
     salaryCurrency: "SGD",
     description:
-      "Partner with hiring managers to attract and close top talent across engineering and GTM roles. You'll use GIQ's AI tooling to triage, screen, and shortlist candidates.",
+      "Build and extend Microsoft Dynamics 365 Finance & Operations for COMM-iT's regional clients. Deliver clean X++ extensions, integrations, and DevOps pipelines that stand up to enterprise audits.",
     responsibilities:
-      "Own end-to-end hiring for assigned requisitions; build candidate pipelines; coach hiring managers on structured interviews.",
+      "Translate functional designs into X++ extensions; build integrations via DMF, Logic Apps and OData; manage LCS deployments; partner with functional consultants on UAT.",
     qualifications:
-      "3+ years in-house or agency recruiting with a track record closing mid/senior roles; familiarity with modern ATS tooling.",
+      "3+ years D365 F&O technical delivery, fluent X++, Git/DevOps experience, working knowledge of Microsoft application lifecycle on LCS, English working proficiency.",
     status: "open",
   },
 ];
 
-async function upsertUser(u: DemoUser): Promise<string> {
-  const existing = await prisma.user.findFirst({ where: { email: u.email } });
-  if (existing) {
-    console.log(`  [skip] user ${u.email} already exists (id=${existing.id})`);
-    return existing.id;
-  }
-  const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
-  const created = await prisma.user.create({
-    data: {
-      email: u.email,
-      name: u.name,
-      role: u.role,
-      passwordHash,
-      isActive: true,
-    },
+async function findFirstAdminId(): Promise<string | null> {
+  const admin = await prisma.user.findFirst({
+    where: { role: "admin", isActive: true },
+    orderBy: { createdAt: "asc" },
   });
-  console.log(`  [create] user ${u.email} (id=${created.id})`);
-  return created.id;
+  return admin?.id ?? null;
 }
 
-async function upsertJob(job: SampleJob, createdById: string): Promise<string> {
+async function upsertJob(job: SampleJob, createdById: string | null): Promise<string> {
   // Dedupe by (title, department) — safe for this demo dataset.
   const existing = await prisma.job.findFirst({
     where: { title: job.title, department: job.department },
@@ -144,19 +121,24 @@ async function upsertJob(job: SampleJob, createdById: string): Promise<string> {
 }
 
 async function main() {
-  console.log("GIQ seed — idempotent, safe to re-run.\n");
+  console.log("CommIT HR seed — idempotent, safe to re-run.\n");
 
-  console.log("Users:");
-  const adminId = await upsertUser(demoUsers[0]!);
-  await upsertUser(demoUsers[1]!);
+  const adminId = await findFirstAdminId();
+  if (!adminId) {
+    console.warn(
+      "  [warn] no admin user found in commit_hr.users; jobs will be created without an owner.\n" +
+        "         Add a Supabase Auth user and SET role='admin' before re-running.",
+    );
+  } else {
+    console.log(`Owner: admin user id=${adminId}`);
+  }
 
-  console.log("\nJobs (owner = admin):");
+  console.log("\nJobs:");
   for (const job of sampleJobs) {
     await upsertJob(job, adminId);
   }
 
-  console.log(`\nDemo credentials: <email> / password "${DEMO_PASSWORD}".`);
-  console.log("Seed complete");
+  console.log("\nSeed complete");
 }
 
 main()

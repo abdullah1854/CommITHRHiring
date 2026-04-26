@@ -2,6 +2,20 @@ export type CustomFetchOptions = RequestInit & {
   responseType?: "json" | "text" | "blob" | "auto";
 };
 
+export type AuthTokenProvider = () => string | null | Promise<string | null>;
+
+let authTokenProvider: AuthTokenProvider | null = null;
+
+/**
+ * Registers a function that returns the current Supabase access token. The
+ * token is attached to every outgoing request as `Authorization: Bearer …`.
+ * Call this once at app startup (e.g. next to the AuthProvider) so the
+ * generated API client can authenticate without extra plumbing.
+ */
+export function setAuthTokenProvider(provider: AuthTokenProvider | null): void {
+  authTokenProvider = provider;
+}
+
 export type ErrorType<T = unknown> = ApiError<T>;
 
 export type BodyType<T> = T;
@@ -295,6 +309,13 @@ export async function customFetch<T = unknown>(
 
   if (responseType === "json" && !headers.has("accept")) {
     headers.set("accept", DEFAULT_JSON_ACCEPT);
+  }
+
+  if (authTokenProvider && !headers.has("authorization")) {
+    const token = await authTokenProvider();
+    if (token) {
+      headers.set("authorization", `Bearer ${token}`);
+    }
   }
 
   const requestInfo = { method, url: resolveUrl(input) };

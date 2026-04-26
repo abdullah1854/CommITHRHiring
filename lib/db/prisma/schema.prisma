@@ -3,52 +3,57 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlserver"
-  url      = env("DATABASE_URL")
-  schemas  = ["hr"]
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["commit_hr"]
 }
 
+/// Profile row for an authenticated Supabase user.
+/// id MUST equal auth.users.id — the row is auto-inserted by the
+/// `on_auth_user_created` trigger when a Supabase Auth user is created.
+/// Never INSERT here directly; let Supabase Auth (Studio / supabase.auth.admin
+/// .createUser) drive creation. Only UPDATE for role/name/avatar/isActive.
 model User {
-  id           String     @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  email        String     @unique @db.NVarChar(320)
-  name         String     @db.NVarChar(200)
-  role         String     @default("recruiter") @db.NVarChar(50) // admin|recruiter
-  passwordHash String?    @map("password_hash") @db.NVarChar(255)
-  avatarUrl    String?    @map("avatar_url") @db.NVarChar(500)
-  isActive     Boolean    @default(true) @map("is_active")
-  createdAt    DateTime   @default(now()) @map("created_at") @db.DateTime2
-  updatedAt    DateTime   @default(now()) @updatedAt @map("updated_at") @db.DateTime2
-  jobs         Job[]
-  auditLogs    AuditLog[]
+  id        String     @id @db.Uuid
+  email     String     @unique @db.VarChar(320)
+  name      String     @db.VarChar(200)
+  role      String     @default("recruiter") @db.VarChar(50) // admin|recruiter
+  avatarUrl String?    @map("avatar_url") @db.VarChar(500)
+  isActive  Boolean    @default(true) @map("is_active")
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  jobs      Job[]
+  auditLogs AuditLog[]
 
   @@index([email])
   @@index([role])
   @@map("users")
-  @@schema("hr")
+  @@schema("commit_hr")
 }
 
 model Job {
-  id                  String              @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  title               String              @db.NVarChar(255)
-  department          String              @db.NVarChar(100)
-  location            String              @db.NVarChar(100)
-  employmentType      String              @map("employment_type") @db.NVarChar(50) // full_time|part_time|contract|internship
-  seniority           String              @db.NVarChar(50) // entry|mid|senior|lead|executive
-  requiredSkills      String                @map("required_skills") @db.NVarChar(Max) // string[]
-  preferredSkills     String                @map("preferred_skills") @db.NVarChar(Max) // string[]
+  id                  String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title               String              @db.VarChar(255)
+  department          String              @db.VarChar(100)
+  location            String              @db.VarChar(100)
+  employmentType      String              @map("employment_type") @db.VarChar(50) // full_time|part_time|contract|internship
+  seniority           String              @db.VarChar(50) // entry|mid|senior|lead|executive
+  requiredSkills      String              @map("required_skills") // JSON string[]
+  preferredSkills     String              @map("preferred_skills") // JSON string[]
   minExperience       Int?                @map("min_experience")
   maxExperience       Int?                @map("max_experience")
   minSalary           Int?                @map("min_salary")
   maxSalary           Int?                @map("max_salary")
-  salaryCurrency      String?             @default("USD") @map("salary_currency") @db.NVarChar(10)
-  description         String              @db.NVarChar(Max)
-  responsibilities    String              @db.NVarChar(Max)
-  qualifications      String              @db.NVarChar(Max)
-  status              String              @default("draft") @db.NVarChar(50) // draft|open|closed|archived
-  createdById         String?             @map("created_by_id") @db.UniqueIdentifier
+  salaryCurrency      String?             @default("USD") @map("salary_currency") @db.VarChar(10)
+  description         String
+  responsibilities    String
+  qualifications      String
+  status              String              @default("draft") @db.VarChar(50) // draft|open|closed|archived
+  createdById         String?             @map("created_by_id") @db.Uuid
   createdBy           User?               @relation(fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  createdAt           DateTime            @default(now()) @map("created_at") @db.DateTime2
-  updatedAt           DateTime            @default(now()) @updatedAt @map("updated_at") @db.DateTime2
+  createdAt           DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   applications        Application[]
   aiScreeningResults  AiScreeningResult[]
   interviews          Interview[]
@@ -57,27 +62,27 @@ model Job {
   @@index([status])
   @@index([department])
   @@map("jobs")
-  @@schema("hr")
+  @@schema("commit_hr")
 }
 
 model Candidate {
-  id                  String               @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  fullName            String               @map("full_name") @db.NVarChar(255)
-  email               String?              @db.NVarChar(320)
-  phone               String?              @db.NVarChar(50)
-  location            String?              @db.NVarChar(200)
-  skills              String                 @db.NVarChar(Max) // string[]
-  experienceSummary   String?              @map("experience_summary") @db.NVarChar(Max)
-  educationSummary    String?              @map("education_summary") @db.NVarChar(Max)
-  pastRoles           String?              @map("past_roles") @db.NVarChar(Max)
-  status              String               @default("new") @db.NVarChar(50) // new|reviewing|shortlisted|interview_scheduled|rejected|hired
-  recruiterNotes      String?              @map("recruiter_notes") @db.NVarChar(Max)
-  currentJobId        String?              @map("current_job_id") @db.UniqueIdentifier
-  linkedinUrl         String?              @map("linkedin_url") @db.NVarChar(500)
-  linkedinData        String?              @map("linkedin_data") @db.NVarChar(Max) // JSON: scraped LinkedIn profile
-  linkedinStatus      String?              @map("linkedin_status") @db.NVarChar(50) // pending|verified|not_found|failed|skipped
-  createdAt           DateTime             @default(now()) @map("created_at") @db.DateTime2
-  updatedAt           DateTime             @default(now()) @updatedAt @map("updated_at") @db.DateTime2
+  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fullName            String               @map("full_name") @db.VarChar(255)
+  email               String?              @db.VarChar(320)
+  phone               String?              @db.VarChar(50)
+  location            String?              @db.VarChar(200)
+  skills              String               // JSON string[]
+  experienceSummary   String?              @map("experience_summary")
+  educationSummary    String?              @map("education_summary")
+  pastRoles           String?              @map("past_roles")
+  status              String               @default("new") @db.VarChar(50) // new|reviewing|shortlisted|interview_scheduled|rejected|hired
+  recruiterNotes      String?              @map("recruiter_notes")
+  currentJobId        String?              @map("current_job_id") @db.Uuid
+  linkedinUrl         String?              @map("linkedin_url") @db.VarChar(500)
+  linkedinData        String?              @map("linkedin_data") // JSON: scraped LinkedIn profile
+  linkedinStatus      String?              @map("linkedin_status") @db.VarChar(50) // pending|verified|not_found|failed|skipped
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   resumes             Resume[]
   applications        Application[]
   aiScreeningResults  AiScreeningResult[]
@@ -89,66 +94,65 @@ model Candidate {
   @@index([currentJobId])
   @@index([createdAt])
   @@map("candidates")
-  @@schema("hr")
+  @@schema("commit_hr")
 }
 
 model Resume {
-  id          String    @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  candidateId String    @map("candidate_id") @db.UniqueIdentifier
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId String    @map("candidate_id") @db.Uuid
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  fileName    String    @map("file_name") @db.NVarChar(500)
-  fileUrl     String    @map("file_url") @db.NVarChar(1000)
-  mimeType    String?   @map("mime_type") @db.NVarChar(100)
-  parsedText  String?   @map("parsed_text") @db.NVarChar(Max)
-  fileSha256  String?   @map("file_sha256") @db.NVarChar(64)
-  uploadedAt  DateTime  @default(now()) @map("uploaded_at") @db.DateTime2
+  fileName    String    @map("file_name") @db.VarChar(500)
+  fileUrl     String    @map("file_url") @db.VarChar(1000)
+  mimeType    String?   @map("mime_type") @db.VarChar(100)
+  parsedText  String?   @map("parsed_text")
+  fileSha256  String?   @map("file_sha256") @db.VarChar(64)
+  uploadedAt  DateTime  @default(now()) @map("uploaded_at") @db.Timestamptz(6)
 
   @@index([candidateId])
   @@index([fileSha256])
   @@map("resumes")
-  @@schema("hr")
+  @@schema("commit_hr")
 }
 
 model Application {
-  id          String    @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  candidateId String    @map("candidate_id") @db.UniqueIdentifier
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId String    @map("candidate_id") @db.Uuid
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  jobId       String    @map("job_id") @db.UniqueIdentifier
+  jobId       String    @map("job_id") @db.Uuid
   job         Job       @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  status      String    @default("applied") @db.NVarChar(50) // applied|screening|shortlisted|interview|offered|rejected|hired
-  appliedAt   DateTime  @default(now()) @map("applied_at") @db.DateTime2
-  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.DateTime2
+  status      String    @default("applied") @db.VarChar(50) // applied|screening|shortlisted|interview|offered|rejected|hired
+  appliedAt   DateTime  @default(now()) @map("applied_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@unique([candidateId, jobId])
   @@index([candidateId])
   @@index([jobId])
   @@index([status])
   @@map("applications")
-  @@schema("hr")
+  @@schema("commit_hr")
 }
 
 model AiScreeningResult {
-  id               String    @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  candidateId      String    @map("candidate_id") @db.UniqueIdentifier
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId      String    @map("candidate_id") @db.Uuid
   candidate        Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  jobId            String    @map("job_id") @db.UniqueIdentifier
+  jobId            String    @map("job_id") @db.Uuid
   job              Job       @relation(fields: [jobId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   matchScore       Float     @map("match_score") @db.Real
-  fitLabel         String    @map("fit_label") @db.NVarChar(50) // strong_fit|moderate_fit|weak_fit
-  matchedSkills    String      @map("matched_skills") @db.NVarChar(Max) // string[]
-  missingSkills    String      @map("missing_skills") @db.NVarChar(Max) // string[]
-  strengths        String      @db.NVarChar(Max) // string[]
-  risks            String      @db.NVarChar(Max) // string[]
-  reasoning        String    @db.NVarChar(Max)
-  aiRecommendation String    @map("ai_recommendation") @db.NVarChar(Max)
-  hrDecision       String?   @default("pending") @map("hr_decision") @db.NVarChar(50) // approved|rejected|pending
-  rawResponse      String?   @map("raw_response") @db.NVarChar(Max)
+  fitLabel         String    @map("fit_label") @db.VarChar(50) // strong_fit|moderate_fit|weak_fit
+  matchedSkills    String    @map("matched_skills") // JSON string[]
+  missingSkills    String    @map("missing_skills") // JSON string[]
+  strengths        String    // JSON string[]
+  risks            String    // JSON string[]
+  reasoning        String
+  aiRecommendation String    @map("ai_recommendation")
+  hrDecision       String?   @default("pending") @map("hr_decision") @db.VarChar(50) // approved|rejected|pending
+  rawResponse      String?   @map("raw_response")
   // Determinism: mode + resumeFileSha + cacheKey together identify a (job, resume, depth) triple.
-  // Same values = reuse the stored row instead of re-calling the LLM.
-  mode             String?   @default("standard") @db.NVarChar(20) // standard|deep
-  resumeFileSha    String?   @map("resume_file_sha") @db.NVarChar(64)
-  cacheKey         String?   @map("cache_key") @db.NVarChar(128)
-  createdAt        DateTime  @default(now()) @map("created_at") @db.DateTime2
+  mode             String?   @default("standard") @db.VarChar(20) // standard|deep
+  resumeFileSha    String?   @map("resume_file_sha") @db.VarChar(64)
+  cacheKey         String?   @map("cache_key") @db.VarChar(128)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([candidateId])
   @@index([jobId])
@@ -157,120 +161,105 @@ model AiScreeningResult {
   @@index([jobId, resumeFileSha, mode])
   @@index([createdAt])
   @@map("ai_screening_results")
-  @@schema("hr")
+  @@schema("commit_hr")
 }
 
 model AiCandidateSummary {
-  id                    String    @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  candidateId           String    @map("candidate_id") @db.UniqueIdentifier
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId           String    @map("candidate_id") @db.Uuid
   candidate             Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  overallSummary        String    @map("overall_summary") @db.NVarChar(Max)
-  experienceSnapshot    String    @map("experience_snapshot") @db.NVarChar(Max)
-  strengths             String      @db.NVarChar(Max) // string[]
-  risks                 String      @db.NVarChar(Max) // string[]
-  likelyFitAreas        String      @map("likely_fit_areas") @db.NVarChar(Max) // string[]
-  missingCapabilities   String      @map("missing_capabilities") @db.NVarChar(Max) // string[]
-  recommendationNotes   String    @map("recommendation_notes") @db.NVarChar(Max)
-  createdAt             DateTime  @default(now()) @map("created_at") @db.DateTime2
+  overallSummary        String    @map("overall_summary")
+  experienceSnapshot    String    @map("experience_snapshot")
+  strengths             String    // JSON string[]
+  risks                 String    // JSON string[]
+  likelyFitAreas        String    @map("likely_fit_areas") // JSON string[]
+  missingCapabilities   String    @map("missing_capabilities") // JSON string[]
+  recommendationNotes   String    @map("recommendation_notes")
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([candidateId])
   @@map("ai_candidate_summaries")
-  @@schema("hr")
+  @@schema("commit_hr")
 }
 
 model AiInterviewQuestionSet {
-  id            String   @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  candidateId   String   @map("candidate_id") @db.UniqueIdentifier
-  jobId         String   @map("job_id") @db.UniqueIdentifier
-  mode          String   @default("standard") @db.NVarChar(20) // standard|deep
-  resumeFileSha String?  @map("resume_file_sha") @db.NVarChar(64)
-  technical     String   @db.NVarChar(Max) // JSON string[]
-  behavioral    String   @db.NVarChar(Max) // JSON string[]
-  roleSpecific  String   @map("role_specific") @db.NVarChar(Max) // JSON string[]
-  followUp      String   @map("follow_up") @db.NVarChar(Max) // JSON string[]
-  createdAt     DateTime @default(now()) @map("created_at") @db.DateTime2
-  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.DateTime2
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId   String   @map("candidate_id") @db.Uuid
+  jobId         String   @map("job_id") @db.Uuid
+  mode          String   @default("standard") @db.VarChar(20) // standard|deep
+  resumeFileSha String?  @map("resume_file_sha") @db.VarChar(64)
+  technical     String   // JSON string[]
+  behavioral    String   // JSON string[]
+  roleSpecific  String   @map("role_specific") // JSON string[]
+  followUp      String   @map("follow_up") // JSON string[]
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@unique([candidateId, jobId, mode])
   @@index([candidateId])
   @@index([jobId])
   @@map("ai_interview_question_sets")
-  @@schema("hr")
+  @@schema("commit_hr")
 }
 
 model Interview {
-  id                String    @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  candidateId       String    @map("candidate_id") @db.UniqueIdentifier
+  id                String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  candidateId       String    @map("candidate_id") @db.Uuid
   candidate         Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  jobId             String    @map("job_id") @db.UniqueIdentifier
+  jobId             String    @map("job_id") @db.Uuid
   job               Job       @relation(fields: [jobId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  interviewerName   String    @map("interviewer_name") @db.NVarChar(255)
-  interviewType     String    @map("interview_type") @db.NVarChar(50) // phone_screen|technical|behavioral|final|panel
-  scheduledAt       DateTime  @map("scheduled_at") @db.DateTime2
+  interviewerName   String    @map("interviewer_name") @db.VarChar(255)
+  interviewType     String    @map("interview_type") @db.VarChar(50) // phone_screen|technical|behavioral|final|panel
+  scheduledAt       DateTime  @map("scheduled_at") @db.Timestamptz(6)
   durationMinutes   Int       @default(60) @map("duration_minutes")
-  location          String?   @db.NVarChar(500)
-  meetingLink       String?   @map("meeting_link") @db.NVarChar(1000)
-  status            String    @default("scheduled") @db.NVarChar(50) // scheduled|completed|cancelled|no_show
-  notes             String?   @db.NVarChar(Max)
-  inviteSentAt      DateTime? @map("invite_sent_at") @db.DateTime2
-  createdAt         DateTime  @default(now()) @map("created_at") @db.DateTime2
-  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.DateTime2
+  location          String?   @db.VarChar(500)
+  meetingLink       String?   @map("meeting_link") @db.VarChar(1000)
+  status            String    @default("scheduled") @db.VarChar(50) // scheduled|completed|cancelled|no_show
+  notes             String?
+  inviteSentAt      DateTime? @map("invite_sent_at") @db.Timestamptz(6)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@index([candidateId])
   @@index([jobId])
   @@index([status])
   @@index([scheduledAt])
   @@map("interviews")
-  @@schema("hr")
+  @@schema("commit_hr")
 }
 
 model EmailNotification {
-  id             String    @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  type           String    @db.NVarChar(100)
-  recipientEmail String    @map("recipient_email") @db.NVarChar(320)
-  recipientName  String?   @map("recipient_name") @db.NVarChar(255)
-  subject        String    @db.NVarChar(500)
-  body           String?   @db.NVarChar(Max)
-  status         String    @default("pending") @db.NVarChar(50) // sent|failed|pending
-  error          String?   @db.NVarChar(Max)
-  sentAt         DateTime? @map("sent_at") @db.DateTime2
-  createdAt      DateTime  @default(now()) @map("created_at") @db.DateTime2
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type           String    @db.VarChar(100)
+  recipientEmail String    @map("recipient_email") @db.VarChar(320)
+  recipientName  String?   @map("recipient_name") @db.VarChar(255)
+  subject        String    @db.VarChar(500)
+  body           String?
+  status         String    @default("pending") @db.VarChar(50) // sent|failed|pending
+  error          String?
+  sentAt         DateTime? @map("sent_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([recipientEmail])
   @@index([status])
   @@index([createdAt])
   @@map("email_notifications")
-  @@schema("hr")
-}
-
-/// Session store table owned by connect-mssql-v2 at runtime — the app
-/// provisions it on boot (see api-server/src/lib/session.ts).
-/// Declared here with @@ignore so `prisma db push` never tries to drop or
-/// reshape it. NEVER generate migrations that touch this table; the session
-/// library is the only authority.
-model UserSession {
-  sid     String   @id @db.NVarChar(255)
-  session String   @db.NVarChar(Max)
-  expires DateTime @db.DateTime
-
-  @@map("user_sessions")
-  @@schema("hr")
-  @@ignore
+  @@schema("commit_hr")
 }
 
 model AuditLog {
-  id           String   @id @default(dbgenerated("NEWID()")) @db.UniqueIdentifier
-  userId       String?  @map("user_id") @db.UniqueIdentifier
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String?  @map("user_id") @db.Uuid
   user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull, onUpdate: NoAction)
-  action       String   @db.NVarChar(100)
-  resourceType String   @map("resource_type") @db.NVarChar(100)
-  resourceId   String?  @map("resource_id") @db.NVarChar(100)
-  details      String?  @db.NVarChar(Max)
-  createdAt    DateTime @default(now()) @map("created_at") @db.DateTime2
+  action       String   @db.VarChar(100)
+  resourceType String   @map("resource_type") @db.VarChar(100)
+  resourceId   String?  @map("resource_id") @db.VarChar(100)
+  details      String?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([userId])
   @@index([resourceType, resourceId])
   @@index([createdAt])
   @@map("audit_logs")
-  @@schema("hr")
+  @@schema("commit_hr")
 }

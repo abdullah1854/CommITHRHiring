@@ -16,6 +16,8 @@
   },
   "optionalDependencies": {
     "@rollup/rollup-darwin-arm64": "^4.60.2",
+    "@tailwindcss/oxide-darwin-arm64": "^4.2.1",
+    "esbuild": "^0.27.3",
     "lightningcss-darwin-arm64": "^1.32.0"
   },
   "dependencies": {

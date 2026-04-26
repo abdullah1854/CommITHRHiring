@@ -5,12 +5,11 @@ import { Lock, Mail, ShieldAlert, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 export default function Login() {
-  const { login, loginAsDemo, isBackendDown } = useAuth();
+  const { login, isBackendDown } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const [demoLoading, setDemoLoading] = useState<null | "admin" | "recruiter">(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,18 +21,6 @@ export default function Login() {
       setError(err.message || "Invalid credentials. Please try again.");
     } finally {
       setIsLoggingIn(false);
-    }
-  };
-
-  const handleDemo = async (role: "admin" | "recruiter") => {
-    setError("");
-    setDemoLoading(role);
-    try {
-      await loginAsDemo(role);
-    } catch (err: any) {
-      setError(err?.message || "Demo login failed. Try again.");
-    } finally {
-      setDemoLoading(null);
     }
   };
 
@@ -56,16 +43,16 @@ export default function Login() {
             </div>
           </div>
           <h1 className="text-3xl font-display font-bold text-slate-900">Welcome Back</h1>
-          <p className="text-slate-500 mt-2">Sign in to your GIQ dashboard</p>
+          <p className="text-slate-500 mt-2">Sign in to your COMM-iT hiring dashboard</p>
         </div>
 
         <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
-          
+
           {isBackendDown && (
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3">
               <ShieldAlert className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
               <div className="text-sm text-yellow-800">
-                <strong>Backend disconnected.</strong> Running in demo mode. Use the buttons below to proceed.
+                <strong>Backend disconnected.</strong> Some features may be unavailable until the API server is reachable.
               </div>
             </div>
           )}
@@ -87,11 +74,11 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-900"
-                  placeholder="name@company.com"
+                  placeholder="name@comm-itgroup.com"
                 />
               </div>
             </div>
-            
+
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="block text-sm font-semibold text-slate-700">Password</label>
@@ -112,36 +99,14 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={isLoggingIn || demoLoading !== null}
+              disabled={isLoggingIn}
               className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold shadow-md transition-all disabled:opacity-60 flex items-center justify-center"
             >
-              {isLoggingIn || demoLoading !== null
+              {isLoggingIn
                 ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Signing In...</>
                 : "Sign In"}
             </button>
           </form>
-
-          <div className="mt-8 pt-6 border-t border-slate-100">
-            <p className="text-sm text-center font-medium text-slate-500 mb-4">Demo Access (Sandbox Mode)</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => handleDemo("admin")}
-                disabled={demoLoading !== null || isLoggingIn}
-                className="py-2.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-xl font-semibold text-sm transition-all disabled:opacity-60 flex items-center justify-center"
-              >
-                {demoLoading === "admin" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Demo Admin"}
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDemo("recruiter")}
-                disabled={demoLoading !== null || isLoggingIn}
-                className="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-xl font-semibold text-sm transition-all disabled:opacity-60 flex items-center justify-center"
-              >
-                {demoLoading === "recruiter" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Demo Recruiter"}
-              </button>
-            </div>
-          </div>
         </div>
 
         <div className="text-center mt-8">
