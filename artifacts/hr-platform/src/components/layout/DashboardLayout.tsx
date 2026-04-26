@@ -15,11 +15,9 @@ import {
   X,
   ShieldCheck,
   SlidersHorizontal,
-  Moon,
-  Sun,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useThemePreference } from "@/hooks/use-theme-preference";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -30,7 +28,6 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { theme, toggleTheme } = useThemePreference();
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: <LayoutDashboard className="w-5 h-5" /> },
@@ -129,14 +126,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={toggleTheme}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-xl transition-colors mb-2"
-          >
-            {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            {theme === "dark" ? "Light Mode" : "Dark Mode"}
-          </button>
+          <ThemeToggle variant="sidebar" className="mb-2" />
           <Link
             href="/settings"
             className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-xl transition-colors mb-2"
