@@ -2,11 +2,10 @@ import { ReactNode } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
-import { useThemePreference } from "@/hooks/use-theme-preference";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function PublicLayout({ children, transparent = false }: { children: ReactNode; transparent?: boolean }) {
   const { user } = useAuth();
-  const { theme, toggleTheme } = useThemePreference();
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -32,16 +31,7 @@ export function PublicLayout({ children, transparent = false }: { children: Reac
           </nav>
 
           <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className={cn(
-                "px-3 py-2 rounded-full text-xs font-bold transition-all",
-                transparent ? "bg-white/10 text-white hover:bg-white/20" : "bg-slate-100 text-slate-700 hover:bg-slate-200",
-              )}
-            >
-              {theme === "dark" ? "Light" : "Dark"}
-            </button>
+            <ThemeToggle variant={transparent ? "transparent" : "default"} />
             {user ? (
               <Link href="/dashboard" className="px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-semibold shadow-md hover:bg-slate-800 hover:-translate-y-0.5 transition-all">
                 Recruiter Dashboard
