@@ -163,14 +163,14 @@ export default function AITools() {
 
   return (
     <DashboardLayout title="AI Assistant Tools">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden md:min-h-[calc(100vh-12rem)] flex flex-col">
+      <div className="bg-card border border-slate-200 rounded-2xl shadow-sm overflow-hidden md:min-h-[calc(100vh-12rem)] flex flex-col">
         {/* Tabs */}
         <div className="flex border-b border-slate-200 bg-slate-50/50">
           <button
             type="button"
             className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
               activeTab === "generate"
-                ? "bg-white text-primary border-b-2 border-primary shadow-[0_4px_0_-2px_white]"
+                ? "bg-card text-primary border-b-2 border-primary shadow-[0_4px_0_-2px_white]"
                 : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
             }`}
             onClick={() => setActiveTab("generate")}
@@ -181,7 +181,7 @@ export default function AITools() {
             type="button"
             className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
               activeTab === "improve"
-                ? "bg-white text-primary border-b-2 border-primary shadow-[0_4px_0_-2px_white]"
+                ? "bg-card text-primary border-b-2 border-primary shadow-[0_4px_0_-2px_white]"
                 : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
             }`}
             onClick={() => setActiveTab("improve")}
@@ -280,7 +280,7 @@ export default function AITools() {
 
               {/* Output */}
               <div className="bg-slate-50 rounded-2xl border border-slate-200 flex flex-col overflow-hidden h-full md:min-h-[400px]">
-                <div className="p-4 border-b border-slate-200 bg-white flex justify-between items-center">
+                <div className="p-4 border-b border-slate-200 bg-card flex justify-between items-center">
                   <h4 className="font-semibold text-slate-800 flex items-center gap-2">
                     <FileText className="w-4 h-4" /> AI Draft
                   </h4>
@@ -396,7 +396,7 @@ export default function AITools() {
 
               {/* Output */}
               <div className="bg-indigo-50/50 rounded-2xl border border-indigo-100 flex flex-col overflow-hidden h-full md:min-h-[400px]">
-                <div className="p-4 border-b border-indigo-100 bg-white flex justify-between items-center">
+                <div className="p-4 border-b border-indigo-100 bg-card flex justify-between items-center">
                   <h4 className="font-semibold text-indigo-900 flex items-center gap-2">
                     <Wand2 className="w-4 h-4" /> Enhanced Version
                   </h4>

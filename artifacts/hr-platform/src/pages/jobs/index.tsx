@@ -68,13 +68,13 @@ export default function Jobs() {
               placeholder="Search by title, dept, location..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white shadow-sm"
+              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-card shadow-sm"
             />
           </div>
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-primary shadow-sm"
+            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-card focus:outline-none focus:border-primary shadow-sm"
           >
             <option value="">All Statuses</option>
             <option value="open">Open</option>
@@ -90,7 +90,7 @@ export default function Jobs() {
         </Link>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="p-12 flex justify-center">
             <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />

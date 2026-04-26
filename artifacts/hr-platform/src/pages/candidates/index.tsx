@@ -155,13 +155,13 @@ export default function Candidates() {
               placeholder="Search by name or email..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
+              className="w-full pl-9 pr-4 py-2 bg-card border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-sm"
             />
           </div>
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-primary shadow-sm"
+            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-card focus:outline-none focus:border-primary shadow-sm"
           >
             <option value="">All Statuses</option>
             <option value="new">New</option>
@@ -174,7 +174,7 @@ export default function Candidates() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+          <div className="inline-flex rounded-lg border border-slate-200 bg-card p-1 shadow-sm">
             <button
               type="button"
               onClick={() => setViewMode("list")}
@@ -194,7 +194,7 @@ export default function Candidates() {
             type="button"
             onClick={() => exportCsv(selectedCandidates.length ? selectedCandidates : filtered)}
             disabled={filtered.length === 0}
-            className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors disabled:opacity-50"
+            className="bg-card border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors disabled:opacity-50"
           >
             Export CSV
           </button>
@@ -218,17 +218,17 @@ export default function Candidates() {
                 if (e.target.value) void handleBulkStatus(e.target.value);
                 e.target.value = "";
               }}
-              className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white focus:outline-none focus:border-primary shadow-sm"
+              className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-card focus:outline-none focus:border-primary shadow-sm"
             >
               <option value="">Change status…</option>
               {CANDIDATE_STATUSES.map((status) => (
                 <option key={status.value} value={status.value}>{status.label}</option>
               ))}
             </select>
-            <button type="button" onClick={() => exportCsv(selectedCandidates)} className="px-3 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm font-semibold">
+            <button type="button" onClick={() => exportCsv(selectedCandidates)} className="px-3 py-2 bg-card border border-blue-200 text-blue-700 rounded-lg text-sm font-semibold">
               Export selected
             </button>
-            <button type="button" onClick={handleBulkDelete} disabled={isDeleting} className="px-3 py-2 bg-white border border-red-200 text-red-700 rounded-lg text-sm font-semibold disabled:opacity-50">
+            <button type="button" onClick={handleBulkDelete} disabled={isDeleting} className="px-3 py-2 bg-card border border-red-200 text-red-700 rounded-lg text-sm font-semibold disabled:opacity-50">
               Delete selected
             </button>
             <button type="button" onClick={() => setSelectedIds(new Set())} className="px-3 py-2 text-blue-700 rounded-lg text-sm font-semibold">
@@ -238,7 +238,7 @@ export default function Candidates() {
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="p-12 flex justify-center"><div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div></div>
         ) : isError ? (
@@ -291,13 +291,13 @@ export default function Candidates() {
                 >
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-bold text-slate-800">{column.label}</h3>
-                    <span className="text-xs font-bold bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-bold bg-card border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
                       {column.candidates.length}
                     </span>
                   </div>
                   <div className="space-y-3">
                     {column.candidates.length === 0 ? (
-                      <div className="border border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-slate-400 bg-white/60">
+                      <div className="border border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-slate-400 bg-card/60">
                         Drop candidates here
                       </div>
                     ) : (
@@ -311,7 +311,7 @@ export default function Candidates() {
                             e.dataTransfer.effectAllowed = "move";
                           }}
                           onDragEnd={() => setDraggingCandidateId(null)}
-                          className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+                          className="bg-card border border-slate-200 rounded-xl p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
                         >
                           <div className="flex items-start gap-3">
                             <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">

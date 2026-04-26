@@ -209,7 +209,7 @@ export default function CreateJob() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         <div className="xl:col-span-2">
-          <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-8 space-y-8">
+          <form onSubmit={handleSubmit(onSubmit)} className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-8 space-y-8">
             
             <div className="flex flex-wrap justify-between items-center gap-3 pb-6 border-b border-slate-100">
               <h2 className="text-xl font-bold text-slate-900">Basic Information</h2>
@@ -221,7 +221,7 @@ export default function CreateJob() {
                       if (e.target.value) applyTemplate(e.target.value);
                       e.target.value = "";
                     }}
-                    className="bg-white border border-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold"
+                    className="bg-card border border-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold"
                   >
                     <option value="">Start from template…</option>
                     {templatesData?.templates.map((template) => (

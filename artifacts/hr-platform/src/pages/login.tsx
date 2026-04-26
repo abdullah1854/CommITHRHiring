@@ -46,7 +46,7 @@ export default function Login() {
           <p className="text-slate-500 mt-2">Sign in to your COMM-iT hiring dashboard</p>
         </div>
 
-        <div className="bg-white p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
+        <div className="bg-card p-8 rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-100">
 
           {isBackendDown && (
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3">

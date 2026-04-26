@@ -43,7 +43,7 @@ export default function SettingsPage() {
   return (
     <DashboardLayout title="User Settings">
       <div className="max-w-3xl space-y-6">
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+        <div className="bg-card border border-slate-200 rounded-2xl shadow-sm p-6">
           <div className="flex items-start gap-4 mb-6">
             <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
               <Bell className="w-6 h-6" />
@@ -137,7 +137,7 @@ function PreferenceRow({
         }`}
       >
         <span
-          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform mt-0.5 ${
+          className={`inline-block h-5 w-5 transform rounded-full bg-card shadow transition-transform mt-0.5 ${
             checked ? "translate-x-5" : "translate-x-0.5"
           }`}
         />

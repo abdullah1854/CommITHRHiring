@@ -34,7 +34,7 @@ export default function Careers() {
               placeholder="Search by job title, department, or keyword..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-12 pr-6 py-4 rounded-2xl bg-white/10 border border-white/20 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary backdrop-blur-sm"
+              className="w-full pl-12 pr-6 py-4 rounded-2xl bg-background/10 border border-white/20 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary backdrop-blur-sm"
             />
           </div>
         </div>
@@ -46,7 +46,7 @@ export default function Careers() {
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           </div>
         ) : filteredJobs.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-3xl border border-slate-200">
+          <div className="text-center py-20 bg-card rounded-3xl border border-slate-200">
             <Briefcase className="w-16 h-16 text-slate-300 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-slate-900">No open positions found</h3>
             <p className="text-slate-500 mt-2">Check back later or try adjusting your search.</p>
@@ -55,7 +55,7 @@ export default function Careers() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredJobs.map((job) => (
               <Link key={job.id} href={`/jobs/${job.id}`}>
-                <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-300 h-full flex flex-col cursor-pointer group">
+                <div className="bg-card p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-300 h-full flex flex-col cursor-pointer group">
                   <div className="flex justify-between items-start mb-4">
                     <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold uppercase tracking-wider">
                       {job.department}

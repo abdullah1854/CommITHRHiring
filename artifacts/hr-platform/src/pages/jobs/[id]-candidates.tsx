@@ -48,7 +48,7 @@ export default function JobCandidates() {
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {isLoadingCandidates ? (
           <div className="p-12 text-center text-slate-500">Loading candidates...</div>
         ) : mergedList.length === 0 ? (
@@ -122,7 +122,7 @@ export default function JobCandidates() {
                     </td>
                     <td className="p-4"><CandidateStatusBadge status={candidate.status} /></td>
                     <td className="p-4 text-right">
-                      <Link href={`/candidates/${candidate.id}`} className="inline-block bg-white border border-slate-200 hover:border-primary text-slate-700 hover:text-primary px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm">
+                      <Link href={`/candidates/${candidate.id}`} className="inline-block bg-card border border-slate-200 hover:border-primary text-slate-700 hover:text-primary px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm">
                         View Profile
                       </Link>
                     </td>

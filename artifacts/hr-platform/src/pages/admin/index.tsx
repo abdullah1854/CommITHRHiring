@@ -72,7 +72,7 @@ export default function Admin() {
 
   return (
     <DashboardLayout title="Administration">
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-8">
+      <div className="bg-card border border-slate-200 rounded-2xl shadow-sm overflow-hidden mb-8">
         <div className="flex border-b border-slate-200">
           <button
             className={`flex-1 py-4 text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${activeTab === "users" ? "text-primary border-b-2 border-primary" : "text-slate-500 hover:bg-slate-50"}`}
@@ -201,7 +201,7 @@ export default function Admin() {
 
       {isAddUserOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+          <div className="bg-card rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <h3 className="text-xl font-bold text-slate-900 mb-1">Add New User</h3>
             <p className="text-sm text-slate-500 mb-6">Send them an invite to join your GIQ workspace.</p>
             <form onSubmit={handleCreateUser} className="space-y-4">
@@ -264,7 +264,7 @@ export default function Admin() {
 
       {editingUserId && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setEditingUserId(null)}>
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card rounded-2xl w-full max-w-sm p-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-bold text-slate-900 mb-1">Change Role</h3>
             <p className="text-sm text-slate-500 mb-6">Update this user's permission level.</p>
             <div className="space-y-2">

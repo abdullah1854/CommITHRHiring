@@ -276,7 +276,7 @@ export default function EditJob() {
         <div className="flex items-center gap-2 flex-wrap">
           <Link
             href={`/jobs/${jobId}/candidates`}
-            className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors"
+            className="inline-flex items-center gap-2 bg-card border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors"
           >
             <Users className="w-4 h-4" /> View Candidates ({job.candidateCount ?? 0})
           </Link>
@@ -284,7 +284,7 @@ export default function EditJob() {
             href={`/jobs/${jobId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors"
+            className="inline-flex items-center gap-2 bg-card border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors"
           >
             <ExternalLink className="w-4 h-4" /> Public Page
           </a>
@@ -292,7 +292,7 @@ export default function EditJob() {
             type="button"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="inline-flex items-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 bg-card border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
           >
             {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
             Delete
@@ -302,7 +302,7 @@ export default function EditJob() {
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-8"
+        className="bg-card rounded-2xl border border-slate-200 shadow-sm p-8 space-y-8"
       >
         <div className="flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-slate-100">
           <h2 className="text-xl font-bold text-slate-900">Job Details</h2>
@@ -472,7 +472,7 @@ export default function EditJob() {
             type="button"
             onClick={handleSaveTemplate}
             disabled={isSavingTemplate}
-            className="mr-3 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 text-slate-700 px-5 py-3 rounded-xl font-bold transition-all flex items-center"
+            className="mr-3 bg-card border border-slate-200 hover:bg-slate-50 disabled:opacity-50 text-slate-700 px-5 py-3 rounded-xl font-bold transition-all flex items-center"
           >
             {isSavingTemplate ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
             Save as Template

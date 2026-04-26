@@ -24,7 +24,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 text-white text-sm font-medium backdrop-blur-md border border-white/20 mb-8 shadow-2xl">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-background/10 text-white text-sm font-medium backdrop-blur-md border border-white/20 mb-8 shadow-2xl">
               <Sparkles className="w-4 h-4 text-blue-300" />
               Introducing GIQ AI Recruitment
             </span>
@@ -40,7 +40,7 @@ export default function Home() {
                 View Open Positions
                 <ArrowRight className="w-5 h-5" />
               </Link>
-              <Link href="/login" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white/10 text-white border border-white/20 font-semibold text-lg backdrop-blur-md hover:bg-white/20 transition-all">
+              <Link href="/login" className="w-full sm:w-auto px-8 py-4 rounded-xl bg-background/10 text-white border border-white/20 font-semibold text-lg backdrop-blur-md hover:bg-background/20 transition-all">
                 Recruiter Login
               </Link>
             </div>
@@ -80,7 +80,7 @@ export default function Home() {
       </div>
       
       {/* Stats Section */}
-      <div className="py-24 bg-white border-t border-slate-100">
+      <div className="py-24 bg-card border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-6">
           <div className="bg-slate-900 rounded-3xl p-12 relative overflow-hidden shadow-2xl">
             <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-primary rounded-full blur-[100px] opacity-30"></div>
@@ -114,7 +114,7 @@ function FeatureCard({ icon, title, description, color }: { icon: React.ReactNod
   };
 
   return (
-    <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-lg shadow-slate-200/50 hover:-translate-y-2 transition-all duration-300">
+    <div className="bg-card p-8 rounded-3xl border border-slate-200 shadow-lg shadow-slate-200/50 hover:-translate-y-2 transition-all duration-300">
       <div className={`w-16 h-16 rounded-2xl ${bgColors[color]} flex items-center justify-center mb-6`}>
         {icon}
       </div>

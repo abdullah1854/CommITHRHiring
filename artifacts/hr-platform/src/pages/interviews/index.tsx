@@ -113,13 +113,13 @@ export default function Interviews() {
               placeholder="Search candidate, job, interviewer..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-white shadow-sm"
+              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary bg-card shadow-sm"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:border-primary shadow-sm"
+            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-card focus:outline-none focus:border-primary shadow-sm"
           >
             {STATUS_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>
@@ -138,7 +138,7 @@ export default function Interviews() {
         </Link>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-card rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="p-12 flex justify-center">
             <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
@@ -300,7 +300,7 @@ export default function Interviews() {
                           </div>
                         </td>
                       </tr>
-                      <tr className="bg-white">
+                      <tr className="bg-card">
                         <td colSpan={6} className="px-4 pb-4">
                           <ScorecardPanel interview={interview} />
                         </td>
@@ -373,7 +373,7 @@ function ScorecardPanel({ interview }: { interview: any }) {
               <select
                 value={ratings[key]}
                 onChange={(e) => setRating(key, Number(e.target.value))}
-                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-card px-2 py-2 text-sm"
               >
                 <option value={0}>Not rated</option>
                 {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}/5</option>)}
@@ -383,7 +383,7 @@ function ScorecardPanel({ interview }: { interview: any }) {
         </div>
         <label className="text-xs font-semibold text-slate-600 lg:w-48">
           Recommendation
-          <select value={recommendation} onChange={(e) => setRecommendation(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm">
+          <select value={recommendation} onChange={(e) => setRecommendation(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-card px-2 py-2 text-sm">
             <option value="strong_yes">Strong Yes</option>
             <option value="yes">Yes</option>
             <option value="hold">Hold</option>
@@ -396,7 +396,7 @@ function ScorecardPanel({ interview }: { interview: any }) {
         onChange={(e) => setNotes(e.target.value)}
         rows={2}
         placeholder="Scorecard notes, evidence, concerns, next steps..."
-        className="mt-3 w-full rounded-lg border border-slate-200 bg-white p-3 text-sm"
+        className="mt-3 w-full rounded-lg border border-slate-200 bg-card p-3 text-sm"
       />
       <div className="mt-3 flex justify-end">
         <button type="button" onClick={save} disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-50">

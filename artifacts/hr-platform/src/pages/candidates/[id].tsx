@@ -337,7 +337,7 @@ export default function CandidateProfile() {
             type="button"
             onClick={handleDeleteCandidate}
             disabled={isDeleting}
-            className="bg-white border border-slate-200 text-slate-600 hover:bg-red-50 hover:border-red-200 hover:text-red-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
+            className="bg-card border border-slate-200 text-slate-600 hover:bg-red-50 hover:border-red-200 hover:text-red-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
             Delete candidate
@@ -347,7 +347,7 @@ export default function CandidateProfile() {
               <button
                 onClick={handleReject}
                 disabled={isRejecting}
-                className="bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+                className="bg-card border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
               >
                 {isRejecting ? "Processing..." : "Reject"}
               </button>
@@ -375,18 +375,18 @@ export default function CandidateProfile() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 min-w-0">
         {/* Left Column */}
         <div className="xl:col-span-1 space-y-6 min-w-0">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="h-24 bg-gradient-to-r from-blue-600 to-indigo-600" />
+          <div className="bg-card rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="h-24 border-b border-border bg-muted" />
             <div className="px-6 pb-6">
               <div className="flex items-end -mt-10 mb-5">
-                <div className="w-20 h-20 rounded-2xl bg-white p-1 shadow-lg shrink-0">
-                  <div className="w-full h-full rounded-xl bg-slate-100 flex items-center justify-center text-2xl font-bold text-primary">
+                <div className="w-20 h-20 rounded-2xl bg-card p-1 shadow-lg shrink-0">
+                  <div className="w-full h-full rounded-xl bg-muted flex items-center justify-center text-2xl font-bold text-primary">
                     {getInitials(candidate.fullName)}
                   </div>
                 </div>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">{candidate.fullName}</h1>
+                <h1 className="text-2xl font-bold text-foreground">{candidate.fullName}</h1>
                 <CandidateStatusBadge status={candidate.status} className="mt-2" />
 
                 <div className="mt-6 space-y-3">
@@ -465,7 +465,7 @@ export default function CandidateProfile() {
             </div>
           )}
 
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+          <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
             <h3 className="font-bold text-slate-900 mb-4">Skills</h3>
             {candidate.skills.length > 0 ? (
               <div className="flex flex-wrap gap-2">
@@ -483,7 +483,7 @@ export default function CandidateProfile() {
 
         {/* Right Column */}
         <div className="xl:col-span-2 space-y-6 min-w-0">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-card rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="flex border-b border-slate-200 px-2 overflow-x-auto">
               <TabButton active={activeTab === "overview"} onClick={() => setActiveTab("overview")}>Overview</TabButton>
               <TabButton active={activeTab === "ai"} onClick={() => setActiveTab("ai")}>
@@ -622,7 +622,7 @@ export default function CandidateProfile() {
                       onClick={handleScreen}
                       disabled={isScreening || !currentJobId}
                       title={!currentJobId ? "No job associated with this candidate" : "Run AI screening against the job description"}
-                      className="bg-white border border-purple-200 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-card border border-purple-200 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isScreening ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Bot className="w-4 h-4 mr-2" />}
                       {latestScreening ? "Re-run Screening" : "Run Deep Screening"}
@@ -630,7 +630,7 @@ export default function CandidateProfile() {
                     <button
                       onClick={handleSummary}
                       disabled={isSummarizing}
-                      className="bg-white border border-purple-200 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm transition-all disabled:opacity-50"
+                      className="bg-card border border-purple-200 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm transition-all disabled:opacity-50"
                     >
                       {isSummarizing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <BrainCircuit className="w-4 h-4 mr-2" />}
                       {candidate.aiSummary ? "Regenerate Summary" : "Generate Summary"}
@@ -829,7 +829,7 @@ export default function CandidateProfile() {
                         value={questionFocus}
                         onChange={(e) => setQuestionFocus(e.target.value)}
                         placeholder={questionFocusPlaceholder}
-                        className="w-full p-3 text-sm border border-indigo-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder:text-slate-400"
+                        className="w-full p-3 text-sm border border-indigo-200 rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder:text-slate-400"
                       />
                       {questionFocus.length > 400 && (
                         <p className="text-xs text-slate-500 mt-1">{questionFocus.length}/500 characters</p>
@@ -913,7 +913,7 @@ export default function CandidateProfile() {
                               {expandedSections[key] ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
                             </button>
                             {expandedSections[key] && (
-                              <ul className="p-4 space-y-3 bg-white">
+                              <ul className="p-4 space-y-3 bg-card">
                                 {questions.map((q, i) => (
                                   <li key={i} className="flex gap-3 text-sm text-slate-700">
                                     <span className="font-bold text-slate-400 shrink-0">{i + 1}.</span>
@@ -1035,7 +1035,7 @@ export default function CandidateProfile() {
                               </span>
                             </button>
                             {expanded && (
-                              <div className="border-t border-slate-200 bg-white p-4">
+                              <div className="border-t border-slate-200 bg-card p-4">
                                 <div className="prose prose-sm max-w-none text-slate-700" dangerouslySetInnerHTML={{ __html: item.body || "<p>No body recorded.</p>" }} />
                               </div>
                             )}
@@ -1052,7 +1052,7 @@ export default function CandidateProfile() {
       </div>
       {isResumePreviewOpen && candidate.resume && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 p-4 flex items-center justify-center" onClick={() => setIsResumePreviewOpen(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-card rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] overflow-hidden flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="p-4 border-b border-slate-200 flex items-center justify-between">
               <h3 className="font-bold text-slate-900">Resume Preview</h3>
               <button type="button" onClick={() => setIsResumePreviewOpen(false)} className="text-sm font-semibold text-slate-500 hover:text-slate-900">Close</button>
@@ -1159,7 +1159,7 @@ function LinkedInInsightsPanel({
             </a>
           )}
         </div>
-        <div className="p-4 space-y-3 bg-white">
+        <div className="p-4 space-y-3 bg-card">
           {profile.headline && <p className="text-sm text-slate-600 italic">"{profile.headline}"</p>}
           {discrepancies.length > 0 && (
             <div className="space-y-1.5">
@@ -1217,7 +1217,7 @@ function LinkedInInsightsPanel({
           value={urlInput}
           onChange={(e) => setUrlInput(e.target.value)}
           placeholder="https://www.linkedin.com/in/username"
-          className="flex-1 text-sm px-3 py-2 border border-amber-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="flex-1 text-sm px-3 py-2 border border-amber-300 bg-card rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
         />
         <button
           onClick={triggerScrape}

@@ -147,7 +147,7 @@
 }
 
 .glass-panel {
-  @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-xl shadow-slate-200/50;
+  @apply bg-card/80 backdrop-blur-xl border border-white/20 shadow-xl shadow-slate-200/50;
 }
 
 /* Custom Scrollbar */

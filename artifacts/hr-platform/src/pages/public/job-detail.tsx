@@ -52,7 +52,7 @@ export default function JobDetail() {
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
             <div>
               <div className="flex flex-wrap gap-2 mb-4">
-                <span className="px-3 py-1 bg-white/10 text-white rounded-full text-xs font-semibold backdrop-blur-md">
+                <span className="px-3 py-1 bg-background/10 text-white rounded-full text-xs font-semibold backdrop-blur-md">
                   {job.department}
                 </span>
                 {job.status !== "open" && (
@@ -126,7 +126,7 @@ export default function JobDetail() {
         </div>
 
         <div className="space-y-8">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+          <div className="bg-card p-6 rounded-2xl border border-slate-200 shadow-sm">
             <h3 className="font-bold text-slate-900 mb-4 flex items-center">
               <Briefcase className="w-5 h-5 mr-2 text-primary" />
               Required Skills

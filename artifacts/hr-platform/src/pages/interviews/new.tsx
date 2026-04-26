@@ -114,7 +114,7 @@ export default function NewInterview() {
 
   return (
     <DashboardLayout title="Schedule Interview">
-      <div className="max-w-3xl bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+      <div className="max-w-3xl bg-card rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
@@ -124,7 +124,7 @@ export default function NewInterview() {
               <select
                 required
                 disabled={candidatesLoading}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-card"
                 value={formData.candidateId}
                 onChange={(e) => setFormData({ ...formData, candidateId: e.target.value })}
               >
@@ -145,7 +145,7 @@ export default function NewInterview() {
               <select
                 required
                 disabled={jobsLoading}
-                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-white"
+                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none bg-card"
                 value={formData.jobId}
                 onChange={(e) => setFormData({ ...formData, jobId: e.target.value })}
               >
@@ -173,7 +173,7 @@ export default function NewInterview() {
                       className={`p-4 rounded-xl border text-left transition-all ${
                         active
                           ? "border-primary bg-primary/5 ring-2 ring-primary/20"
-                          : "border-slate-200 hover:border-slate-300 bg-white"
+                          : "border-slate-200 hover:border-slate-300 bg-card"
                       }`}
                     >
                       <div className="flex items-center gap-2 font-semibold text-slate-800">

@@ -75,7 +75,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="lg:col-span-2 bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="font-bold text-lg text-slate-900">Activity Trends (30 Days)</h3>
             <Link href="/analytics" className="text-sm font-medium text-primary hover:underline flex items-center">
@@ -112,7 +112,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
+        <div className="bg-card rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col">
           <h3 className="font-bold text-lg text-slate-900 mb-6">Quick Actions</h3>
           <div className="space-y-3 flex-1">
             <QuickActionLink href="/jobs/new" icon={<Briefcase />} title="Create Job Posting" desc="Draft a new requisition" color="blue" />
@@ -124,7 +124,7 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Candidates */}
-      <div className="mt-8 bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div className="mt-8 bg-card rounded-2xl border border-slate-200 shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="font-bold text-lg text-slate-900">Recent Candidates</h3>
@@ -190,7 +190,7 @@ export default function Dashboard() {
 
 function StatCard({ title, value, icon, trend, bg }: { title: string; value: number; icon: React.ReactNode; trend: string; bg: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-card rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-xl ${bg}`}>{icon}</div>
         <div className="flex items-center text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">

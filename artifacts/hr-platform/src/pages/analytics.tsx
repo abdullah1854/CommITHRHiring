@@ -137,14 +137,14 @@ export default function Analytics() {
           <button
             type="button"
             onClick={exportAnalytics}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-card text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             <Download className="w-4 h-4" /> Export CSV
           </button>
           <button
             type="button"
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-card text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             <FileText className="w-4 h-4" /> Print / Save PDF
           </button>
@@ -153,7 +153,7 @@ export default function Analytics() {
       {/* KPI Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {kpiCards.map(kpi => (
-          <div key={kpi.label} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div key={kpi.label} className="bg-card rounded-2xl border border-slate-200 shadow-sm p-5">
             <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center mb-3`}>
               {kpi.icon}
             </div>
@@ -166,7 +166,7 @@ export default function Analytics() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Pipeline Funnel */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="bg-card p-6 rounded-2xl border border-slate-200 shadow-sm">
           <h3 className="font-bold text-lg text-slate-900 mb-1">Recruitment Funnel</h3>
           <p className="text-sm text-slate-400 mb-6">Candidate distribution by pipeline stage</p>
           <div className="h-72">
@@ -187,7 +187,7 @@ export default function Analytics() {
         </div>
 
         {/* Activity Trends */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="bg-card p-6 rounded-2xl border border-slate-200 shadow-sm">
           <h3 className="font-bold text-lg text-slate-900 mb-1">Activity Trends</h3>
           <p className="text-sm text-slate-400 mb-6">Daily activity over the past 14 days</p>
           <div className="h-72">
@@ -211,7 +211,7 @@ export default function Analytics() {
         </div>
 
         {/* Job Performance */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+        <div className="bg-card p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
           <h3 className="font-bold text-lg text-slate-900 mb-1">Job Performance</h3>
           <p className="text-sm text-slate-400 mb-4">Candidate volume and average AI match score by job. Candidate counts use the left axis; AI scores use the right axis (/100).</p>
           {isMinimalJobData && (
@@ -252,7 +252,7 @@ export default function Analytics() {
       </div>
 
       {/* Per-job breakdown table */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="bg-card p-6 rounded-2xl border border-slate-200 shadow-sm">
         <h3 className="font-bold text-lg text-slate-900 mb-1">Per-Job Breakdown</h3>
         <p className="text-sm text-slate-400 mb-6">Detailed metrics for each requisition</p>
         {isJobLoading ? (
