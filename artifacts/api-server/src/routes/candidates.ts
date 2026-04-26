@@ -30,6 +30,43 @@ function hydrateCandidate<T extends { skills?: unknown } | null | undefined>(c: 
   return { ...(c as any), skills: parseList((c as any).skills) } as T;
 }
 
+function parseLinkedInData(raw: unknown): { profile: any | null; discrepancies: string[] } {
+  if (!raw || typeof raw !== "string") return { profile: null, discrepancies: [] };
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      profile: parsed?.profile ?? null,
+      discrepancies: parseList(parsed?.discrepancies),
+    };
+  } catch {
+    return { profile: null, discrepancies: [] };
+  }
+}
+
+async function getCandidateDetailBase(id: string) {
+  try {
+    return await prisma.candidate.findFirst({
+      where: { id },
+      select: {
+        ...candidatePublicSelect,
+        linkedinUrl: true,
+        linkedinStatus: true,
+        linkedinData: true,
+      } as any,
+    });
+  } catch (err: any) {
+    const msg = String(err?.message ?? "");
+    if (err?.code === "P2022" || /linkedin_(url|status|data)|linkedinUrl|linkedinStatus|linkedinData|Invalid column/i.test(msg)) {
+      console.warn("[candidates] LinkedIn columns unavailable; loading candidate without enrichment fields.");
+      return prisma.candidate.findFirst({
+        where: { id },
+        select: candidatePublicSelect,
+      });
+    }
+    throw err;
+  }
+}
+
 router.get("/", requireAuth, async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page as string) || 1);

@@ -61,7 +61,7 @@ export function JobStatusBadge({ status, className }: StatusBadgeProps) {
 export function FitLabelBadge({ fitLabel, className }: { fitLabel: string; className?: string }) {
   const variants: Record<string, string> = {
     strong_fit: "bg-emerald-100 text-emerald-800 border-emerald-200",
-    moderate_fit: "bg-yellow-100 text-yellow-800 border-yellow-200",
+    moderate_fit: "bg-blue-100 text-blue-800 border-blue-200",
     weak_fit: "bg-red-100 text-red-800 border-red-200",
   };
 

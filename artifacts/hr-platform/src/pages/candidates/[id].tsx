@@ -43,6 +43,31 @@ function safeList(v: unknown): string[] {
   return [];
 }
 
+function buildQuestionFocusPlaceholder(job: any): string {
+  const title = String(job?.title ?? "").toLowerCase();
+  const department = String(job?.department ?? "").toLowerCase();
+  const requiredSkills = safeList(job?.requiredSkills).slice(0, 3);
+
+  if (
+    title.includes("project manager") ||
+    title.includes("pmp") ||
+    requiredSkills.some((s) => /pmp|stakeholder|governance|erp|vendor/i.test(s))
+  ) {
+    return "e.g. ERP rollout governance, stakeholder escalation, vendor coordination, project risk controls";
+  }
+
+  if (department.includes("it") || title.includes("engineer") || title.includes("developer")) {
+    const skillHint = requiredSkills.length ? requiredSkills.join(", ") : "system design and delivery trade-offs";
+    return `e.g. ${skillHint}, production ownership, cross-functional delivery risks`;
+  }
+
+  if (title.includes("sales") || department.includes("sales")) {
+    return "e.g. enterprise discovery, pipeline discipline, objection handling, customer success handoff";
+  }
+
+  return "e.g. role-critical skills, leadership examples, stakeholder scenarios, follow-up gaps from screening";
+}
+
 export default function CandidateProfile() {
   const [, params] = useRoute("/candidates/:id");
   const [, setLocation] = useLocation();
@@ -74,6 +99,8 @@ export default function CandidateProfile() {
   const [selectedQuestionTypes, setSelectedQuestionTypes] = useState<Set<QuestionType>>(
     () => new Set(ALL_QUESTION_TYPES),
   );
+  const [educationDraft, setEducationDraft] = useState("");
+  const [isEditingEducation, setIsEditingEducation] = useState(false);
 
   // Derived BEFORE the early returns below so the hooks below always run in
   // the same order (React rule of hooks).
@@ -121,6 +148,27 @@ export default function CandidateProfile() {
 
   const currentJobId = candidateJobId;
   const currentJobTitle = candidate.jobApplications?.[0]?.job?.title;
+  const currentJob = candidate.jobApplications?.[0]?.job;
+  const questionFocusPlaceholder = buildQuestionFocusPlaceholder(currentJob);
+
+  const startEditingEducation = () => {
+    setEducationDraft(candidate.educationSummary || "");
+    setIsEditingEducation(true);
+  };
+
+  const saveEducation = async () => {
+    try {
+      await updateStatus({
+        id: candidateId,
+        data: { educationSummary: educationDraft.trim() || null },
+      });
+      toast.success("Education updated");
+      setIsEditingEducation(false);
+      invalidateCandidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update education");
+    }
+  };
 
   const invalidateCandidate = () => {
     queryClient.invalidateQueries({ queryKey: getGetCandidateQueryKey(candidateId) });
@@ -421,16 +469,83 @@ export default function CandidateProfile() {
                   </section>
                   <section>
                     <h3 className="text-lg font-bold text-slate-900 mb-3">Education</h3>
-                    <p className="text-slate-600 leading-relaxed">
-                      {candidate.educationSummary || "Not provided."}
-                    </p>
+                    {isEditingEducation ? (
+                      <div className="space-y-3">
+                        <textarea
+                          rows={3}
+                          value={educationDraft}
+                          onChange={(e) => setEducationDraft(e.target.value)}
+                          placeholder="e.g. MBA, National University of Singapore; PMP certification"
+                          className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              updateStatus(
+                                { id: candidateId, data: { educationSummary: educationDraft.trim() || null } },
+                                {
+                                  onSuccess: () => {
+                                    toast.success("Education updated");
+                                    setIsEditingEducation(false);
+                                    invalidateCandidate();
+                                  },
+                                  onError: (err: any) => toast.error(err?.message || "Failed to update education"),
+                                },
+                              );
+                            }}
+                            className="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold"
+                          >
+                            Save education
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIsEditingEducation(false)}
+                            className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-bold"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : candidate.educationSummary ? (
+                      <div className="flex items-start justify-between gap-3">
+                        <p className="text-slate-600 leading-relaxed">{candidate.educationSummary}</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEducationDraft(candidate.educationSummary || "");
+                            setIsEditingEducation(true);
+                          }}
+                          className="text-xs font-bold text-primary hover:underline shrink-0"
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-4">
+                        <p className="text-sm font-semibold text-slate-700">Education not extracted yet</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          The resume parser did not find a clear education section. Add degrees or certifications manually if relevant.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEducationDraft("");
+                            setIsEditingEducation(true);
+                          }}
+                          className="mt-3 text-xs font-bold text-primary hover:underline"
+                        >
+                          Add education
+                        </button>
+                      </div>
+                    )}
                   </section>
                   <section>
                     <h3 className="text-lg font-bold text-slate-900 mb-3">Recruiter Notes</h3>
                     <textarea
                       className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900 placeholder:text-yellow-700/50"
                       rows={4}
-                      placeholder="Add private notes here (saves automatically)..."
+                      placeholder="Add private plain-text notes here. Keep it concise (recommended under 2,000 characters); saves automatically on blur."
                       defaultValue={candidate.recruiterNotes || ""}
                       onBlur={(e) => {
                         const value = e.target.value;
@@ -667,7 +782,7 @@ export default function CandidateProfile() {
                         maxLength={500}
                         value={questionFocus}
                         onChange={(e) => setQuestionFocus(e.target.value)}
-                        placeholder="e.g. 'AWS migration scenarios', 'leading distributed teams', 'debugging production incidents'"
+                        placeholder={questionFocusPlaceholder}
                         className="w-full p-3 text-sm border border-indigo-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder:text-slate-400"
                       />
                       {questionFocus.length > 400 && (

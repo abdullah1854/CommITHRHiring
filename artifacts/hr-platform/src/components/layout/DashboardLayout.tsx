@@ -12,7 +12,8 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  ShieldCheck,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -102,6 +103,9 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
         </nav>
 
         <div className="p-4 border-t border-sidebar-border flex-shrink-0">
+          <p className="px-2 mb-2 text-[10px] uppercase tracking-wider font-bold text-sidebar-foreground/40">
+            Signed in as
+          </p>
           <div className="flex items-center gap-3 mb-4 px-2">
             <Avatar className="w-10 h-10 border-2 border-sidebar-accent">
               <AvatarImage src={(user as any)?.avatarUrl || ""} />
@@ -109,7 +113,14 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-sidebar-foreground truncate">{user?.name || "User"}</p>
-              <p className="text-xs text-sidebar-foreground/60 capitalize truncate">{user?.role || "Recruiter"}</p>
+              <span className={`mt-1 inline-flex w-max items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
+                user?.role === "admin"
+                  ? "bg-purple-500/15 text-purple-200 border border-purple-400/20"
+                  : "bg-blue-500/15 text-blue-200 border border-blue-400/20"
+              }`}>
+                <ShieldCheck className="w-3 h-3" />
+                {user?.role || "Recruiter"}
+              </span>
             </div>
           </div>
           <button

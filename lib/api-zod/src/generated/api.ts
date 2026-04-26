@@ -757,7 +757,16 @@ export const UpdateCandidateParams = zod.object({
 });
 
 export const UpdateCandidateBody = zod.object({
-  recruiterNotes: zod.string().optional(),
+  fullName: zod.string().optional(),
+  email: zod.string().nullish(),
+  phone: zod.string().nullish(),
+  location: zod.string().nullish(),
+  skills: zod.array(zod.string()).optional(),
+  experienceSummary: zod.string().nullish(),
+  educationSummary: zod.string().nullish(),
+  pastRoles: zod.string().nullish(),
+  currentJobId: zod.string().nullish(),
+  recruiterNotes: zod.string().nullish(),
   status: zod
     .enum([
       "new",

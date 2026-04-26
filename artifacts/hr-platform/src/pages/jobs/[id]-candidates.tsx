@@ -109,8 +109,8 @@ export default function JobCandidates() {
                           </div>
                           <div className="flex flex-col gap-1">
                             <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md inline-block w-max
-                              ${candidate.rankInfo.fitLabel === 'strong_fit' ? 'bg-emerald-100 text-emerald-800' : 
-                                candidate.rankInfo.fitLabel === 'moderate_fit' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}
+                            ${candidate.rankInfo.fitLabel === 'strong_fit' ? 'bg-emerald-100 text-emerald-800' : 
+                                candidate.rankInfo.fitLabel === 'moderate_fit' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}
                             `}>
                               {candidate.rankInfo.fitLabel.replace(/_/g, ' ')}
                             </span>

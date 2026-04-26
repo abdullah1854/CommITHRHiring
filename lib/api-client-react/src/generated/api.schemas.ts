@@ -414,7 +414,16 @@ export const UpdateCandidateBodyStatus = {
 } as const;
 
 export interface UpdateCandidateBody {
-  recruiterNotes?: string;
+  fullName?: string;
+  email?: string | null;
+  phone?: string | null;
+  location?: string | null;
+  skills?: string[];
+  experienceSummary?: string | null;
+  educationSummary?: string | null;
+  pastRoles?: string | null;
+  currentJobId?: string | null;
+  recruiterNotes?: string | null;
   status?: UpdateCandidateBodyStatus;
 }
 

@@ -1347,8 +1347,36 @@ components:
     UpdateCandidateBody:
       type: object
       properties:
+        fullName:
+          type: string
+        email:
+          type: string
+          nullable: true
+        phone:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        skills:
+          type: array
+          items:
+            type: string
+        experienceSummary:
+          type: string
+          nullable: true
+        educationSummary:
+          type: string
+          nullable: true
+        pastRoles:
+          type: string
+          nullable: true
+        currentJobId:
+          type: string
+          nullable: true
         recruiterNotes:
           type: string
+          nullable: true
         status:
           type: string
           enum: [new, reviewing, shortlisted, interview_scheduled, rejected, hired]

@@ -1352,7 +1352,7 @@ Return JSON. Use null for any field you cannot confidently determine:
   "yearsOfExperience": <integer total years of professional experience, or null>,
   "skills": ["<technical and professional skills — list 10-25 if present>"],
   "experienceSummary": "<2-3 sentence professional overview including key roles and achievements>",
-  "educationSummary": "<highest degree, field, institution and year if available, else null>",
+  "educationSummary": "<highest degree, field, institution and year if available. If no degree is listed but professional certifications/training are present, summarize those. Return null only when neither education nor certifications/training can be found.>",
   "pastRoles": "<semicolon-separated list of past job titles and companies, e.g. 'Software Engineer at Acme (2019-2021); Frontend Dev at Startup (2021-2023)'>"
 }
 
