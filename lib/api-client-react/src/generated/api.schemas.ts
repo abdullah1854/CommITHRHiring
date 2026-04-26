@@ -77,6 +77,84 @@ export interface UpdateUserBody {
   isActive?: boolean;
 }
 
+export type JobTemplateEmploymentType =
+  (typeof JobTemplateEmploymentType)[keyof typeof JobTemplateEmploymentType];
+
+export const JobTemplateEmploymentType = {
+  full_time: "full_time",
+  part_time: "part_time",
+  contract: "contract",
+  internship: "internship",
+} as const;
+
+export type JobTemplateSeniority =
+  (typeof JobTemplateSeniority)[keyof typeof JobTemplateSeniority];
+
+export const JobTemplateSeniority = {
+  entry: "entry",
+  mid: "mid",
+  senior: "senior",
+  lead: "lead",
+  executive: "executive",
+} as const;
+
+export interface JobTemplate {
+  id: string;
+  name: string;
+  title: string;
+  department: string;
+  location: string;
+  employmentType: JobTemplateEmploymentType;
+  seniority: JobTemplateSeniority;
+  requiredSkills: string[];
+  preferredSkills: string[];
+  description: string;
+  responsibilities: string;
+  qualifications: string;
+  createdById?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface JobTemplateListResponse {
+  templates: JobTemplate[];
+}
+
+export type CreateJobTemplateBodyEmploymentType =
+  (typeof CreateJobTemplateBodyEmploymentType)[keyof typeof CreateJobTemplateBodyEmploymentType];
+
+export const CreateJobTemplateBodyEmploymentType = {
+  full_time: "full_time",
+  part_time: "part_time",
+  contract: "contract",
+  internship: "internship",
+} as const;
+
+export type CreateJobTemplateBodySeniority =
+  (typeof CreateJobTemplateBodySeniority)[keyof typeof CreateJobTemplateBodySeniority];
+
+export const CreateJobTemplateBodySeniority = {
+  entry: "entry",
+  mid: "mid",
+  senior: "senior",
+  lead: "lead",
+  executive: "executive",
+} as const;
+
+export interface CreateJobTemplateBody {
+  name: string;
+  title: string;
+  department: string;
+  location: string;
+  employmentType: CreateJobTemplateBodyEmploymentType;
+  seniority: CreateJobTemplateBodySeniority;
+  requiredSkills?: string[];
+  preferredSkills?: string[];
+  description: string;
+  responsibilities: string;
+  qualifications: string;
+}
+
 export type JobEmploymentType =
   (typeof JobEmploymentType)[keyof typeof JobEmploymentType];
 

@@ -438,6 +438,118 @@ export const GetJobCandidatesResponse = zod.object({
 });
 
 /**
+ * @summary List saved job templates
+ */
+export const ListJobTemplatesResponse = zod.object({
+  templates: zod.array(
+    zod.object({
+      id: zod.string(),
+      name: zod.string(),
+      title: zod.string(),
+      department: zod.string(),
+      location: zod.string(),
+      employmentType: zod.enum([
+        "full_time",
+        "part_time",
+        "contract",
+        "internship",
+      ]),
+      seniority: zod.enum(["entry", "mid", "senior", "lead", "executive"]),
+      requiredSkills: zod.array(zod.string()),
+      preferredSkills: zod.array(zod.string()),
+      description: zod.string(),
+      responsibilities: zod.string(),
+      qualifications: zod.string(),
+      createdById: zod.string().nullish(),
+      createdAt: zod.date(),
+      updatedAt: zod.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Create a saved job template
+ */
+export const CreateJobTemplateBody = zod.object({
+  name: zod.string(),
+  title: zod.string(),
+  department: zod.string(),
+  location: zod.string(),
+  employmentType: zod.enum([
+    "full_time",
+    "part_time",
+    "contract",
+    "internship",
+  ]),
+  seniority: zod.enum(["entry", "mid", "senior", "lead", "executive"]),
+  requiredSkills: zod.array(zod.string()).optional(),
+  preferredSkills: zod.array(zod.string()).optional(),
+  description: zod.string(),
+  responsibilities: zod.string(),
+  qualifications: zod.string(),
+});
+
+/**
+ * @summary Update a saved job template
+ */
+export const UpdateJobTemplateParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateJobTemplateBody = zod.object({
+  name: zod.string(),
+  title: zod.string(),
+  department: zod.string(),
+  location: zod.string(),
+  employmentType: zod.enum([
+    "full_time",
+    "part_time",
+    "contract",
+    "internship",
+  ]),
+  seniority: zod.enum(["entry", "mid", "senior", "lead", "executive"]),
+  requiredSkills: zod.array(zod.string()).optional(),
+  preferredSkills: zod.array(zod.string()).optional(),
+  description: zod.string(),
+  responsibilities: zod.string(),
+  qualifications: zod.string(),
+});
+
+export const UpdateJobTemplateResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  title: zod.string(),
+  department: zod.string(),
+  location: zod.string(),
+  employmentType: zod.enum([
+    "full_time",
+    "part_time",
+    "contract",
+    "internship",
+  ]),
+  seniority: zod.enum(["entry", "mid", "senior", "lead", "executive"]),
+  requiredSkills: zod.array(zod.string()),
+  preferredSkills: zod.array(zod.string()),
+  description: zod.string(),
+  responsibilities: zod.string(),
+  qualifications: zod.string(),
+  createdById: zod.string().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Delete a saved job template
+ */
+export const DeleteJobTemplateParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteJobTemplateResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
  * @summary List candidates
  */
 export const listCandidatesQueryPageDefault = 1;

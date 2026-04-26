@@ -24,6 +24,7 @@ model User {
   createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   jobs      Job[]
+  jobTemplates JobTemplate[]
   auditLogs AuditLog[]
 
   @@index([email])
@@ -62,6 +63,30 @@ model Job {
   @@index([status])
   @@index([department])
   @@map("jobs")
+  @@schema("commit_hr")
+}
+
+model JobTemplate {
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name             String   @db.VarChar(255)
+  title            String   @db.VarChar(255)
+  department       String   @db.VarChar(100)
+  location         String?  @db.VarChar(100)
+  employmentType   String   @default("full_time") @map("employment_type") @db.VarChar(50)
+  seniority        String   @default("mid") @db.VarChar(50)
+  requiredSkills   String   @map("required_skills")
+  preferredSkills  String   @map("preferred_skills")
+  description      String
+  responsibilities String
+  qualifications   String
+  createdById      String?  @map("created_by_id") @db.Uuid
+  createdBy        User?    @relation(fields: [createdById], references: [id], onDelete: SetNull, onUpdate: NoAction)
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([createdById])
+  @@index([department])
+  @@map("job_templates")
   @@schema("commit_hr")
 }
 

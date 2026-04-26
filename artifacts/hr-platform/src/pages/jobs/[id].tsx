@@ -5,6 +5,7 @@ import {
   useUpdateJob,
   useDeleteJob,
   useImproveJobDescription,
+  useCreateJobTemplate,
   getGetJobQueryKey,
   getListJobsQueryKey,
 } from "@workspace/api-client-react";
@@ -93,6 +94,7 @@ export default function EditJob() {
   const { mutate: updateJob, isPending: isSaving } = useUpdateJob();
   const { mutate: deleteJob, isPending: isDeleting } = useDeleteJob();
   const { mutateAsync: improveJD, isPending: isImproving } = useImproveJobDescription();
+  const { mutateAsync: createTemplate, isPending: isSavingTemplate } = useCreateJobTemplate();
 
   const {
     register,
@@ -223,6 +225,30 @@ export default function EditJob() {
     }
   };
 
+  const handleSaveTemplate = async () => {
+    const values = watch();
+    try {
+      await createTemplate({
+        data: {
+          name: values.title ? `${values.title} Template` : "Untitled Job Template",
+          title: values.title,
+          department: values.department,
+          location: values.location,
+          employmentType: values.employmentType,
+          seniority: values.seniority,
+          requiredSkills: values.requiredSkills.split(",").map((s) => s.trim()).filter(Boolean),
+          preferredSkills: (values.preferredSkills || "").split(",").map((s) => s.trim()).filter(Boolean),
+          description: values.description,
+          responsibilities: values.responsibilities,
+          qualifications: values.qualifications,
+        },
+      });
+      toast.success("Template saved");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to save template");
+    }
+  };
+
   if (isLoading) {
     return (
       <DashboardLayout title="Loading...">
@@ -288,6 +314,15 @@ export default function EditJob() {
           >
             {isImproving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wand2 className="w-4 h-4 mr-2" />}
             Improve with AI
+          </button>
+          <button
+            type="button"
+            onClick={handleSaveTemplate}
+            disabled={isSavingTemplate}
+            className="bg-slate-50 text-slate-700 hover:bg-slate-100 disabled:opacity-50 px-4 py-2 rounded-lg text-sm font-bold flex items-center transition-colors"
+          >
+            {isSavingTemplate ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+            Save as Template
           </button>
         </div>
 
@@ -433,6 +468,15 @@ export default function EditJob() {
         </div>
 
         <div className="pt-6 border-t border-slate-100 flex justify-end">
+          <button
+            type="button"
+            onClick={handleSaveTemplate}
+            disabled={isSavingTemplate}
+            className="mr-3 bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-50 text-slate-700 px-5 py-3 rounded-xl font-bold transition-all flex items-center"
+          >
+            {isSavingTemplate ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <Save className="w-5 h-5 mr-2" />}
+            Save as Template
+          </button>
           <button
             type="submit"
             disabled={isSaving || !isDirty}

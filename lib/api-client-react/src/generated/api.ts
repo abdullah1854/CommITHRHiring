@@ -25,6 +25,7 @@ import type {
   CandidateRankingResponse,
   CandidateSummary,
   CreateJobBody,
+  CreateJobTemplateBody,
   CreateUserBody,
   ErrorResponse,
   GenerateJDBody,
@@ -42,6 +43,8 @@ import type {
   Job,
   JobAnalyticsResponse,
   JobListResponse,
+  JobTemplate,
+  JobTemplateListResponse,
   ListCandidatesParams,
   ListInterviewsParams,
   ListJobsParams,
@@ -1273,6 +1276,338 @@ export function useGetJobCandidates<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List saved job templates
+ */
+export const getListJobTemplatesUrl = () => {
+  return `/api/job-templates`;
+};
+
+export const listJobTemplates = async (
+  options?: RequestInit,
+): Promise<JobTemplateListResponse> => {
+  return customFetch<JobTemplateListResponse>(getListJobTemplatesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListJobTemplatesQueryKey = () => {
+  return [`/api/job-templates`] as const;
+};
+
+export const getListJobTemplatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listJobTemplates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listJobTemplates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListJobTemplatesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listJobTemplates>>
+  > = ({ signal }) => listJobTemplates({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listJobTemplates>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListJobTemplatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listJobTemplates>>
+>;
+export type ListJobTemplatesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List saved job templates
+ */
+
+export function useListJobTemplates<
+  TData = Awaited<ReturnType<typeof listJobTemplates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listJobTemplates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListJobTemplatesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a saved job template
+ */
+export const getCreateJobTemplateUrl = () => {
+  return `/api/job-templates`;
+};
+
+export const createJobTemplate = async (
+  createJobTemplateBody: CreateJobTemplateBody,
+  options?: RequestInit,
+): Promise<JobTemplate> => {
+  return customFetch<JobTemplate>(getCreateJobTemplateUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createJobTemplateBody),
+  });
+};
+
+export const getCreateJobTemplateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createJobTemplate>>,
+    TError,
+    { data: BodyType<CreateJobTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createJobTemplate>>,
+  TError,
+  { data: BodyType<CreateJobTemplateBody> },
+  TContext
+> => {
+  const mutationKey = ["createJobTemplate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createJobTemplate>>,
+    { data: BodyType<CreateJobTemplateBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createJobTemplate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateJobTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createJobTemplate>>
+>;
+export type CreateJobTemplateMutationBody = BodyType<CreateJobTemplateBody>;
+export type CreateJobTemplateMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a saved job template
+ */
+export const useCreateJobTemplate = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createJobTemplate>>,
+    TError,
+    { data: BodyType<CreateJobTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createJobTemplate>>,
+  TError,
+  { data: BodyType<CreateJobTemplateBody> },
+  TContext
+> => {
+  return useMutation(getCreateJobTemplateMutationOptions(options));
+};
+
+/**
+ * @summary Update a saved job template
+ */
+export const getUpdateJobTemplateUrl = (id: string) => {
+  return `/api/job-templates/${id}`;
+};
+
+export const updateJobTemplate = async (
+  id: string,
+  createJobTemplateBody: CreateJobTemplateBody,
+  options?: RequestInit,
+): Promise<JobTemplate> => {
+  return customFetch<JobTemplate>(getUpdateJobTemplateUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createJobTemplateBody),
+  });
+};
+
+export const getUpdateJobTemplateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateJobTemplate>>,
+    TError,
+    { id: string; data: BodyType<CreateJobTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateJobTemplate>>,
+  TError,
+  { id: string; data: BodyType<CreateJobTemplateBody> },
+  TContext
+> => {
+  const mutationKey = ["updateJobTemplate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateJobTemplate>>,
+    { id: string; data: BodyType<CreateJobTemplateBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateJobTemplate(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateJobTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateJobTemplate>>
+>;
+export type UpdateJobTemplateMutationBody = BodyType<CreateJobTemplateBody>;
+export type UpdateJobTemplateMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a saved job template
+ */
+export const useUpdateJobTemplate = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateJobTemplate>>,
+    TError,
+    { id: string; data: BodyType<CreateJobTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateJobTemplate>>,
+  TError,
+  { id: string; data: BodyType<CreateJobTemplateBody> },
+  TContext
+> => {
+  return useMutation(getUpdateJobTemplateMutationOptions(options));
+};
+
+/**
+ * @summary Delete a saved job template
+ */
+export const getDeleteJobTemplateUrl = (id: string) => {
+  return `/api/job-templates/${id}`;
+};
+
+export const deleteJobTemplate = async (
+  id: string,
+  options?: RequestInit,
+): Promise<MessageResponse> => {
+  return customFetch<MessageResponse>(getDeleteJobTemplateUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteJobTemplateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteJobTemplate>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteJobTemplate>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteJobTemplate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteJobTemplate>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteJobTemplate(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteJobTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteJobTemplate>>
+>;
+
+export type DeleteJobTemplateMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a saved job template
+ */
+export const useDeleteJobTemplate = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteJobTemplate>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteJobTemplate>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteJobTemplateMutationOptions(options));
+};
 
 /**
  * @summary List candidates

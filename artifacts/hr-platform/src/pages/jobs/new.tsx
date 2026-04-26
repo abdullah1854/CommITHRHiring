@@ -4,6 +4,7 @@ import {
   useCreateJob,
   useGenerateJobDescription,
   useImproveJobDescription,
+  useListJobTemplates,
   getListJobsQueryKey,
 } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
@@ -73,6 +74,7 @@ export default function CreateJob() {
   const { mutate: createJob, isPending: isCreating } = useCreateJob();
   const { mutateAsync: generateJD, isPending: isGenerating } = useGenerateJobDescription();
   const { mutateAsync: improveJD, isPending: isImproving } = useImproveJobDescription();
+  const { data: templatesData } = useListJobTemplates();
   const [aiPrompt, setAiPrompt] = useState("");
   const [showAIGenerator, setShowAIGenerator] = useState(false);
 
@@ -149,6 +151,22 @@ export default function CreateJob() {
     }
   };
 
+  const applyTemplate = (templateId: string) => {
+    const template = templatesData?.templates.find((t) => t.id === templateId);
+    if (!template) return;
+    setValue("title", template.title);
+    setValue("department", template.department);
+    setValue("location", template.location);
+    setValue("employmentType", template.employmentType as FormValues["employmentType"]);
+    setValue("seniority", template.seniority as FormValues["seniority"]);
+    setValue("description", template.description);
+    setValue("responsibilities", template.responsibilities);
+    setValue("qualifications", template.qualifications);
+    setValue("requiredSkills", template.requiredSkills.join(", "));
+    setValue("preferredSkills", template.preferredSkills.join(", "));
+    toast.success("Template applied");
+  };
+
   const handleImproveJD = async () => {
     const existingJD = [
       watch("description"),
@@ -196,6 +214,23 @@ export default function CreateJob() {
             <div className="flex flex-wrap justify-between items-center gap-3 pb-6 border-b border-slate-100">
               <h2 className="text-xl font-bold text-slate-900">Basic Information</h2>
               <div className="flex items-center gap-2">
+                {(templatesData?.templates.length ?? 0) > 0 && (
+                  <select
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (e.target.value) applyTemplate(e.target.value);
+                      e.target.value = "";
+                    }}
+                    className="bg-white border border-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-semibold"
+                  >
+                    <option value="">Start from template…</option>
+                    {templatesData?.templates.map((template) => (
+                      <option key={template.id} value={template.id}>
+                        {template.title}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <button
                   type="button"
                   onClick={handleImproveJD}

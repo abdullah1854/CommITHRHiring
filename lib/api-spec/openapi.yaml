@@ -352,6 +352,79 @@ paths:
               schema:
                 $ref: "#/components/schemas/CandidateListResponse"
 
+  # Job Templates
+  /job-templates:
+    get:
+      operationId: listJobTemplates
+      tags: [jobs]
+      summary: List saved job templates
+      responses:
+        "200":
+          description: Job templates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobTemplateListResponse"
+    post:
+      operationId: createJobTemplate
+      tags: [jobs]
+      summary: Create a saved job template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJobTemplateBody"
+      responses:
+        "201":
+          description: Created template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobTemplate"
+
+  /job-templates/{id}:
+    put:
+      operationId: updateJobTemplate
+      tags: [jobs]
+      summary: Update a saved job template
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateJobTemplateBody"
+      responses:
+        "200":
+          description: Updated template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobTemplate"
+    delete:
+      operationId: deleteJobTemplate
+      tags: [jobs]
+      summary: Delete a saved job template
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted template
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
   # Candidates
   /candidates:
     get:
@@ -1100,6 +1173,107 @@ components:
           enum: [admin, recruiter]
         isActive:
           type: boolean
+
+    JobTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        title:
+          type: string
+        department:
+          type: string
+        location:
+          type: string
+        employmentType:
+          type: string
+          enum: [full_time, part_time, contract, internship]
+        seniority:
+          type: string
+          enum: [entry, mid, senior, lead, executive]
+        requiredSkills:
+          type: array
+          items:
+            type: string
+        preferredSkills:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        responsibilities:
+          type: string
+        qualifications:
+          type: string
+        createdById:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - title
+        - department
+        - location
+        - employmentType
+        - seniority
+        - requiredSkills
+        - preferredSkills
+        - description
+        - responsibilities
+        - qualifications
+        - createdAt
+        - updatedAt
+
+    JobTemplateListResponse:
+      type: object
+      properties:
+        templates:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobTemplate"
+      required:
+        - templates
+
+    CreateJobTemplateBody:
+      type: object
+      required: [name, title, department, location, employmentType, seniority, description, responsibilities, qualifications]
+      properties:
+        name:
+          type: string
+        title:
+          type: string
+        department:
+          type: string
+        location:
+          type: string
+        employmentType:
+          type: string
+          enum: [full_time, part_time, contract, internship]
+        seniority:
+          type: string
+          enum: [entry, mid, senior, lead, executive]
+        requiredSkills:
+          type: array
+          items:
+            type: string
+        preferredSkills:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+        responsibilities:
+          type: string
+        qualifications:
+          type: string
 
     Job:
       type: object

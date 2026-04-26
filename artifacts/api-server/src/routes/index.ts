@@ -9,6 +9,7 @@ import aiRouter from "./ai.js";
 import interviewsRouter from "./interviews.js";
 import analyticsRouter from "./analytics.js";
 import notificationsRouter from "./notifications.js";
+import jobTemplatesRouter from "./jobTemplates.js";
 
 const router: IRouter = Router();
 
@@ -16,6 +17,7 @@ router.use(healthRouter);
 router.use("/auth", authRouter);
 router.use("/users", usersRouter);
 router.use("/jobs", jobsRouter);
+router.use("/job-templates", jobTemplatesRouter);
 router.use("/candidates", candidatesRouter);
 router.use("/resumes", resumesRouter);
 router.use("/ai", aiRouter);
