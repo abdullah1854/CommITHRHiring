@@ -238,12 +238,31 @@ model Interview {
   inviteSentAt      DateTime? @map("invite_sent_at") @db.Timestamptz(6)
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  scorecard         InterviewScorecard?
 
   @@index([candidateId])
   @@index([jobId])
   @@index([status])
   @@index([scheduledAt])
   @@map("interviews")
+  @@schema("commit_hr")
+}
+
+model InterviewScorecard {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  interviewId    String    @unique @map("interview_id") @db.Uuid
+  interview      Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  technical      Int?      @db.SmallInt
+  roleFit        Int?      @map("role_fit") @db.SmallInt
+  communication  Int?      @db.SmallInt
+  culture        Int?      @db.SmallInt
+  recommendation String?   @db.VarChar(50) // strong_yes|yes|mixed|no
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([interviewId])
+  @@map("interview_scorecards")
   @@schema("commit_hr")
 }
 

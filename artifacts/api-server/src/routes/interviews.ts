@@ -224,6 +224,70 @@ router.delete("/:id", requireAuth, async (req, res) => {
   }
 });
 
+router.get("/:id/scorecard", requireAuth, async (req, res) => {
+  try {
+    const scorecard = await prisma.interviewScorecard.findUnique({
+      where: { interviewId: req.params.id as string },
+    });
+    if (!scorecard) return res.status(404).json({ error: "Not Found", message: "Scorecard not found" });
+    res.json(scorecard);
+  } catch (err) {
+    console.error("[interviews] scorecard get failed:", err);
+    res.status(500).json({ error: "Internal Server Error", message: "Failed to fetch scorecard" });
+  }
+});
+
+router.put("/:id/scorecard", requireAuth, async (req, res) => {
+  try {
+    const interviewId = req.params.id as string;
+    const existing = await prisma.interview.findFirst({ where: { id: interviewId }, select: { id: true } });
+    if (!existing) return res.status(404).json({ error: "Not Found", message: "Interview not found" });
+
+    const toRating = (value: unknown) => {
+      const num = Number(value);
+      return Number.isInteger(num) && num >= 1 && num <= 5 ? num : null;
+    };
+    const technicalRating = toRating(req.body?.technicalRating);
+    const roleFitRating = toRating(req.body?.roleFitRating);
+    const communicationRating = toRating(req.body?.communicationRating);
+    const cultureRating = toRating(req.body?.cultureRating);
+    if ([technicalRating, roleFitRating, communicationRating, cultureRating].some((v) => v == null)) {
+      return res.status(400).json({ error: "Bad Request", message: "All ratings must be whole numbers from 1 to 5" });
+    }
+
+    const recommendation = String(req.body?.recommendation ?? "").trim();
+    if (!["strong_yes", "yes", "hold", "no"].includes(recommendation)) {
+      return res.status(400).json({ error: "Bad Request", message: "Invalid recommendation" });
+    }
+
+    const scorecard = await prisma.interviewScorecard.upsert({
+      where: { interviewId },
+      create: {
+        interviewId,
+        technicalRating: technicalRating!,
+        roleFitRating: roleFitRating!,
+        communicationRating: communicationRating!,
+        cultureRating: cultureRating!,
+        recommendation,
+        notes: typeof req.body?.notes === "string" ? req.body.notes : null,
+      },
+      update: {
+        technicalRating: technicalRating!,
+        roleFitRating: roleFitRating!,
+        communicationRating: communicationRating!,
+        cultureRating: cultureRating!,
+        recommendation,
+        notes: typeof req.body?.notes === "string" ? req.body.notes : null,
+      },
+    });
+
+    res.json(scorecard);
+  } catch (err) {
+    console.error("[interviews] scorecard save failed:", err);
+    res.status(500).json({ error: "Internal Server Error", message: "Failed to save scorecard" });
+  }
+});
+
 router.post("/:id/send-invite", requireAuth, async (req, res) => {
   try {
     const interview = await prisma.interview.findFirst({

@@ -852,6 +852,54 @@ paths:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
 
+  /interviews/{id}/scorecard:
+    get:
+      operationId: getInterviewScorecard
+      tags: [interviews]
+      summary: Get interview scorecard
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Interview scorecard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewScorecard"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: upsertInterviewScorecard
+      tags: [interviews]
+      summary: Create or update interview scorecard
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertInterviewScorecardBody"
+      responses:
+        "200":
+          description: Interview scorecard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InterviewScorecard"
+
   # Analytics
   /analytics/overview:
     get:
@@ -1748,6 +1796,9 @@ components:
           type: string
           format: date-time
           nullable: true
+        scorecard:
+          $ref: "#/components/schemas/InterviewScorecard"
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -1765,6 +1816,62 @@ components:
         - status
         - createdAt
         - updatedAt
+
+    InterviewScorecard:
+      type: object
+      properties:
+        id:
+          type: string
+        interviewId:
+          type: string
+        technicalRating:
+          type: integer
+        roleFitRating:
+          type: integer
+        communicationRating:
+          type: integer
+        cultureRating:
+          type: integer
+        recommendation:
+          type: string
+          enum: [strong_yes, yes, no, strong_no]
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - interviewId
+        - technicalRating
+        - roleFitRating
+        - communicationRating
+        - cultureRating
+        - recommendation
+        - createdAt
+        - updatedAt
+
+    UpsertInterviewScorecardBody:
+      type: object
+      required: [technicalRating, roleFitRating, communicationRating, cultureRating, recommendation]
+      properties:
+        technicalRating:
+          type: integer
+        roleFitRating:
+          type: integer
+        communicationRating:
+          type: integer
+        cultureRating:
+          type: integer
+        recommendation:
+          type: string
+          enum: [strong_yes, yes, no, strong_no]
+        notes:
+          type: string
 
     InterviewListResponse:
       type: object

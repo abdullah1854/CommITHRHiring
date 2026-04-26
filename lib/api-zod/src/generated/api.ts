@@ -663,6 +663,25 @@ export const GetCandidateResponse = zod
             ]),
             notes: zod.string().nullish(),
             inviteSentAt: zod.date().nullish(),
+            scorecard: zod
+              .object({
+                id: zod.string(),
+                interviewId: zod.string(),
+                technicalRating: zod.number(),
+                roleFitRating: zod.number(),
+                communicationRating: zod.number(),
+                cultureRating: zod.number(),
+                recommendation: zod.enum([
+                  "strong_yes",
+                  "yes",
+                  "no",
+                  "strong_no",
+                ]),
+                notes: zod.string().nullish(),
+                createdAt: zod.date(),
+                updatedAt: zod.date(),
+              })
+              .nullish(),
             createdAt: zod.date(),
             updatedAt: zod.date(),
           }),
@@ -949,6 +968,25 @@ export const UpdateCandidateResponse = zod
             ]),
             notes: zod.string().nullish(),
             inviteSentAt: zod.date().nullish(),
+            scorecard: zod
+              .object({
+                id: zod.string(),
+                interviewId: zod.string(),
+                technicalRating: zod.number(),
+                roleFitRating: zod.number(),
+                communicationRating: zod.number(),
+                cultureRating: zod.number(),
+                recommendation: zod.enum([
+                  "strong_yes",
+                  "yes",
+                  "no",
+                  "strong_no",
+                ]),
+                notes: zod.string().nullish(),
+                createdAt: zod.date(),
+                updatedAt: zod.date(),
+              })
+              .nullish(),
             createdAt: zod.date(),
             updatedAt: zod.date(),
           }),
@@ -1228,6 +1266,25 @@ export const RejectCandidateResponse = zod
             ]),
             notes: zod.string().nullish(),
             inviteSentAt: zod.date().nullish(),
+            scorecard: zod
+              .object({
+                id: zod.string(),
+                interviewId: zod.string(),
+                technicalRating: zod.number(),
+                roleFitRating: zod.number(),
+                communicationRating: zod.number(),
+                cultureRating: zod.number(),
+                recommendation: zod.enum([
+                  "strong_yes",
+                  "yes",
+                  "no",
+                  "strong_no",
+                ]),
+                notes: zod.string().nullish(),
+                createdAt: zod.date(),
+                updatedAt: zod.date(),
+              })
+              .nullish(),
             createdAt: zod.date(),
             updatedAt: zod.date(),
           }),
@@ -1495,6 +1552,25 @@ export const ShortlistCandidateResponse = zod
             ]),
             notes: zod.string().nullish(),
             inviteSentAt: zod.date().nullish(),
+            scorecard: zod
+              .object({
+                id: zod.string(),
+                interviewId: zod.string(),
+                technicalRating: zod.number(),
+                roleFitRating: zod.number(),
+                communicationRating: zod.number(),
+                cultureRating: zod.number(),
+                recommendation: zod.enum([
+                  "strong_yes",
+                  "yes",
+                  "no",
+                  "strong_no",
+                ]),
+                notes: zod.string().nullish(),
+                createdAt: zod.date(),
+                updatedAt: zod.date(),
+              })
+              .nullish(),
             createdAt: zod.date(),
             updatedAt: zod.date(),
           }),
@@ -1906,6 +1982,20 @@ export const ListInterviewsResponse = zod.object({
       status: zod.enum(["scheduled", "completed", "cancelled", "no_show"]),
       notes: zod.string().nullish(),
       inviteSentAt: zod.date().nullish(),
+      scorecard: zod
+        .object({
+          id: zod.string(),
+          interviewId: zod.string(),
+          technicalRating: zod.number(),
+          roleFitRating: zod.number(),
+          communicationRating: zod.number(),
+          cultureRating: zod.number(),
+          recommendation: zod.enum(["strong_yes", "yes", "no", "strong_no"]),
+          notes: zod.string().nullish(),
+          createdAt: zod.date(),
+          updatedAt: zod.date(),
+        })
+        .nullish(),
       createdAt: zod.date(),
       updatedAt: zod.date(),
     }),
@@ -2050,6 +2140,20 @@ export const GetInterviewResponse = zod.object({
   status: zod.enum(["scheduled", "completed", "cancelled", "no_show"]),
   notes: zod.string().nullish(),
   inviteSentAt: zod.date().nullish(),
+  scorecard: zod
+    .object({
+      id: zod.string(),
+      interviewId: zod.string(),
+      technicalRating: zod.number(),
+      roleFitRating: zod.number(),
+      communicationRating: zod.number(),
+      cultureRating: zod.number(),
+      recommendation: zod.enum(["strong_yes", "yes", "no", "strong_no"]),
+      notes: zod.string().nullish(),
+      createdAt: zod.date(),
+      updatedAt: zod.date(),
+    })
+    .nullish(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
 });
@@ -2171,6 +2275,20 @@ export const UpdateInterviewResponse = zod.object({
   status: zod.enum(["scheduled", "completed", "cancelled", "no_show"]),
   notes: zod.string().nullish(),
   inviteSentAt: zod.date().nullish(),
+  scorecard: zod
+    .object({
+      id: zod.string(),
+      interviewId: zod.string(),
+      technicalRating: zod.number(),
+      roleFitRating: zod.number(),
+      communicationRating: zod.number(),
+      cultureRating: zod.number(),
+      recommendation: zod.enum(["strong_yes", "yes", "no", "strong_no"]),
+      notes: zod.string().nullish(),
+      createdAt: zod.date(),
+      updatedAt: zod.date(),
+    })
+    .nullish(),
   createdAt: zod.date(),
   updatedAt: zod.date(),
 });
@@ -2195,6 +2313,55 @@ export const SendInterviewInviteParams = zod.object({
 
 export const SendInterviewInviteResponse = zod.object({
   message: zod.string(),
+});
+
+/**
+ * @summary Get interview scorecard
+ */
+export const GetInterviewScorecardParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetInterviewScorecardResponse = zod.object({
+  id: zod.string(),
+  interviewId: zod.string(),
+  technicalRating: zod.number(),
+  roleFitRating: zod.number(),
+  communicationRating: zod.number(),
+  cultureRating: zod.number(),
+  recommendation: zod.enum(["strong_yes", "yes", "no", "strong_no"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
+});
+
+/**
+ * @summary Create or update interview scorecard
+ */
+export const UpsertInterviewScorecardParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpsertInterviewScorecardBody = zod.object({
+  technicalRating: zod.number(),
+  roleFitRating: zod.number(),
+  communicationRating: zod.number(),
+  cultureRating: zod.number(),
+  recommendation: zod.enum(["strong_yes", "yes", "no", "strong_no"]),
+  notes: zod.string().optional(),
+});
+
+export const UpsertInterviewScorecardResponse = zod.object({
+  id: zod.string(),
+  interviewId: zod.string(),
+  technicalRating: zod.number(),
+  roleFitRating: zod.number(),
+  communicationRating: zod.number(),
+  cultureRating: zod.number(),
+  recommendation: zod.enum(["strong_yes", "yes", "no", "strong_no"]),
+  notes: zod.string().nullish(),
+  createdAt: zod.date(),
+  updatedAt: zod.date(),
 });
 
 /**

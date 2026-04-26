@@ -194,111 +194,118 @@ export default function Interviews() {
                     (variables as any)?.id === interview.id;
                   const isRowDeleting = isDeleting && deletingId === interview.id;
                   return (
-                    <tr key={interview.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="p-4">
-                        <Link
-                          href={`/candidates/${interview.candidateId}`}
-                          className="font-bold text-slate-900 hover:text-primary transition-colors"
-                        >
-                          {interview.candidate?.fullName ?? "Unknown Candidate"}
-                        </Link>
-                        <div className="text-xs text-slate-400 mt-0.5">
-                          {interview.interviewerName}
-                        </div>
-                      </td>
-                      <td className="p-4 text-sm text-slate-600">
-                        {interview.job?.title ?? "Unknown Job"}
-                      </td>
-                      <td className="p-4 text-sm text-slate-900 font-medium">
-                        <div className="flex items-center gap-2">
-                          <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
-                          {format(new Date(interview.scheduledAt), "MMM d, yyyy h:mm a")}
-                        </div>
-                        <div className="text-xs text-slate-400 mt-0.5 ml-6">
-                          {interview.durationMinutes} min
-                        </div>
-                      </td>
-                      <td className="p-4 text-sm text-slate-600">
-                        <div className="flex items-center gap-1.5 capitalize">
-                          {INTERVIEW_ICONS[interview.interviewType] ?? null}
-                          {interview.interviewType.replace(/_/g, " ")}
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                          ${
-                            interview.status === "scheduled"
-                              ? "bg-blue-100 text-blue-800"
-                              : interview.status === "completed"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : interview.status === "cancelled"
-                              ? "bg-slate-100 text-slate-600"
-                              : "bg-red-100 text-red-800"
-                          }
-                        `}
-                        >
-                          {interview.status.replace(/_/g, " ")}
-                        </span>
-                      </td>
-                      <td className="p-4 text-right">
-                        <div className="flex items-center justify-end gap-3">
-                          {interview.meetingLink && (
-                            <a
-                              href={interview.meetingLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-sm text-primary hover:underline font-medium whitespace-nowrap"
-                            >
-                              Join
-                            </a>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleSendInvite(interview.id)}
-                            disabled={isRowSending}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-200 hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
-                            title={
-                              interview.inviteSentAt
-                                ? `Invite last sent ${format(
-                                    new Date(interview.inviteSentAt),
-                                    "MMM d, h:mm a"
-                                  )}`
-                                : "Send calendar invite"
+                    <>
+                      <tr key={interview.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-4">
+                          <Link
+                            href={`/candidates/${interview.candidateId}`}
+                            className="font-bold text-slate-900 hover:text-primary transition-colors"
+                          >
+                            {interview.candidate?.fullName ?? "Unknown Candidate"}
+                          </Link>
+                          <div className="text-xs text-slate-400 mt-0.5">
+                            {interview.interviewerName}
+                          </div>
+                        </td>
+                        <td className="p-4 text-sm text-slate-600">
+                          {interview.job?.title ?? "Unknown Job"}
+                        </td>
+                        <td className="p-4 text-sm text-slate-900 font-medium">
+                          <div className="flex items-center gap-2">
+                            <CalendarIcon className="w-4 h-4 text-slate-400 shrink-0" />
+                            {format(new Date(interview.scheduledAt), "MMM d, yyyy h:mm a")}
+                          </div>
+                          <div className="text-xs text-slate-400 mt-0.5 ml-6">
+                            {interview.durationMinutes} min
+                          </div>
+                        </td>
+                        <td className="p-4 text-sm text-slate-600">
+                          <div className="flex items-center gap-1.5 capitalize">
+                            {INTERVIEW_ICONS[interview.interviewType] ?? null}
+                            {interview.interviewType.replace(/_/g, " ")}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
+                            ${
+                              interview.status === "scheduled"
+                                ? "bg-blue-100 text-blue-800"
+                                : interview.status === "completed"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : interview.status === "cancelled"
+                                ? "bg-slate-100 text-slate-600"
+                                : "bg-red-100 text-red-800"
                             }
+                          `}
                           >
-                            {isRowSending ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Mail className="w-3.5 h-3.5" />
+                            {interview.status.replace(/_/g, " ")}
+                          </span>
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex items-center justify-end gap-3">
+                            {interview.meetingLink && (
+                              <a
+                                href={interview.meetingLink}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-sm text-primary hover:underline font-medium whitespace-nowrap"
+                              >
+                                Join
+                              </a>
                             )}
-                            {interview.inviteSentAt ? "Resend" : "Send Invite"}
-                          </button>
-                          <a
-                            href={`/api/interviews/${interview.id}/ics`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors"
-                            title="Download calendar invite (.ics)"
-                          >
-                            <CalendarIcon className="w-3.5 h-3.5" />
-                            ICS
-                          </a>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(interview.id)}
-                            disabled={isRowDeleting}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border border-red-200 text-red-700 hover:bg-red-50 transition-colors disabled:opacity-50"
-                            title="Delete interview"
-                          >
-                            {isRowDeleting ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-3.5 h-3.5" />
-                            )}
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                            <button
+                              type="button"
+                              onClick={() => handleSendInvite(interview.id)}
+                              disabled={isRowSending}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-200 hover:border-primary hover:text-primary transition-colors disabled:opacity-50"
+                              title={
+                                interview.inviteSentAt
+                                  ? `Invite last sent ${format(
+                                      new Date(interview.inviteSentAt),
+                                      "MMM d, h:mm a"
+                                    )}`
+                                  : "Send calendar invite"
+                              }
+                            >
+                              {isRowSending ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Mail className="w-3.5 h-3.5" />
+                              )}
+                              {interview.inviteSentAt ? "Resend" : "Send Invite"}
+                            </button>
+                            <a
+                              href={`/api/interviews/${interview.id}/ics`}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border border-blue-200 text-blue-700 hover:bg-blue-50 transition-colors"
+                              title="Download calendar invite (.ics)"
+                            >
+                              <CalendarIcon className="w-3.5 h-3.5" />
+                              ICS
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(interview.id)}
+                              disabled={isRowDeleting}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md border border-red-200 text-red-700 hover:bg-red-50 transition-colors disabled:opacity-50"
+                              title="Delete interview"
+                            >
+                              {isRowDeleting ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Trash2 className="w-3.5 h-3.5" />
+                              )}
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr className="bg-white">
+                        <td colSpan={6} className="px-4 pb-4">
+                          <ScorecardPanel interview={interview} />
+                        </td>
+                      </tr>
+                    </>
                   );
                 })}
               </tbody>
@@ -307,5 +314,95 @@ export default function Interviews() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+function ScorecardPanel({ interview }: { interview: any }) {
+  const [ratings, setRatings] = useState({
+    technical: interview.scorecard?.technicalRating ?? 0,
+    roleFit: interview.scorecard?.roleFitRating ?? 0,
+    communication: interview.scorecard?.communicationRating ?? 0,
+    culture: interview.scorecard?.cultureRating ?? 0,
+  });
+  const [recommendation, setRecommendation] = useState(interview.scorecard?.recommendation ?? "hold");
+  const [notes, setNotes] = useState(interview.scorecard?.notes ?? "");
+  const [saving, setSaving] = useState(false);
+  const qc = useQueryClient();
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/interviews/${interview.id}/scorecard`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          technicalRating: Number(ratings.technical) || null,
+          roleFitRating: Number(ratings.roleFit) || null,
+          communicationRating: Number(ratings.communication) || null,
+          cultureRating: Number(ratings.culture) || null,
+          recommendation,
+          notes,
+        }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      toast.success("Scorecard saved");
+      qc.invalidateQueries({ queryKey: getListInterviewsQueryKey() });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to save scorecard");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const setRating = (key: keyof typeof ratings, value: number) => {
+    setRatings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
+          {([
+            ["technical", "Technical"],
+            ["roleFit", "Role Fit"],
+            ["communication", "Communication"],
+            ["culture", "Culture"],
+          ] as const).map(([key, label]) => (
+            <label key={key} className="text-xs font-semibold text-slate-600">
+              {label}
+              <select
+                value={ratings[key]}
+                onChange={(e) => setRating(key, Number(e.target.value))}
+                className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm"
+              >
+                <option value={0}>Not rated</option>
+                {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}/5</option>)}
+              </select>
+            </label>
+          ))}
+        </div>
+        <label className="text-xs font-semibold text-slate-600 lg:w-48">
+          Recommendation
+          <select value={recommendation} onChange={(e) => setRecommendation(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-white px-2 py-2 text-sm">
+            <option value="strong_yes">Strong Yes</option>
+            <option value="yes">Yes</option>
+            <option value="hold">Hold</option>
+            <option value="no">No</option>
+          </select>
+        </label>
+      </div>
+      <textarea
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        rows={2}
+        placeholder="Scorecard notes, evidence, concerns, next steps..."
+        className="mt-3 w-full rounded-lg border border-slate-200 bg-white p-3 text-sm"
+      />
+      <div className="mt-3 flex justify-end">
+        <button type="button" onClick={save} disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-50">
+          {saving ? "Saving..." : interview.scorecard ? "Update scorecard" : "Save scorecard"}
+        </button>
+      </div>
+    </div>
   );
 }

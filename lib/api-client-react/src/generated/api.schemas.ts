@@ -346,6 +346,29 @@ export const InterviewStatus = {
   no_show: "no_show",
 } as const;
 
+export type InterviewScorecardRecommendation =
+  (typeof InterviewScorecardRecommendation)[keyof typeof InterviewScorecardRecommendation];
+
+export const InterviewScorecardRecommendation = {
+  strong_yes: "strong_yes",
+  yes: "yes",
+  no: "no",
+  strong_no: "strong_no",
+} as const;
+
+export interface InterviewScorecard {
+  id: string;
+  interviewId: string;
+  technicalRating: number;
+  roleFitRating: number;
+  communicationRating: number;
+  cultureRating: number;
+  recommendation: InterviewScorecardRecommendation;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Interview {
   id: string;
   candidateId: string;
@@ -362,6 +385,7 @@ export interface Interview {
   status: InterviewStatus;
   notes?: string | null;
   inviteSentAt?: string | null;
+  scorecard?: InterviewScorecard | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -522,6 +546,25 @@ export interface GeneratedJDResponse {
   requiredSkills: string[];
   preferredSkills: string[];
   interviewFocusAreas: string[];
+}
+
+export type UpsertInterviewScorecardBodyRecommendation =
+  (typeof UpsertInterviewScorecardBodyRecommendation)[keyof typeof UpsertInterviewScorecardBodyRecommendation];
+
+export const UpsertInterviewScorecardBodyRecommendation = {
+  strong_yes: "strong_yes",
+  yes: "yes",
+  no: "no",
+  strong_no: "strong_no",
+} as const;
+
+export interface UpsertInterviewScorecardBody {
+  technicalRating: number;
+  roleFitRating: number;
+  communicationRating: number;
+  cultureRating: number;
+  recommendation: UpsertInterviewScorecardBodyRecommendation;
+  notes?: string;
 }
 
 export interface InterviewListResponse {

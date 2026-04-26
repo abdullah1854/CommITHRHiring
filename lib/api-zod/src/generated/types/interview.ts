@@ -8,6 +8,7 @@
 import type { Candidate } from "./candidate";
 import type { InterviewInterviewFormat } from "./interviewInterviewFormat";
 import type { InterviewInterviewType } from "./interviewInterviewType";
+import type { InterviewScorecard } from "./interviewScorecard";
 import type { InterviewStatus } from "./interviewStatus";
 import type { Job } from "./job";
 
@@ -27,6 +28,7 @@ export interface Interview {
   status: InterviewStatus;
   notes?: string | null;
   inviteSentAt?: Date | null;
+  scorecard?: InterviewScorecard | null;
   createdAt: Date;
   updatedAt: Date;
 }
