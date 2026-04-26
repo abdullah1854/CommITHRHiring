@@ -60,7 +60,7 @@ export default function Home() {
             <FeatureCard 
               icon={<Bot className="w-8 h-8 text-blue-600" />}
               title="AI Resume Screening"
-              description="Instantly analyze hundreds of resumes against job descriptions. Get a detailed match score, identified strengths, and potential risks for every candidate."
+              description="Instantly analyze resumes against each job description. Match scores are stable: uploading the same résumé file again does not reroll the rating—identical inputs yield the same score, with strengths and risks called out for every candidate."
               color="blue"
             />
             <FeatureCard 
