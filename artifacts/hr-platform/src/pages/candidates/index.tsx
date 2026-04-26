@@ -7,16 +7,27 @@ import {
   getListCandidatesQueryKey,
 } from "@workspace/api-client-react";
 import { Link } from "wouter";
-import { Search, Users, Mail, Phone, UploadCloud, Trash2, Loader2 } from "lucide-react";
+import { Search, Users, Mail, Phone, UploadCloud, Trash2, Loader2, Columns3, List } from "lucide-react";
 import { CandidateStatusBadge, FitLabelBadge } from "@/components/ui/status-badge";
 import { getInitials } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+const CANDIDATE_STATUSES = [
+  { value: "new", label: "New" },
+  { value: "reviewing", label: "Reviewing" },
+  { value: "shortlisted", label: "Shortlisted" },
+  { value: "interview_scheduled", label: "Interview Scheduled" },
+  { value: "rejected", label: "Rejected" },
+  { value: "hired", label: "Hired" },
+] as const;
+
 export default function Candidates() {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [viewMode, setViewMode] = useState<"list" | "board">("list");
+  const [draggingCandidateId, setDraggingCandidateId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const { data, isLoading, isError, error } = useListCandidates({ limit: 100 });
   const { mutateAsync: deleteCandidate, isPending: isDeleting } = useDeleteCandidate();
@@ -44,6 +55,10 @@ export default function Candidates() {
   });
   const selectedCandidates = filtered.filter((c) => selectedIds.has(c.id));
   const allFilteredSelected = filtered.length > 0 && filtered.every((c) => selectedIds.has(c.id));
+  const candidatesByStatus = CANDIDATE_STATUSES.map((status) => ({
+    ...status,
+    candidates: filtered.filter((candidate) => candidate.status === status.value),
+  }));
 
   const toggleSelected = (id: string) => {
     setSelectedIds((prev) => {
@@ -72,6 +87,19 @@ export default function Candidates() {
       setSelectedIds(new Set());
     } catch (err: any) {
       toast.error(err?.message || "Failed to update selected candidates.");
+    }
+  };
+
+  const moveCandidateToStatus = async (candidateId: string, status: string) => {
+    const candidate = (data?.candidates ?? []).find((c) => c.id === candidateId);
+    if (!candidate || candidate.status === status) return;
+
+    try {
+      await updateCandidate({ id: candidateId, data: { status: status as any } });
+      await queryClient.invalidateQueries({ queryKey: getListCandidatesQueryKey() });
+      toast.success(`Moved ${candidate.fullName} to ${status.replace(/_/g, " ")}`);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to move candidate.");
     }
   };
 
@@ -146,6 +174,22 @@ export default function Candidates() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${viewMode === "list" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"}`}
+            >
+              <List className="w-4 h-4" /> List
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("board")}
+              className={`px-3 py-1.5 rounded-md text-sm font-semibold flex items-center gap-1.5 ${viewMode === "board" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-50"}`}
+            >
+              <Columns3 className="w-4 h-4" /> Board
+            </button>
+          </div>
           <button
             type="button"
             onClick={() => exportCsv(selectedCandidates.length ? selectedCandidates : filtered)}
@@ -177,12 +221,9 @@ export default function Candidates() {
               className="px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white focus:outline-none focus:border-primary shadow-sm"
             >
               <option value="">Change status…</option>
-              <option value="new">New</option>
-              <option value="reviewing">Reviewing</option>
-              <option value="shortlisted">Shortlisted</option>
-              <option value="interview_scheduled">Interview Scheduled</option>
-              <option value="rejected">Rejected</option>
-              <option value="hired">Hired</option>
+              {CANDIDATE_STATUSES.map((status) => (
+                <option key={status.value} value={status.value}>{status.label}</option>
+              ))}
             </select>
             <button type="button" onClick={() => exportCsv(selectedCandidates)} className="px-3 py-2 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm font-semibold">
               Export selected
@@ -233,12 +274,86 @@ export default function Candidates() {
               </Link>
             )}
           </div>
+        ) : viewMode === "board" ? (
+          <div className="p-4 overflow-x-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-4 min-w-[900px]">
+              {candidatesByStatus.map((column) => (
+                <div
+                  key={column.value}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const candidateId = e.dataTransfer.getData("text/plain") || draggingCandidateId;
+                    setDraggingCandidateId(null);
+                    if (candidateId) void moveCandidateToStatus(candidateId, column.value);
+                  }}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 min-h-[220px] p-3"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-slate-800">{column.label}</h3>
+                    <span className="text-xs font-bold bg-white border border-slate-200 text-slate-500 px-2 py-0.5 rounded-full">
+                      {column.candidates.length}
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    {column.candidates.length === 0 ? (
+                      <div className="border border-dashed border-slate-200 rounded-xl p-4 text-center text-xs text-slate-400 bg-white/60">
+                        Drop candidates here
+                      </div>
+                    ) : (
+                      column.candidates.map((candidate) => (
+                        <div
+                          key={candidate.id}
+                          draggable
+                          onDragStart={(e) => {
+                            setDraggingCandidateId(candidate.id);
+                            e.dataTransfer.setData("text/plain", candidate.id);
+                            e.dataTransfer.effectAllowed = "move";
+                          }}
+                          onDragEnd={() => setDraggingCandidateId(null)}
+                          className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                              {getInitials(candidate.fullName)}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <Link href={`/candidates/${candidate.id}`} className="font-bold text-sm text-slate-900 hover:text-primary transition-colors block truncate">
+                                {candidate.fullName}
+                              </Link>
+                              <p className="text-xs text-slate-500 truncate">{candidate.email ?? "No email"}</p>
+                              <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                {candidate.latestScore ? (
+                                  <span className="text-[11px] font-bold text-slate-700">{candidate.latestScore}/100</span>
+                                ) : (
+                                  <span className="text-[11px] text-slate-400">No AI score</span>
+                                )}
+                                {candidate.latestFit && <FitLabelBadge fitLabel={candidate.latestFit} />}
+                              </div>
+                              <select
+                                value={candidate.status}
+                                onChange={(e) => void moveCandidateToStatus(candidate.id, e.target.value)}
+                                className="mt-3 w-full px-2 py-1.5 text-xs border border-slate-200 rounded-lg bg-slate-50"
+                              >
+                                {CANDIDATE_STATUSES.map((status) => (
+                                  <option key={status.value} value={status.value}>{status.label}</option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-sm text-slate-500">
-                  <th className="p-4 font-semibold">Candidate</th>
                   <th className="p-4 font-semibold w-10">
                     <input
                       type="checkbox"
@@ -247,6 +362,7 @@ export default function Candidates() {
                       aria-label="Select all filtered candidates"
                     />
                   </th>
+                  <th className="p-4 font-semibold">Candidate</th>
                   <th className="p-4 font-semibold">Contact</th>
                   <th className="p-4 font-semibold">Status</th>
                   <th className="p-4 font-semibold">AI Fit</th>
