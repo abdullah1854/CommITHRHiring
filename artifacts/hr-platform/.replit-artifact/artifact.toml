@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "GIQ - HR Recruitment Platform"
+version = "1.0.0"
+id = "artifacts/hr-platform"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 19028
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/hr-platform run dev"
+
+[services.env]
+PORT = "19028"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/hr-platform", "run", "build"]
+publicDir = "artifacts/hr-platform/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"

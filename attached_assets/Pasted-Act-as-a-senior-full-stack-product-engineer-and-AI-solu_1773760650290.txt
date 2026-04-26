@@ -1,0 +1,416 @@
+Act as a senior full-stack product engineer and AI solutions architect.
+
+Build a near-production-ready AI-enabled internal HR recruitment web application for a small HR team (3–4 people). The application should be modern, secure, mobile responsive, and designed for internal hiring operations. Do not ask me follow-up questions unless absolutely necessary. Make sensible product and engineering decisions where details are missing.
+
+## Product Goal
+This is an internal HR recruitment system used by:
+- Admin
+- HR / Recruiter team
+
+The platform should help a small HR team manage hiring more efficiently using AI. The AI should support first-level screening by analyzing job descriptions and resumes, scoring candidates, ranking them, suggesting interview questions, summarizing candidate profiles, and highlighting skill gaps.
+
+Important:
+- AI should recommend by default, not auto-reject without approval.
+- HR must have the ability to review AI recommendations and explicitly approve rejection.
+- Candidates do NOT log in.
+- Resumes are uploaded manually by HR only.
+- Authentication should use Azure AD / Microsoft login for internal users only.
+- Use real OpenAI API integration from day one.
+- Interview scheduling should be manual inside the dashboard.
+- Email invite functionality should exist.
+- Outlook / Google Calendar integration should be designed for future extensibility, but not fully implemented now.
+
+## Required Tech Stack
+Use this stack unless there is a strong reason to improve it while staying aligned:
+- Frontend: React
+- Backend: Node.js + Express
+- Language: TypeScript across frontend and backend
+- Database: PostgreSQL
+- ORM: Prisma
+- Authentication: Azure AD / Microsoft identity platform (OAuth / OpenID Connect)
+- AI: OpenAI API
+- Styling: modern corporate UI using Tailwind CSS
+- State/data fetching: use a clean modern approach (React Query or equivalent)
+- Validation: Zod or equivalent
+- Email: Nodemailer or a suitable transactional email abstraction
+- File upload: support PDF and DOC/DOCX resume uploads
+- Resume text extraction/parsing: implement practical resume parsing flow for uploaded files
+
+## Product Requirements
+
+### User Roles
+1. Admin
+   - Manage internal users
+   - View all analytics
+   - View all jobs and applicants
+   - Manage recruiter accounts
+   - Review hiring pipeline
+   - View AI screening results
+   - Override workflow decisions if needed
+
+2. Recruiter / HR
+   - Create and edit job postings
+   - Upload resumes manually
+   - View applicants
+   - Trigger AI screening
+   - View candidate ranking
+   - View candidate summaries
+   - View skill-gap insights
+   - Generate interview questions
+   - Schedule interviews manually
+   - Send email invites / updates
+
+### Authentication and Access Control
+- Azure AD login only for Admin and Recruiters
+- No public candidate login
+- Implement protected routes and role-based authorization
+- Secure session/token handling
+- Environment variable based configuration
+- Add proper auth middleware
+
+## Required Pages / Screens
+Build the following pages:
+
+1. Home Page
+   - Modern corporate design
+   - Clear value proposition
+   - Navigation to careers and login
+   - CTA for internal recruitment intelligence platform
+
+2. Careers Page
+   - Public-facing job listing overview
+   - Search and filter available roles
+   - View job summaries
+   - Link to full job details page
+
+3. Job Listings Page
+   - List all open job postings
+   - Filter by department, location, employment type, status
+   - Clean cards/table layout
+
+4. Job Details Page
+   - Show full job description
+   - Responsibilities
+   - Requirements
+   - Skills
+   - Experience range
+   - Hiring status
+
+5. Login Page
+   - Azure AD sign-in
+   - Clean enterprise design
+
+6. Recruiter Dashboard
+   - Overview metrics
+   - Recent jobs
+   - Recent uploaded candidates
+   - AI screening queue
+   - Candidate ranking overview
+   - Interview scheduling section
+   - Notifications panel
+
+7. Admin Panel
+   - User management
+   - System analytics
+   - Recruitment funnel analytics
+   - Job performance metrics
+   - Candidate pipeline visibility
+   - AI usage stats/logs if feasible
+
+## Core Functional Modules
+
+### 1. Job Management
+- Create new job posting
+- Edit existing job posting
+- Archive / close job
+- Fields should include:
+  - title
+  - department
+  - location
+  - employment type
+  - seniority
+  - required skills
+  - preferred skills
+  - years of experience
+  - salary range optional
+  - description
+  - responsibilities
+  - qualifications
+  - status
+  - created by
+  - timestamps
+
+### 2. Resume Upload and Candidate Profiles
+- HR manually uploads resumes
+- Support drag-and-drop upload
+- Accepted formats: PDF, DOC, DOCX
+- Parse extracted text from resume
+- Generate candidate profile record automatically
+- Candidate record should include:
+  - full name
+  - email if found
+  - phone if found
+  - skills extracted
+  - experience summary
+  - education summary
+  - past roles
+  - location if found
+  - uploaded resume file path
+  - parsed resume text
+  - recruiter notes
+  - linked job posting(s)
+
+### 3. AI Resume Screening
+For each uploaded candidate against a selected job description:
+- Parse the resume
+- Compare candidate profile to JD
+- Generate match score
+- Generate skill match breakdown
+- Highlight missing skills / skill gaps
+- Summarize candidate strengths
+- Summarize risks / concerns
+- Recommend one of:
+  - Strong Fit
+  - Moderate Fit
+  - Weak Fit
+- Never auto-reject silently
+- HR must approve any rejection action
+
+### 4. AI Candidate Ranking
+For a job posting:
+- Rank all associated candidates by fit
+- Show score explanation
+- Show matched skills
+- Show missing skills
+- Show concise reasoning
+- Allow recruiters to sort and filter candidates
+
+### 5. AI Job Description Support
+Provide AI assistance to:
+- Generate JD drafts from a short prompt
+- Improve existing JDs
+- Suggest required skills and qualifications
+- Suggest interview focus areas
+
+### 6. AI Interview Question Generator
+Generate structured interview questions based on:
+- the job description
+- candidate resume
+- candidate skill gaps
+- experience level
+
+Output categories:
+- technical questions
+- behavioral questions
+- role-specific scenario questions
+- follow-up probing questions
+
+### 7. Candidate Summary
+Generate AI summary for each candidate:
+- overall profile summary
+- experience snapshot
+- strengths
+- risks
+- likely fit areas
+- missing capabilities
+- recommendation notes for recruiter
+
+### 8. Interview Scheduling
+- HR manually selects interview date/time inside dashboard
+- Attach candidate to interview record
+- Assign interviewer name
+- Set interview type
+- Set status
+- Send email invite only
+- Keep design ready for future Outlook / Google Calendar integration
+
+### 9. Email Notifications
+Implement email notification flows for:
+- HR when candidate is uploaded
+- HR when AI screening completes
+- Candidate when interview is scheduled
+- Candidate when application status is updated if recruiter chooses to send email
+- Keep email templates modular and reusable
+
+## Analytics and Reporting
+Create useful dashboards and reporting widgets for Admin and Recruiters:
+- total open jobs
+- total candidates
+- candidates per job
+- interview scheduled count
+- shortlisted / rejected / pending count
+- AI screening completion count
+- average match score by job
+- recruitment pipeline funnel
+- hiring activity trends
+
+Use a clean chart library and good dashboard UX.
+
+## Data Model / Database Design
+Design a robust PostgreSQL schema using Prisma.
+
+At minimum include tables/models for:
+- User
+- Role
+- JobPosting
+- Candidate
+- Resume
+- Application / CandidateJobLink
+- AIScreeningResult
+- Interview
+- EmailNotificationLog
+- AuditLog
+
+Suggested relationships:
+- A recruiter creates many job postings
+- A candidate can be linked to one or more job postings if needed
+- A candidate has one uploaded resume record
+- A job posting has many AI screening results
+- An interview belongs to a candidate and a job posting
+- Admin and recruiter actions should be audit-logged
+
+Include proper indexes and timestamps.
+
+## API Requirements
+Build clean REST APIs (or modular backend structure) for:
+- auth
+- users
+- jobs
+- candidates
+- resumes
+- AI screening
+- AI ranking
+- interview scheduling
+- analytics
+- notifications
+
+Each endpoint should:
+- validate input
+- handle errors clearly
+- return structured JSON
+- use role-based authorization where needed
+
+## AI Integration Details
+Integrate real OpenAI API.
+
+Implement reusable AI service modules for:
+- JD generation/improvement
+- resume analysis
+- candidate-job scoring
+- candidate summary generation
+- interview question generation
+- skill gap detection
+
+Important:
+- Store AI outputs in database where appropriate
+- Avoid repeated unnecessary AI calls
+- Add retry/error handling
+- Make prompts modular in backend services
+- Show confidence/reasoning in a recruiter-friendly way
+- Keep AI recommendations explainable and not opaque
+
+## Business Rules
+- Only internal HR/Admin users can log in
+- No candidate self-service portal
+- Resume upload is manual by recruiters only
+- AI recommends rejection, but HR must approve any rejection
+- Interview dates are set manually by recruiters
+- Email invite is sent after manual scheduling
+- Future calendar integration should be easy to add
+
+## UI / UX Requirements
+Design language:
+- modern corporate
+- clean, professional, trustworthy
+- minimal but premium SaaS-like
+- mobile responsive
+- desktop-first dashboard experience
+- accessible forms and tables
+
+Use:
+- cards
+- tables
+- filters
+- search
+- status badges
+- tabs where helpful
+- modals/drawers for actions if appropriate
+
+## Security and Production Readiness
+Make this near-production-ready:
+- secure auth flow
+- environment variables
+- backend input validation
+- file upload validation
+- sanitize data
+- robust error states
+- loading states
+- empty states
+- API abstraction
+- reusable components
+- modular architecture
+- clear folder structure
+- comments only where useful, not excessive
+- no hardcoded secrets
+- proper .env.example
+
+## Project Structure
+Generate a clean full-stack monorepo or clearly separated frontend/backend structure.
+
+Recommended:
+- /client
+- /server
+- /prisma
+
+## Deliverables
+I want the result to include:
+
+1. Complete full-stack codebase
+2. Clean folder structure
+3. Frontend + backend integration
+4. Prisma schema
+5. SQL/PostgreSQL-ready setup
+6. Azure AD auth integration
+7. OpenAI integration
+8. File upload and resume parsing flow
+9. Recruiter dashboard
+10. Admin panel
+11. Careers pages and job pages
+12. Email notification workflow
+13. AI screening workflow
+14. README with setup instructions
+15. .env.example
+16. Clear instructions to run locally in Replit
+
+## Build Instructions for You
+Please do the following in order:
+1. First define the system architecture and folder structure
+2. Then generate the database schema
+3. Then generate backend APIs and services
+4. Then generate frontend pages/components
+5. Then wire frontend and backend together
+6. Then add authentication and role-based access
+7. Then add AI workflows
+8. Then add email scheduling/invite features
+9. Then add analytics dashboard
+10. Then provide setup instructions
+
+## Important Constraints
+- Do not generate only a landing page or mock UI
+- Do not leave core features as vague placeholders
+- Implement real working flows as much as possible
+- Use mock/fallback handling only where external API credentials are required
+- Keep code maintainable and modular
+- Make it runnable in Replit
+- Make reasonable assumptions without blocking progress
+
+## Nice-to-Have Enhancements
+If feasible, also include:
+- advanced candidate filtering
+- recruiter notes and internal comments
+- interview feedback form
+- status pipeline tracking
+- AI prompt logging for debugging
+- audit trail for major decisions
+
+Now build the project end-to-end.

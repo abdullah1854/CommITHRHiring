@@ -1,0 +1,996 @@
+import { useRoute } from "wouter";
+import {
+  useGetCandidate,
+  useScreenCandidate,
+  useGenerateCandidateSummary,
+  useShortlistCandidate,
+  useRejectCandidate,
+  useUpdateCandidate,
+  useGenerateInterviewQuestions,
+  useDeleteCandidate,
+  getGetCandidateQueryKey,
+  getListCandidatesQueryKey,
+} from "@workspace/api-client-react";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import {
+  ArrowLeft, Mail, Phone, MapPin, FileText, Sparkles, CheckCircle2,
+  XCircle, Calendar, Bot, Loader2, BrainCircuit, ExternalLink, HelpCircle,
+  ChevronDown, ChevronUp, Linkedin, ShieldCheck, ShieldAlert, ShieldOff, RefreshCw, AlertTriangle, Trash2
+} from "lucide-react";
+import { Link, useLocation } from "wouter";
+import { CandidateStatusBadge, FitLabelBadge } from "@/components/ui/status-badge";
+import { getInitials } from "@/lib/utils";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+
+/** Safely coerce a DB value (string JSON, array, null, undefined) to string[]. */
+function safeList(v: unknown): string[] {
+  if (Array.isArray(v)) return v as string[];
+  if (typeof v === "string" && v.trim()) {
+    try {
+      const parsed = JSON.parse(v);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+export default function CandidateProfile() {
+  const [, params] = useRoute("/candidates/:id");
+  const [, setLocation] = useLocation();
+  const candidateId = params?.id || "";
+  const queryClient = useQueryClient();
+
+  const { data: candidate, isLoading } = useGetCandidate(candidateId);
+
+  const { mutateAsync: screenCandidate, isPending: isScreening } = useScreenCandidate();
+  const { mutateAsync: generateSummary, isPending: isSummarizing } = useGenerateCandidateSummary();
+  const { mutateAsync: shortlist, isPending: isShortlisting } = useShortlistCandidate();
+  const { mutateAsync: reject, isPending: isRejecting } = useRejectCandidate();
+  const { mutateAsync: updateStatus } = useUpdateCandidate();
+  const { mutateAsync: generateQuestions, isPending: isGeneratingQuestions } = useGenerateInterviewQuestions();
+  const { mutateAsync: deleteCandidatePermanently, isPending: isDeleting } = useDeleteCandidate();
+
+  const [activeTab, setActiveTab] = useState("overview");
+  const [interviewQuestions, setInterviewQuestions] = useState<{
+    technical: string[]; behavioral: string[]; roleSpecific: string[]; followUp: string[];
+  } | null>(null);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    technical: true, behavioral: true, roleSpecific: true, followUp: true,
+  });
+
+  const ALL_QUESTION_TYPES = ["technical", "behavioral", "roleSpecific", "followUp"] as const;
+  type QuestionType = (typeof ALL_QUESTION_TYPES)[number];
+
+  const [questionFocus, setQuestionFocus] = useState("");
+  const [selectedQuestionTypes, setSelectedQuestionTypes] = useState<Set<QuestionType>>(
+    () => new Set(ALL_QUESTION_TYPES),
+  );
+
+  // Derived BEFORE the early returns below so the hooks below always run in
+  // the same order (React rule of hooks).
+  const candidateJobId =
+    candidate?.currentJobId || candidate?.jobApplications?.[0]?.jobId || null;
+
+  // Hydrate interview questions from the DB cache on mount / when the
+  // candidate-job pair changes. The backend persists them in
+  // hr.ai_interview_question_sets; re-loading the page should restore the
+  // last generated set instead of showing the empty state.
+  useEffect(() => {
+    if (!candidateId || !candidateJobId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/ai/interview-questions/${candidateId}/${candidateJobId}`,
+          { credentials: "include" },
+        );
+        if (res.status === 404) {
+          if (!cancelled) setInterviewQuestions(null);
+          return;
+        }
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!cancelled && data?.questions) {
+          setInterviewQuestions({
+            technical: safeList(data.questions.technical),
+            behavioral: safeList(data.questions.behavioral),
+            roleSpecific: safeList(data.questions.roleSpecific),
+            followUp: safeList(data.questions.followUp),
+          });
+        }
+      } catch {
+        /* silent — the "Generate Questions" button still works */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [candidateId, candidateJobId]);
+
+  if (isLoading) return <DashboardLayout title="Loading..."><div className="p-20 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div></DashboardLayout>;
+  if (!candidate) return <DashboardLayout title="Not Found"><div className="p-20 text-center">Candidate not found.</div></DashboardLayout>;
+
+  const currentJobId = candidateJobId;
+  const currentJobTitle = candidate.jobApplications?.[0]?.job?.title;
+
+  const invalidateCandidate = () => {
+    queryClient.invalidateQueries({ queryKey: getGetCandidateQueryKey(candidateId) });
+    queryClient.invalidateQueries({ queryKey: getListCandidatesQueryKey() });
+  };
+
+  const forceRefetchCandidate = async () => {
+    queryClient.removeQueries({ queryKey: getGetCandidateQueryKey(candidateId) });
+    await queryClient.refetchQueries({
+      queryKey: getGetCandidateQueryKey(candidateId),
+      type: "active",
+    });
+    queryClient.invalidateQueries({ queryKey: getListCandidatesQueryKey() });
+  };
+
+  const handleScreen = async () => {
+    if (!currentJobId) {
+      toast.error("No job associated with this candidate. Associate a job first.");
+      return;
+    }
+    let succeeded = false;
+    try {
+      await screenCandidate({ candidateId, jobId: currentJobId });
+      succeeded = true;
+      toast.success("AI Screening complete!");
+    } catch (err: any) {
+      toast.error(err?.message || "Screening failed.");
+    } finally {
+      // Always refetch — if screening succeeded we want the new score; if it
+      // failed we still want to clear any stale optimistic UI state.
+      try {
+        await forceRefetchCandidate();
+      } catch {
+        /* ignore — refetch errors should not mask the original outcome */
+      }
+    }
+    if (!succeeded) return;
+  };
+
+  const handleSummary = async () => {
+    let succeeded = false;
+    try {
+      await generateSummary({
+        candidateId,
+        ...(currentJobId ? { jobId: currentJobId } : {}),
+      });
+      succeeded = true;
+      toast.success("AI Summary generated!");
+    } catch (err: any) {
+      toast.error(err?.message || "Summary generation failed.");
+    } finally {
+      try {
+        await forceRefetchCandidate();
+      } catch {
+        /* ignore */
+      }
+    }
+    if (!succeeded) return;
+  };
+
+  const handleDeleteCandidate = async () => {
+    if (
+      !window.confirm(
+        "Permanently delete this candidate and all related resumes, screenings, and interviews? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+    try {
+      await deleteCandidatePermanently({ id: candidateId });
+      toast.success("Candidate deleted");
+      setLocation("/candidates");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to delete candidate.");
+    }
+  };
+
+  const handleShortlist = async () => {
+    try {
+      await shortlist({ id: candidateId });
+      toast.success("Candidate shortlisted!");
+      invalidateCandidate();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to shortlist.");
+    }
+  };
+
+  const handleReject = async () => {
+    if (window.confirm("Are you sure you want to reject this candidate?")) {
+      try {
+        await reject({ id: candidateId, data: { reason: "Not a fit at this time" } });
+        toast.success("Candidate rejected.");
+        invalidateCandidate();
+      } catch (err: any) {
+        toast.error(err?.message || "Failed to reject.");
+      }
+    }
+  };
+
+  const handleGenerateQuestions = async () => {
+    if (!currentJobId) {
+      toast.error("No job associated. Please associate a job first.");
+      return;
+    }
+    if (selectedQuestionTypes.size === 0) {
+      toast.error("Select at least one question type.");
+      return;
+    }
+    try {
+      const focusValue = questionFocus.trim() || undefined;
+      const typesArr = Array.from(selectedQuestionTypes);
+      const isCustom = focusValue !== undefined || typesArr.length < 4;
+      const result = await generateQuestions({
+        candidateId,
+        jobId: currentJobId,
+        data: {
+          focus: focusValue,
+          types: typesArr,
+          force: isCustom,
+        },
+      });
+      setInterviewQuestions(result.questions);
+      toast.success("Interview questions generated!");
+    } catch {
+      toast.error("Failed to generate questions.");
+    }
+  };
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const latestScreening = candidate.screeningResults?.[0];
+
+  return (
+    <DashboardLayout title="Candidate Profile">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <Link href="/candidates" className="text-sm font-medium text-slate-500 hover:text-slate-900 flex items-center">
+          <ArrowLeft className="w-4 h-4 mr-1" /> Back to Candidates
+        </Link>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleDeleteCandidate}
+            disabled={isDeleting}
+            className="bg-white border border-slate-200 text-slate-600 hover:bg-red-50 hover:border-red-200 hover:text-red-700 px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2 disabled:opacity-50"
+          >
+            {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            Delete candidate
+          </button>
+          {candidate.status !== "rejected" && candidate.status !== "hired" && (
+            <>
+              <button
+                onClick={handleReject}
+                disabled={isRejecting}
+                className="bg-white border border-red-200 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+              >
+                {isRejecting ? "Processing..." : "Reject"}
+              </button>
+              {candidate.status !== "shortlisted" && candidate.status !== "interview_scheduled" && (
+                <button
+                  onClick={handleShortlist}
+                  disabled={isShortlisting}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors"
+                >
+                  {isShortlisting ? "Processing..." : "Shortlist"}
+                </button>
+              )}
+            </>
+          )}
+          <Link
+            href={`/interviews/new?candidateId=${candidateId}`}
+            className="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            Schedule
+          </Link>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 min-w-0">
+        {/* Left Column */}
+        <div className="xl:col-span-1 space-y-6 min-w-0">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="h-24 bg-gradient-to-r from-blue-600 to-indigo-600" />
+            <div className="px-6 pb-6">
+              <div className="flex items-end -mt-10 mb-5">
+                <div className="w-20 h-20 rounded-2xl bg-white p-1 shadow-lg shrink-0">
+                  <div className="w-full h-full rounded-xl bg-slate-100 flex items-center justify-center text-2xl font-bold text-primary">
+                    {getInitials(candidate.fullName)}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">{candidate.fullName}</h1>
+                <CandidateStatusBadge status={candidate.status} className="mt-2" />
+
+                <div className="mt-6 space-y-3">
+                  {candidate.email && (
+                    <div className="flex items-center text-sm text-slate-600">
+                      <Mail className="w-4 h-4 mr-3 text-slate-400" />
+                      <a href={`mailto:${candidate.email}`} className="hover:text-primary transition-colors">{candidate.email}</a>
+                    </div>
+                  )}
+                  {candidate.phone && (
+                    <div className="flex items-center text-sm text-slate-600">
+                      <Phone className="w-4 h-4 mr-3 text-slate-400" />
+                      {candidate.phone}
+                    </div>
+                  )}
+                  {candidate.location && (
+                    <div className="flex items-center text-sm text-slate-600">
+                      <MapPin className="w-4 h-4 mr-3 text-slate-400" />
+                      {candidate.location}
+                    </div>
+                  )}
+                  {candidate.resume && (
+                    <div className="flex items-center text-sm text-slate-600 pt-3 border-t border-slate-100">
+                      <FileText className="w-4 h-4 mr-3 text-slate-400" />
+                      <a href={candidate.resume.fileUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center">
+                        View Resume <ExternalLink className="w-3 h-3 ml-1" />
+                      </a>
+                    </div>
+                  )}
+                  {/* LinkedIn verification status */}
+                  <LinkedInBadge
+                    status={(candidate as any).linkedinStatus}
+                    linkedinUrl={(candidate as any).linkedinUrl}
+                    discrepancies={(candidate as any).linkedinDiscrepancies ?? []}
+                    candidateId={candidateId}
+                    onRefresh={invalidateCandidate}
+                  />
+                  {currentJobTitle && (
+                    <div className="pt-3 border-t border-slate-100">
+                      <p className="text-xs text-slate-400 uppercase font-semibold tracking-wide mb-1">Applying for</p>
+                      <p className="text-sm font-semibold text-slate-800">{currentJobTitle}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {latestScreening && (
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl border border-slate-800 shadow-xl p-6 text-white">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold flex items-center"><Sparkles className="w-4 h-4 mr-2 text-blue-400" /> AI Score</h3>
+                <FitLabelBadge fitLabel={latestScreening.fitLabel} />
+              </div>
+              <div className="flex items-end gap-2">
+                <div className="text-5xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">
+                  {latestScreening.matchScore}
+                </div>
+                <div className="text-slate-400 font-medium mb-1">/ 100</div>
+              </div>
+              <p className="text-sm text-slate-400 mt-4 leading-relaxed">{latestScreening.aiRecommendation}</p>
+            </div>
+          )}
+
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+            <h3 className="font-bold text-slate-900 mb-4">Skills</h3>
+            {candidate.skills.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {candidate.skills.map((skill, i) => (
+                  <span key={i} className="px-3 py-1.5 bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg">
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-400">No skills extracted yet.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="xl:col-span-2 space-y-6 min-w-0">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="flex border-b border-slate-200 px-2 overflow-x-auto">
+              <TabButton active={activeTab === "overview"} onClick={() => setActiveTab("overview")}>Overview</TabButton>
+              <TabButton active={activeTab === "ai"} onClick={() => setActiveTab("ai")}>
+                <Sparkles className="w-4 h-4 mr-1.5 text-purple-500" /> AI Insights
+              </TabButton>
+              <TabButton active={activeTab === "questions"} onClick={() => setActiveTab("questions")}>
+                <HelpCircle className="w-4 h-4 mr-1.5 text-indigo-500" /> Interview Qs
+              </TabButton>
+              <TabButton active={activeTab === "interviews"} onClick={() => setActiveTab("interviews")}>Interviews</TabButton>
+            </div>
+
+            <div className="p-4 sm:p-6">
+              {activeTab === "overview" && (
+                <div className="space-y-8">
+                  <section>
+                    <h3 className="text-lg font-bold text-slate-900 mb-3">Experience Summary</h3>
+                    <p className="text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                      {candidate.experienceSummary || "No summary available. Generate an AI summary for deeper insights."}
+                    </p>
+                  </section>
+                  <section>
+                    <h3 className="text-lg font-bold text-slate-900 mb-3">Education</h3>
+                    <p className="text-slate-600 leading-relaxed">
+                      {candidate.educationSummary || "Not provided."}
+                    </p>
+                  </section>
+                  <section>
+                    <h3 className="text-lg font-bold text-slate-900 mb-3">Recruiter Notes</h3>
+                    <textarea
+                      className="w-full p-4 bg-yellow-50 border border-yellow-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-400 text-yellow-900 placeholder:text-yellow-700/50"
+                      rows={4}
+                      placeholder="Add private notes here (saves automatically)..."
+                      defaultValue={candidate.recruiterNotes || ""}
+                      onBlur={(e) => {
+                        const value = e.target.value;
+                        if (value === (candidate.recruiterNotes ?? "")) return;
+                        updateStatus(
+                          { id: candidateId, data: { recruiterNotes: value } },
+                          {
+                            onSuccess: () => {
+                              toast.success("Notes saved");
+                              invalidateCandidate();
+                            },
+                            onError: (err: any) =>
+                              toast.error(err?.message || "Failed to save notes"),
+                          },
+                        );
+                      }}
+                    />
+                    <p className="text-xs text-slate-400 mt-2">Notes save automatically when you click outside.</p>
+                  </section>
+                </div>
+              )}
+
+              {activeTab === "ai" && (
+                <div className="space-y-6">
+                  {/* Action toolbar */}
+                  <div className="flex flex-wrap gap-3 p-4 bg-purple-50 rounded-xl border border-purple-100">
+                    <button
+                      onClick={handleScreen}
+                      disabled={isScreening || !currentJobId}
+                      title={!currentJobId ? "No job associated with this candidate" : "Run AI screening against the job description"}
+                      className="bg-white border border-purple-200 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isScreening ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Bot className="w-4 h-4 mr-2" />}
+                      {latestScreening ? "Re-run Screening" : "Run Deep Screening"}
+                    </button>
+                    <button
+                      onClick={handleSummary}
+                      disabled={isSummarizing}
+                      className="bg-white border border-purple-200 text-purple-700 hover:bg-purple-100 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm transition-all disabled:opacity-50"
+                    >
+                      {isSummarizing ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <BrainCircuit className="w-4 h-4 mr-2" />}
+                      {candidate.aiSummary ? "Regenerate Summary" : "Generate Summary"}
+                    </button>
+                    {currentJobTitle && (
+                      <p className="text-xs text-slate-600 w-full">
+                        Summary and fit analysis target: <span className="font-semibold text-slate-800">{currentJobTitle}</span>
+                      </p>
+                    )}
+                    {!currentJobId && (
+                      <p className="text-xs text-purple-600 mt-1 w-full">⚠ Associate this candidate with a job to enable AI screening.</p>
+                    )}
+                  </div>
+
+                  {/* LinkedIn verification panel in AI tab */}
+                  <LinkedInInsightsPanel
+                    status={(candidate as any).linkedinStatus}
+                    linkedinUrl={(candidate as any).linkedinUrl}
+                    profile={(candidate as any).linkedinProfile}
+                    discrepancies={(candidate as any).linkedinDiscrepancies ?? []}
+                    candidateId={candidateId}
+                    onRefresh={invalidateCandidate}
+                  />
+
+                  {/* Screening result detail */}
+                  {latestScreening && (
+                    <div className="space-y-4">
+                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                        <Bot className="w-4 h-4 text-purple-500" /> Screening Analysis
+                      </h4>
+                      {latestScreening.reasoning && (
+                        <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                          <p className="text-sm text-slate-600 leading-relaxed">{latestScreening.reasoning}</p>
+                        </div>
+                      )}
+                      {latestScreening.aiRecommendation && (
+                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                          <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide mb-1">Recruiter Recommendation</p>
+                          <p className="text-sm text-blue-900 leading-relaxed">{latestScreening.aiRecommendation}</p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {safeList(latestScreening.matchedSkills).length > 0 && (
+                          <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
+                            <h5 className="font-semibold text-emerald-900 mb-2 flex items-center text-sm">
+                              <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-600" /> Matched Skills
+                            </h5>
+                            <div className="flex flex-wrap gap-1.5">
+                              {safeList(latestScreening.matchedSkills).map((skill, i) => (
+                                <span key={i} className="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-medium rounded-md">{skill}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {safeList(latestScreening.missingSkills).length > 0 && (
+                          <div className="bg-orange-50 border border-orange-100 p-4 rounded-xl">
+                            <h5 className="font-semibold text-orange-900 mb-2 flex items-center text-sm">
+                              <XCircle className="w-4 h-4 mr-2 text-orange-500" /> Skill Gaps
+                            </h5>
+                            <div className="flex flex-wrap gap-1.5">
+                              {safeList(latestScreening.missingSkills).map((skill, i) => (
+                                <span key={i} className="px-2 py-0.5 bg-orange-100 text-orange-800 text-xs font-medium rounded-md">{skill}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* AI Summary */}
+                  {candidate.aiSummary && (
+                    <div className="space-y-4">
+                      <h4 className="font-bold text-slate-900 flex items-center gap-2">
+                        <BrainCircuit className="w-4 h-4 text-purple-500" /> Candidate Profile Summary
+                      </h4>
+
+                      <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
+                        <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Executive Summary</p>
+                        <p className="text-slate-700 leading-relaxed">{candidate.aiSummary.overallSummary}</p>
+                      </div>
+
+                      {candidate.aiSummary.experienceSnapshot && (
+                        <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
+                          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Experience Snapshot</p>
+                          <p className="text-slate-700 leading-relaxed">{candidate.aiSummary.experienceSnapshot}</p>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {safeList(candidate.aiSummary.strengths).length > 0 && (
+                          <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-xl">
+                            <h5 className="font-bold text-emerald-900 mb-3 flex items-center text-sm">
+                              <CheckCircle2 className="w-4 h-4 mr-2 text-emerald-600" /> Key Strengths
+                            </h5>
+                            <ul className="space-y-2">
+                              {safeList(candidate.aiSummary.strengths).map((s, i) => (
+                                <li key={i} className="text-sm text-emerald-800 flex items-start"><span className="mr-2 mt-0.5 shrink-0">•</span>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {safeList(candidate.aiSummary.risks).length > 0 && (
+                          <div className="bg-red-50 border border-red-100 p-5 rounded-xl">
+                            <h5 className="font-bold text-red-900 mb-3 flex items-center text-sm">
+                              <XCircle className="w-4 h-4 mr-2 text-red-600" /> Potential Risks
+                            </h5>
+                            <ul className="space-y-2">
+                              {safeList(candidate.aiSummary.risks).map((s, i) => (
+                                <li key={i} className="text-sm text-red-800 flex items-start"><span className="mr-2 mt-0.5 shrink-0">•</span>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {safeList(candidate.aiSummary.likelyFitAreas).length > 0 && (
+                          <div className="bg-blue-50 border border-blue-100 p-5 rounded-xl">
+                            <h5 className="font-bold text-blue-900 mb-3 flex items-center text-sm">
+                              <Sparkles className="w-4 h-4 mr-2 text-blue-500" /> Likely Fit Areas
+                            </h5>
+                            <ul className="space-y-2">
+                              {safeList(candidate.aiSummary.likelyFitAreas).map((s, i) => (
+                                <li key={i} className="text-sm text-blue-800 flex items-start"><span className="mr-2 mt-0.5 shrink-0">•</span>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        {safeList(candidate.aiSummary.missingCapabilities).length > 0 && (
+                          <div className="bg-amber-50 border border-amber-100 p-5 rounded-xl">
+                            <h5 className="font-bold text-amber-900 mb-3 flex items-center text-sm">
+                              <HelpCircle className="w-4 h-4 mr-2 text-amber-500" /> Missing Capabilities
+                            </h5>
+                            <ul className="space-y-2">
+                              {safeList(candidate.aiSummary.missingCapabilities).map((s, i) => (
+                                <li key={i} className="text-sm text-amber-800 flex items-start"><span className="mr-2 mt-0.5 shrink-0">•</span>{s}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+
+                      {candidate.aiSummary.recommendationNotes && (
+                        <div className="bg-purple-50 border border-purple-100 p-5 rounded-xl">
+                          <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide mb-1">Recruiter Recommendation</p>
+                          <p className="text-sm text-purple-900 leading-relaxed">{candidate.aiSummary.recommendationNotes}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Prompt to generate summary after screening */}
+                  {latestScreening && !candidate.aiSummary && (
+                    <div className="text-center py-10 text-slate-500 border border-dashed border-slate-200 rounded-2xl">
+                      <Bot className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                      <p className="font-semibold text-slate-700 mb-1">Screening complete</p>
+                      <p className="text-sm">Click <strong>Generate Summary</strong> above for a full AI profile breakdown.</p>
+                    </div>
+                  )}
+
+                  {/* No data at all */}
+                  {!latestScreening && !candidate.aiSummary && (
+                    <div className="text-center py-14 text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl">
+                      <Sparkles className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-bold text-slate-700 mb-2">No AI Insights Yet</h3>
+                      <p className="max-w-sm mx-auto text-sm">
+                        {currentJobId
+                          ? "Click Run Deep Screening to get an AI fit score, matched skills, and candidate summary."
+                          : "Associate this candidate with a job first, then run AI screening to unlock fit analysis and summaries."}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === "questions" && (
+                <div className="space-y-6">
+                  <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-indigo-900">AI-Generated Interview Questions</h4>
+                        <p className="text-sm text-indigo-600 mt-0.5">
+                          {currentJobId
+                            ? `Tailored for ${currentJobTitle ?? "the associated job"}`
+                            : "Associate a job to generate tailored questions"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="question-focus" className="block text-xs font-semibold text-indigo-900 mb-1">
+                        Focus area (optional)
+                      </label>
+                      <textarea
+                        id="question-focus"
+                        rows={2}
+                        maxLength={500}
+                        value={questionFocus}
+                        onChange={(e) => setQuestionFocus(e.target.value)}
+                        placeholder="e.g. 'AWS migration scenarios', 'leading distributed teams', 'debugging production incidents'"
+                        className="w-full p-3 text-sm border border-indigo-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 placeholder:text-slate-400"
+                      />
+                      {questionFocus.length > 400 && (
+                        <p className="text-xs text-slate-500 mt-1">{questionFocus.length}/500 characters</p>
+                      )}
+                    </div>
+
+                    <div>
+                      <p className="block text-xs font-semibold text-indigo-900 mb-2">Question types</p>
+                      <div className="flex flex-wrap gap-3">
+                        {([
+                          { key: "technical", label: "Technical" },
+                          { key: "behavioral", label: "Behavioral" },
+                          { key: "roleSpecific", label: "Role-Specific" },
+                          { key: "followUp", label: "Follow-Up" },
+                        ] as const).map(({ key, label }) => {
+                          const checked = selectedQuestionTypes.has(key);
+                          return (
+                            <label key={key} className="flex items-center gap-2 text-sm text-indigo-900 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={(e) => {
+                                  setSelectedQuestionTypes((prev) => {
+                                    const next = new Set(prev);
+                                    if (e.target.checked) next.add(key);
+                                    else next.delete(key);
+                                    return next;
+                                  });
+                                }}
+                                className="rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500"
+                              />
+                              {label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <button
+                        onClick={handleGenerateQuestions}
+                        disabled={isGeneratingQuestions || !currentJobId || selectedQuestionTypes.size === 0}
+                        title={
+                          !currentJobId
+                            ? "No job associated"
+                            : selectedQuestionTypes.size === 0
+                            ? "Select at least one question type"
+                            : "Generate interview questions powered by AI"
+                        }
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 whitespace-nowrap"
+                      >
+                        {isGeneratingQuestions ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                        {isGeneratingQuestions
+                          ? "Generating..."
+                          : selectedQuestionTypes.size < 4
+                          ? "Generate Selected Questions"
+                          : "Generate Questions"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {interviewQuestions ? (
+                    <div className="space-y-4">
+                      {(
+                        [
+                          { key: "technical", label: "Technical Questions", color: "blue" },
+                          { key: "behavioral", label: "Behavioral Questions", color: "emerald" },
+                          { key: "roleSpecific", label: "Role-Specific Questions", color: "purple" },
+                          { key: "followUp", label: "Follow-Up Questions", color: "orange" },
+                        ] as const
+                      ).map(({ key, label, color }) => {
+                        const questions = interviewQuestions[key];
+                        if (!questions?.length) return null;
+                        return (
+                          <div key={key} className="border border-slate-200 rounded-xl overflow-hidden">
+                            <button
+                              onClick={() => toggleSection(key)}
+                              className={`w-full p-4 flex items-center justify-between text-left font-semibold text-sm bg-${color}-50 border-b border-slate-200 hover:bg-${color}-100 transition-colors`}
+                            >
+                              <span className={`text-${color}-900`}>{label} <span className="font-normal text-slate-500">({questions.length})</span></span>
+                              {expandedSections[key] ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                            </button>
+                            {expandedSections[key] && (
+                              <ul className="p-4 space-y-3 bg-white">
+                                {questions.map((q, i) => (
+                                  <li key={i} className="flex gap-3 text-sm text-slate-700">
+                                    <span className="font-bold text-slate-400 shrink-0">{i + 1}.</span>
+                                    <span>{q}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400">
+                      <HelpCircle className="w-12 h-12 text-indigo-200 mx-auto mb-4" />
+                      <h3 className="text-lg font-bold text-slate-600 mb-2">No Questions Generated Yet</h3>
+                      <p className="text-sm max-w-sm mx-auto">
+                        Generate AI-powered, role-specific interview questions tailored to this candidate's profile and the job requirements.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === "interviews" && (
+                <div>
+                  {(!candidate.interviews || candidate.interviews.length === 0) ? (
+                    <div className="text-center py-12 text-slate-500 border-2 border-dashed border-slate-200 rounded-2xl">
+                      <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-bold text-slate-700 mb-2">No Interviews Scheduled</h3>
+                      <Link href={`/interviews/new?candidateId=${candidate.id}`} className="mt-4 inline-block bg-primary text-white px-5 py-2.5 rounded-lg text-sm font-semibold shadow-sm hover:bg-blue-700 transition-colors">
+                        Schedule First Interview
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {candidate.interviews.map(interview => (
+                        <div key={interview.id} className="border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors">
+                          <div>
+                            <h4 className="font-bold text-slate-900 capitalize">{interview.interviewType.replace(/_/g, " ")}</h4>
+                            <div className="text-sm text-slate-500 mt-1 flex items-center">
+                              <Calendar className="w-3 h-3 mr-1" />
+                              {new Date(interview.scheduledAt).toLocaleString()} &bull; {interview.interviewerName}
+                            </div>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider capitalize
+                            ${interview.status === "scheduled" ? "bg-blue-100 text-blue-800" :
+                              interview.status === "completed" ? "bg-emerald-100 text-emerald-800" :
+                              interview.status === "cancelled" ? "bg-slate-100 text-slate-600" :
+                              "bg-red-100 text-red-800"}
+                          `}>
+                            {interview.status.replace(/_/g, " ")}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
+
+function LinkedInBadge({
+  status, linkedinUrl, discrepancies, candidateId, onRefresh,
+}: {
+  status?: string | null; linkedinUrl?: string | null; discrepancies: string[];
+  candidateId: string; onRefresh: () => void;
+}) {
+  const [scraping, setScraping] = useState(false);
+
+  const triggerScrape = async (url?: string) => {
+    setScraping(true);
+    try {
+      const body: Record<string, string> = {};
+      if (url) body.linkedinUrl = url;
+      await fetch(`/api/candidates/${candidateId}/scrape-linkedin`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        credentials: "include", body: JSON.stringify(body),
+      });
+      setTimeout(() => { onRefresh(); setScraping(false); }, 3000);
+    } catch { setScraping(false); }
+  };
+
+  const badge = (() => {
+    if (!status || status === "skipped") {
+      return { icon: <ShieldOff className="w-4 h-4" />, label: "Not on CV", color: "text-slate-400 bg-slate-50 border-slate-200" };
+    }
+    if (status === "pending") {
+      return { icon: <Loader2 className="w-4 h-4 animate-spin" />, label: "Verifying…", color: "text-blue-600 bg-blue-50 border-blue-200" };
+    }
+    if (status === "verified") {
+      return discrepancies.length > 0
+        ? { icon: <ShieldAlert className="w-4 h-4" />, label: "Discrepancies found", color: "text-orange-600 bg-orange-50 border-orange-200" }
+        : { icon: <ShieldCheck className="w-4 h-4" />, label: "LinkedIn verified", color: "text-emerald-600 bg-emerald-50 border-emerald-200" };
+    }
+    if (status === "not_found") {
+      return { icon: <ShieldAlert className="w-4 h-4" />, label: "Profile private/missing", color: "text-amber-600 bg-amber-50 border-amber-200" };
+    }
+    return { icon: <ShieldOff className="w-4 h-4" />, label: "Verification failed", color: "text-red-500 bg-red-50 border-red-200" };
+  })();
+
+  return (
+    <div className="pt-3 border-t border-slate-100 space-y-2">
+      <div className={`flex items-center gap-2 text-xs font-semibold px-2.5 py-1.5 rounded-lg border w-fit ${badge.color}`}>
+        {badge.icon} {badge.label}
+      </div>
+      {linkedinUrl && (
+        <a href={linkedinUrl} target="_blank" rel="noopener noreferrer"
+          className="flex items-center text-xs text-blue-600 hover:underline gap-1">
+          <Linkedin className="w-3 h-3" /> View LinkedIn
+        </a>
+      )}
+      {(!status || status === "skipped" || status === "failed" || status === "not_found") && (
+        <button onClick={() => triggerScrape(linkedinUrl ?? undefined)} disabled={scraping}
+          className="text-xs text-purple-600 hover:underline flex items-center gap-1 disabled:opacity-50">
+          <RefreshCw className="w-3 h-3" /> {scraping ? "Scraping…" : "Verify LinkedIn"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function LinkedInInsightsPanel({
+  status, linkedinUrl, profile, discrepancies, candidateId, onRefresh,
+}: {
+  status?: string | null; linkedinUrl?: string | null;
+  profile?: any; discrepancies: string[];
+  candidateId: string; onRefresh: () => void;
+}) {
+  const [scraping, setScraping] = useState(false);
+  const [urlInput, setUrlInput] = useState(linkedinUrl ?? "");
+
+  const triggerScrape = async () => {
+    if (!urlInput.trim()) return;
+    setScraping(true);
+    try {
+      await fetch(`/api/candidates/${candidateId}/scrape-linkedin`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        credentials: "include", body: JSON.stringify({ linkedinUrl: urlInput.trim() }),
+      });
+      setTimeout(() => { onRefresh(); setScraping(false); }, 3000);
+    } catch { setScraping(false); }
+  };
+
+  if (status === "verified" && profile) {
+    return (
+      <div className="border border-slate-200 rounded-xl overflow-hidden">
+        <div className={`px-4 py-3 flex items-center gap-2 text-sm font-semibold ${discrepancies.length > 0 ? "bg-orange-50 text-orange-800 border-b border-orange-200" : "bg-emerald-50 text-emerald-800 border-b border-emerald-200"}`}>
+          {discrepancies.length > 0 ? <ShieldAlert className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
+          LinkedIn Verification — {discrepancies.length > 0 ? `${discrepancies.length} discrepanc${discrepancies.length === 1 ? "y" : "ies"} detected` : "Verified, no discrepancies"}
+          {linkedinUrl && (
+            <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="ml-auto text-xs font-normal flex items-center gap-1 opacity-70 hover:opacity-100">
+              <Linkedin className="w-3 h-3" /> Profile
+            </a>
+          )}
+        </div>
+        <div className="p-4 space-y-3 bg-white">
+          {profile.headline && <p className="text-sm text-slate-600 italic">"{profile.headline}"</p>}
+          {discrepancies.length > 0 && (
+            <div className="space-y-1.5">
+              {discrepancies.map((d: string, i: number) => (
+                <div key={i} className="flex items-start gap-2 text-sm text-orange-800 bg-orange-50 px-3 py-2 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-orange-500" />
+                  {d}
+                </div>
+              ))}
+            </div>
+          )}
+          {profile.skills?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">Skills on LinkedIn</p>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.skills.slice(0, 20).map((s: string, i: number) => (
+                  <span key={i} className="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs rounded-md">{s}</span>
+                ))}
+                {profile.skills.length > 20 && <span className="text-xs text-slate-400">+{profile.skills.length - 20} more</span>}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "pending") {
+    return (
+      <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl text-sm text-blue-700">
+        <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+        Verifying LinkedIn profile in the background… Refresh the page in a minute.
+      </div>
+    );
+  }
+
+  // No LinkedIn or failed — show the manual input
+  return (
+    <div className="border border-amber-200 bg-amber-50 rounded-xl p-4 space-y-3">
+      <div className="flex items-center gap-2 text-sm font-semibold text-amber-800">
+        <ShieldAlert className="w-4 h-4" />
+        {status === "not_found"
+          ? "LinkedIn profile could not be scraped (private or removed)"
+          : !linkedinUrl
+          ? "No LinkedIn URL found on this CV"
+          : "LinkedIn verification failed"}
+      </div>
+      <p className="text-xs text-amber-700">
+        Without LinkedIn verification, CV claims are unverified. The AI screening will apply additional scrutiny.
+        Enter the candidate's LinkedIn URL below to trigger verification.
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="url"
+          value={urlInput}
+          onChange={(e) => setUrlInput(e.target.value)}
+          placeholder="https://www.linkedin.com/in/username"
+          className="flex-1 text-sm px-3 py-2 border border-amber-300 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400"
+        />
+        <button
+          onClick={triggerScrape}
+          disabled={scraping || !urlInput.trim()}
+          className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-semibold rounded-lg disabled:opacity-50 flex items-center gap-2"
+        >
+          {scraping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Linkedin className="w-4 h-4" />}
+          {scraping ? "Verifying…" : "Verify"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 sm:px-5 py-3 sm:py-4 text-sm font-bold border-b-2 transition-colors flex items-center whitespace-nowrap shrink-0 ${
+        active ? "border-primary text-primary" : "border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}

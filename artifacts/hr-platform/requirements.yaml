@@ -1,0 +1,22 @@
+packages:
+  "framer-motion": "Page transitions and micro-interactions"
+  "recharts": "Analytics dashboard charts"
+  "date-fns": "Date formatting and manipulation"
+  "react-dropzone": "Drag and drop resume uploads"
+  "react-hook-form": "Form state management"
+  "@hookform/resolvers": "Zod validation for forms"
+  "zod": "Schema definitions and form validation"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility for merging tailwind classes"
+
+images:
+  - path: "artifacts/hr-platform/public/images/hero-bg.png"
+    description: "Modern abstract corporate geometric background in deep blue and slate colors, subtle glowing network nodes, premium enterprise SaaS aesthetic"
+    aspect_ratio: "16:9"
+  - path: "artifacts/hr-platform/public/images/logo-icon.png"
+    description: "Minimalist modern letter T combined with a brain or spark, vibrant blue and indigo gradient, transparent background"
+    aspect_ratio: "1:1"
+
+notes:
+  - Using generated API hooks from @workspace/api-client-react
+  - Implementing an AuthContext to handle standard session plus a Demo Mode fallback

@@ -1,0 +1,27 @@
+{
+  "name": "@workspace/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts"
+  },
+  "scripts": {
+    "sync-env": "node -e \"const fs=require('fs');if(fs.existsSync('../../.env'))fs.copyFileSync('../../.env','./prisma/.env');else console.log('[db] repo-root .env not present - relying on existing ./prisma/.env or process env');\"",
+    "generate": "pnpm sync-env && prisma generate --schema ./prisma/schema.prisma",
+    "push": "pnpm sync-env && prisma db push --schema ./prisma/schema.prisma --skip-generate",
+    "push-force": "pnpm sync-env && prisma db push --schema ./prisma/schema.prisma --skip-generate --accept-data-loss",
+    "postinstall": "prisma generate --schema ./prisma/schema.prisma || echo 'prisma generate skipped (expected at workspace install time)'"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.18.0",
+    "mssql": "^11.0.1",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@types/mssql": "^9.1.7",
+    "@types/node": "catalog:",
+    "prisma": "^6.18.0"
+  }
+}
