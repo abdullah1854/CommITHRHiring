@@ -32,6 +32,16 @@ const FOCUS_SUGGESTIONS = [
   "Highlight growth opportunities",
 ];
 
+function generatePromptExample(department: string, seniority: string, employmentType: string): string {
+  const seniorityLabel = SENIORITY_OPTIONS.find((o) => o.value === seniority)?.label ?? seniority;
+  const employmentLabel = EMPLOYMENT_TYPES.find((o) => o.value === employmentType)?.label ?? employmentType;
+  const dept = department.trim() || "the hiring team";
+  if (/it|project|pmo|operations/i.test(dept)) {
+    return `e.g. We need a ${seniorityLabel} ${employmentLabel} project manager for ERP modernization. Include governance, stakeholder management, vendor coordination, delivery risks, and success measures.`;
+  }
+  return `e.g. Describe a ${seniorityLabel} ${employmentLabel} role in ${dept}. Include business context, key responsibilities, must-have skills, collaboration needs, and measurable outcomes.`;
+}
+
 function formatJD(data: GeneratedJDResponse | null): string {
   if (!data) return "";
   const lines: string[] = [];
@@ -101,6 +111,7 @@ export default function AITools() {
 
   const formattedGenerated = useMemo(() => formatJD(generatedResult), [generatedResult]);
   const formattedImproved = useMemo(() => formatJD(improvedResult), [improvedResult]);
+  const promptExample = generatePromptExample(department, seniority, employmentType);
 
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,7 +210,7 @@ export default function AITools() {
                     <textarea
                       required
                       rows={5}
-                      placeholder="e.g. We need a React developer who knows Tailwind and Next.js. They will lead the frontend team and migrate our legacy app."
+                      placeholder={promptExample}
                       className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-slate-900"
                       value={prompt}
                       onChange={(e) => setPrompt(e.target.value)}

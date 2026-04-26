@@ -31,8 +31,8 @@ export function PublicLayout({ children, transparent = false }: { children: Reac
 
           <div className="flex items-center gap-4">
             {user ? (
-              <Link href="/dashboard" className="px-5 py-2.5 rounded-full bg-primary text-white text-sm font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:-translate-y-0.5 transition-all">
-                Go to Dashboard
+              <Link href="/dashboard" className="px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-semibold shadow-md hover:bg-slate-800 hover:-translate-y-0.5 transition-all">
+                Recruiter Dashboard
               </Link>
             ) : (
               <Link href="/login" className={cn(

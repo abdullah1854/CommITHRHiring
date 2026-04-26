@@ -182,7 +182,7 @@ export default function Admin() {
               <div className="bg-slate-50 p-5 rounded-xl border border-slate-200">
                 <h4 className="font-semibold text-slate-900 mb-2">Email Notifications</h4>
                 <p className="text-sm text-slate-500 mb-4">Configure SMTP templates for candidate emails and interview invites. Email sending is handled server-side.</p>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
                   Configure SMTP to enable
                 </span>
               </div>

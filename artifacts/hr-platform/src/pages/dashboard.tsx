@@ -10,6 +10,13 @@ import { Link } from "wouter";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatDistanceToNow } from "date-fns";
 
+function formatChartDate(value: string | number) {
+  const raw = String(value);
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const { data: overview, isLoading: overviewLoading } = useGetAnalyticsOverview();
@@ -83,9 +90,18 @@ export default function Dashboard() {
               </div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={trends?.data?.length ? trends.data : dummyTrends}>
+                <LineChart data={trends?.data?.length ? trends.data : dummyTrends} margin={{ top: 8, right: 20, left: 0, bottom: 16 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dy={10} />
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748b', fontSize: 11 }}
+                    dy={10}
+                    minTickGap={28}
+                    interval="preserveStartEnd"
+                    tickFormatter={formatChartDate}
+                  />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12 }} dx={-10} />
                   <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
                   <Line type="monotone" dataKey="candidatesAdded" name="Candidates" stroke="#3b82f6" strokeWidth={3} dot={false} activeDot={{ r: 6 }} />

@@ -116,8 +116,11 @@ export default function UploadResume() {
                 value={candidateName}
                 onChange={(e) => setCandidateName(e.target.value)}
                 className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" 
-                placeholder="Leave blank to auto-extract from resume" 
+                placeholder="Leave blank to auto-extract; filename is used if parsing cannot find a name" 
               />
+              <p className="text-xs text-slate-400 mt-1">
+                You can edit the candidate profile later if extraction needs cleanup.
+              </p>
             </div>
 
             <div>

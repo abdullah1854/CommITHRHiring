@@ -11,6 +11,13 @@ import {
 } from "recharts";
 import { Loader2, Briefcase, Users, Star, TrendingUp } from "lucide-react";
 
+function formatChartDate(value: string) {
+  if (!value) return "";
+  const date = value.includes("-") ? new Date(value) : new Date(`2026-${value}`);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
 export default function Analytics() {
   const { data: overview } = useGetAnalyticsOverview();
   const { data: pipeline, isLoading: isPipelineLoading } = useGetPipelineAnalytics();
@@ -59,6 +66,7 @@ export default function Analytics() {
   const rawJobs = jobAnalytics?.jobs ?? [];
   const hasRealJobs = rawJobs.some(j => j.candidateCount > 0);
   const displayJobs = hasRealJobs ? rawJobs : demoJobs;
+  const isMinimalJobData = displayJobs.length <= 1;
 
   const kpiCards = [
     {
@@ -140,7 +148,7 @@ export default function Analytics() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={displayActivity} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} dy={10} />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} dy={10} tickFormatter={formatChartDate} interval="preserveStartEnd" minTickGap={18} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} dx={-10} />
                   <Tooltip contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }} />
                   <Legend wrapperStyle={{ paddingTop: "20px" }} />
@@ -156,7 +164,23 @@ export default function Analytics() {
         {/* Job Performance */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
           <h3 className="font-bold text-lg text-slate-900 mb-1">Job Performance</h3>
-          <p className="text-sm text-slate-400 mb-6">Candidate volume and average AI match score by job</p>
+          <p className="text-sm text-slate-400 mb-4">Candidate volume and average AI match score by job. Candidate counts use the left axis; AI scores use the right axis (/100).</p>
+          {isMinimalJobData && (
+            <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="rounded-xl bg-blue-50 border border-blue-100 p-4">
+                <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Job</p>
+                <p className="font-bold text-slate-900 truncate">{displayJobs[0]?.jobTitle ?? "No job data"}</p>
+              </div>
+              <div className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Candidates</p>
+                <p className="text-2xl font-display font-bold text-slate-900">{displayJobs[0]?.candidateCount ?? 0}</p>
+              </div>
+              <div className="rounded-xl bg-purple-50 border border-purple-100 p-4">
+                <p className="text-xs font-semibold text-purple-600 uppercase tracking-wide">Avg AI Score</p>
+                <p className="text-2xl font-display font-bold text-slate-900">{displayJobs[0]?.averageScore ?? 0}/100</p>
+              </div>
+            </div>
+          )}
           <div className="h-72">
             {isJobLoading ? (
               <Loader />
@@ -167,7 +191,7 @@ export default function Analytics() {
                   <XAxis dataKey="jobTitle" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} dy={10} angle={-20} textAnchor="end" height={60} />
                   <YAxis yAxisId="left" orientation="left" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
                   <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} domain={[0, 100]} />
-                  <Tooltip cursor={{ fill: "#f8fafc" }} contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }} />
+                  <Tooltip cursor={{ fill: "#f8fafc" }} formatter={(value, name) => name === "Avg AI Score" ? [`${value}/100`, name] : [value, name]} contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" }} />
                   <Legend wrapperStyle={{ paddingTop: "20px" }} />
                   <Bar yAxisId="left" dataKey="candidateCount" name="Total Candidates" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={50} />
                   <Bar yAxisId="right" dataKey="averageScore" name="Avg AI Score" fill="#8b5cf6" radius={[4, 4, 0, 0]} maxBarSize={50} />
