@@ -162,7 +162,7 @@ export function interviewInviteTemplate(opts: {
   `;
 }
 
-function escapeIcsText(value: string): string {
+export function escapeIcsText(value: string): string {
   return value
     .replace(/\\/g, "\\\\")
     .replace(/\n/g, "\\n")
@@ -170,7 +170,7 @@ function escapeIcsText(value: string): string {
     .replace(/;/g, "\\;");
 }
 
-function formatIcsDate(date: Date): string {
+export function formatIcsDate(date: Date): string {
   return date.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
 }
 
