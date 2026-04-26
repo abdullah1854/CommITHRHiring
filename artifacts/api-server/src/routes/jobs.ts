@@ -287,6 +287,18 @@ router.post("/", requireAuth, async (req, res) => {
         .json({ error: "Bad Request", message: `Invalid status "${status}"` });
     }
 
+    const validation = validateExperienceAndSkills({
+      status: normalizedStatus,
+      requiredSkills,
+      minExperience,
+      maxExperience,
+    });
+    if (validation.error) {
+      return res.status(400).json({ error: "Bad Request", message: validation.error });
+    }
+    const normalizedRequiredSkills = validation.normalized.requiredSkills ?? [];
+    const normalizedPreferredSkills = normalizeSkillList(preferredSkills);
+
     const job = await prisma.job.create({
       data: {
         title: title.trim(),
@@ -294,10 +306,10 @@ router.post("/", requireAuth, async (req, res) => {
         location: typeof location === "string" && location.trim() ? location.trim() : "Remote",
         employmentType: normalizedEmploymentType,
         seniority: normalizedSeniority,
-        requiredSkills: serializeList(Array.isArray(requiredSkills) ? requiredSkills : []),
-        preferredSkills: serializeList(Array.isArray(preferredSkills) ? preferredSkills : []),
-        minExperience: minExperience ?? null,
-        maxExperience: maxExperience ?? null,
+        requiredSkills: serializeList(normalizedRequiredSkills),
+        preferredSkills: serializeList(normalizedPreferredSkills),
+        minExperience: validation.normalized.minExperience ?? null,
+        maxExperience: validation.normalized.maxExperience ?? null,
         minSalary: minSalary ?? null,
         maxSalary: maxSalary ?? null,
         salaryCurrency: salaryCurrency ?? "USD",
@@ -364,6 +376,9 @@ router.put("/:id", requireAuth, async (req, res) => {
       if (req.body?.[key] !== undefined) updates[key] = req.body[key];
     }
 
+    const existing = await prisma.job.findFirst({ where: { id } });
+    if (!existing) return res.status(404).json({ error: "Not Found", message: "Job not found" });
+
     if (updates.status !== undefined) {
       const s = normalizeEnum(updates.status);
       if (!s || !VALID_JOB_STATUSES.has(s)) {
@@ -392,11 +407,30 @@ router.put("/:id", requireAuth, async (req, res) => {
       }
       updates.seniority = s;
     }
-    if (updates.requiredSkills !== undefined) {
-      updates.requiredSkills = serializeList(updates.requiredSkills);
+
+    const validation = validateExperienceAndSkills({
+      status: updates.status ?? existing.status,
+      requiredSkills: updates.requiredSkills,
+      minExperience: updates.minExperience,
+      maxExperience: updates.maxExperience,
+      existingRequiredSkills: existing.requiredSkills,
+      existingMinExperience: existing.minExperience,
+      existingMaxExperience: existing.maxExperience,
+    });
+    if (validation.error) {
+      return res.status(400).json({ error: "Bad Request", message: validation.error });
+    }
+    if (validation.normalized.requiredSkills !== undefined) {
+      updates.requiredSkills = serializeList(validation.normalized.requiredSkills);
+    }
+    if (validation.normalized.minExperience !== undefined) {
+      updates.minExperience = validation.normalized.minExperience;
+    }
+    if (validation.normalized.maxExperience !== undefined) {
+      updates.maxExperience = validation.normalized.maxExperience;
     }
     if (updates.preferredSkills !== undefined) {
-      updates.preferredSkills = serializeList(updates.preferredSkills);
+      updates.preferredSkills = serializeList(normalizeSkillList(updates.preferredSkills));
     }
 
     let job;
