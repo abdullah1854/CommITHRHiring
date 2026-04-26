@@ -24,6 +24,7 @@ import NewInterview from "@/pages/interviews/new";
 import Analytics from "@/pages/analytics";
 import Admin from "@/pages/admin/index";
 import AITools from "@/pages/ai-tools";
+import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -80,6 +81,7 @@ function Router() {
       <ProtectedRoute path="/analytics" component={Analytics} />
       <ProtectedRoute path="/admin" component={Admin} adminOnly />
       <ProtectedRoute path="/ai-tools" component={AITools} />
+      <ProtectedRoute path="/settings" component={SettingsPage} />
 
       {/* 404 */}
       <Route component={NotFound} />

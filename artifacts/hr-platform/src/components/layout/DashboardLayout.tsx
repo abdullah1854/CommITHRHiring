@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ShieldCheck,
+  SlidersHorizontal,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -35,6 +36,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
     { name: "Interviews", href: "/interviews", icon: <Calendar className="w-5 h-5" /> },
     { name: "AI Tools", href: "/ai-tools", icon: <Sparkles className="w-5 h-5" /> },
     { name: "Analytics", href: "/analytics", icon: <BarChart3 className="w-5 h-5" /> },
+    { name: "Settings", href: "/settings", icon: <SlidersHorizontal className="w-5 h-5" /> },
   ];
 
   if (user?.role === "admin") {
