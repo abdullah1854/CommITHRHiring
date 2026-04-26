@@ -62,3 +62,6 @@ artifacts/api-server/uploads/*
 
 # Claude / agent state
 .claude/
+
+# Local git worktrees
+.worktrees/
