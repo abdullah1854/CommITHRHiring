@@ -60,7 +60,7 @@ function sanitizeUser(user: any) {
 }
 
 function sanitizePublicJob(job: any) {
-  const { minSalary, maxSalary, salaryCurrency, ...safe } = job;
+  const { minSalary, maxSalary, salaryCurrency, createdBy, createdById, ...safe } = job;
   return safe;
 }
 
@@ -328,27 +328,35 @@ router.post("/", requireAuth, async (req, res) => {
   }
 });
 
-router.get("/:id", requireAuth, async (req, res) => {
+router.get("/:id", (req: Request, res: Response, next: NextFunction) => {
+  const isPublic = (req.query.public as string | undefined) === "true";
+  if (isPublic) return getJob(req, res).catch(next);
+  return requireAuth(req, res, () => getJob(req, res).catch(next));
+});
+
+async function getJob(req: Request, res: Response) {
   try {
     const id = req.params.id as string;
+    const isPublic = (req.query.public as string | undefined) === "true";
     const job = await prisma.job.findFirst({
-      where: { id },
+      where: { id, ...(isPublic ? { status: "open" } : {}) },
       include: { createdBy: true },
     });
     if (!job) return res.status(404).json({ error: "Not Found", message: "Job not found" });
 
     const candidateCount = await prisma.application.count({ where: { jobId: id } });
 
-    res.json({
+    const hydrated = {
       ...hydrateJob(job),
       createdBy: (job as any).createdBy ? sanitizeUser((job as any).createdBy) : null,
       candidateCount,
-    });
+    };
+    res.json(isPublic ? sanitizePublicJob(hydrated) : hydrated);
   } catch (err) {
     console.error("[jobs] get failed:", err);
     res.status(500).json({ error: "Internal Server Error", message: "Failed to fetch job" });
   }
-});
+}
 
 router.put("/:id", requireAuth, async (req, res) => {
   try {
