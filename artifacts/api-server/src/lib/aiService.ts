@@ -1,5 +1,10 @@
 import OpenAI from "openai";
 import { createHash } from "node:crypto";
+import {
+  ANTHROPIC_MODEL,
+  callAnthropicJson,
+  hasAnthropicApiKey,
+} from "@workspace/integrations-anthropic-ai-server";
 
 // ---------------------------------------------------------------------------
 // Configuration (everything tunable lives in env)
@@ -97,8 +102,17 @@ const FAIL_REASONING = "AI service unavailable";
 const hasApiKey = Boolean(OPENAI_API_KEY);
 console.log(
   `[aiService] init model=${OPENAI_MODEL} questionsModel=${QUESTIONS_MODEL} questionsWebSearch=${QUESTIONS_WEB_SEARCH} timeoutMs=${REQUEST_TIMEOUT_MS} ` +
-    `screenCap=${RESUME_CONTEXT_CAP} retries=${MAX_RETRIES} hasApiKey=${hasApiKey}`,
+    `screenCap=${RESUME_CONTEXT_CAP} retries=${MAX_RETRIES} hasApiKey=${hasApiKey} hasAnthropicApiKey=${hasAnthropicApiKey}`,
 );
+
+export type ScreeningProvider = "openai" | "anthropic";
+
+export function selectScreeningProvider(
+  mode: ScreeningMode,
+  anthropicConfigured = hasAnthropicApiKey,
+): ScreeningProvider {
+  return mode === "deep" && anthropicConfigured ? "anthropic" : "openai";
+}
 
 const openai = new OpenAI({
   baseURL: OPENAI_BASE_URL,
@@ -606,23 +620,37 @@ export async function screenCandidate(input: ScreeningInput): Promise<ScreeningO
   // token headroom to avoid truncated JSON.
   const maxTokens = mode === "deep" ? Math.max(SCREEN_MAX_TOKENS, 6_000) : SCREEN_MAX_TOKENS;
 
-  const result = await callOpenAIJson<any>(
-    `screenCandidate:${mode}`,
-    {
-      model: OPENAI_MODEL,
-      max_completion_tokens: maxTokens,
-      temperature: SCREEN_TEMPERATURE,
-      // OpenAI's documented determinism toggle. Same seed + temperature 0 +
-      // unchanged prompt should produce repeatable scores.
-      seed: SCREEN_SEED,
-      messages: [
-        { role: "system", content: SCREEN_SYSTEM_PROMPT },
-        { role: "user", content: prompt },
-      ],
-      response_format: { type: "json_object" },
-    } as any,
-    null,
-  );
+  const provider = selectScreeningProvider(mode);
+  const result =
+    provider === "anthropic"
+      ? await callAnthropicJson<any>(
+          `screenCandidate:${mode}`,
+          {
+            model: ANTHROPIC_MODEL,
+            system: SCREEN_SYSTEM_PROMPT,
+            user: prompt,
+            maxTokens,
+            temperature: SCREEN_TEMPERATURE,
+          },
+          null,
+        )
+      : await callOpenAIJson<any>(
+          `screenCandidate:${mode}`,
+          {
+            model: OPENAI_MODEL,
+            max_completion_tokens: maxTokens,
+            temperature: SCREEN_TEMPERATURE,
+            // OpenAI's documented determinism toggle. Same seed + temperature 0 +
+            // unchanged prompt should produce repeatable scores.
+            seed: SCREEN_SEED,
+            messages: [
+              { role: "system", content: SCREEN_SYSTEM_PROMPT },
+              { role: "user", content: prompt },
+            ],
+            response_format: { type: "json_object" },
+          } as any,
+          null,
+        );
 
   if (!result || typeof result !== "object") return buildFallbackScreening();
 

@@ -103,6 +103,14 @@ test("legacy path (no sha) still hashes extracted fields for backwards compat", 
   assert.notEqual(k1, k2);
 });
 
+test("deep screening selects Anthropic only when the Anthropic key is configured", async () => {
+  const { selectScreeningProvider } = await import("./aiService.js");
+
+  assert.equal(selectScreeningProvider("standard", true), "openai");
+  assert.equal(selectScreeningProvider("deep", false), "openai");
+  assert.equal(selectScreeningProvider("deep", true), "anthropic");
+});
+
 test("prompt builder defaults to all four types and includes per-type counts", () => {
   const { prompt, types } = buildInterviewQuestionsPrompt(IQ_BASE);
   assert.deepEqual(types, ["technical", "behavioral", "roleSpecific", "followUp"]);
