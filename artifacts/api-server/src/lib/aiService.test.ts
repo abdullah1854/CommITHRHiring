@@ -1,8 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
-import { screeningCacheKey } from "./aiService.js";
-import { buildInterviewQuestionsPrompt } from "./aiService.js";
+import {
+  buildInterviewQuestionsPrompt,
+  normalizeResumeTextForFingerprint,
+  resumeTextFingerprint,
+  screeningCacheKey,
+} from "./aiService.js";
 
 const IQ_BASE = {
   candidateName: "Jane Doe",
@@ -30,6 +34,45 @@ const BASE_JOB = {
   minExperience: 7,
   maxExperience: 12,
 };
+
+test("normalized resume text fingerprint ignores case, whitespace, bullets, and page footers", () => {
+  const a = resumeTextFingerprint("JANE DOE\n• TypeScript\nPage 1 of 2");
+  const b = resumeTextFingerprint(" jane doe - typescript ");
+
+  assert.equal(normalizeResumeTextForFingerprint("JANE DOE\n• TypeScript\nPage 1 of 2"), "jane doe - typescript");
+  assert.equal(a, b);
+  assert.equal(resumeTextFingerprint("   "), null);
+});
+
+test("resume text fingerprint outranks file sha in screening cache key", () => {
+  const keyA = screeningCacheKey({
+    candidateName: "Jane Doe",
+    resumeText: "parse A",
+    skills: ["TypeScript"],
+    resumeFileSha: "first-pdf-export",
+    resumeTextFingerprint: "normalized-resume-v1",
+    ...BASE_JOB,
+  });
+  const keyB = screeningCacheKey({
+    candidateName: "Different Parsed Name",
+    resumeText: "parse B",
+    skills: ["Python"],
+    resumeFileSha: "second-pdf-export",
+    resumeTextFingerprint: "normalized-resume-v1",
+    ...BASE_JOB,
+  });
+  const keyC = screeningCacheKey({
+    candidateName: "Jane Doe",
+    resumeText: "parse A",
+    skills: ["TypeScript"],
+    resumeFileSha: "first-pdf-export",
+    resumeTextFingerprint: "normalized-resume-v2",
+    ...BASE_JOB,
+  });
+
+  assert.equal(keyA, keyB);
+  assert.notEqual(keyA, keyC);
+});
 
 test("same resume sha + job = same cache key regardless of extracted metadata drift", () => {
   const keyA = screeningCacheKey({

@@ -131,10 +131,12 @@ model Resume {
   mimeType    String?   @map("mime_type") @db.VarChar(100)
   parsedText  String?   @map("parsed_text")
   fileSha256  String?   @map("file_sha256") @db.VarChar(64)
+  textFingerprint String? @map("text_fingerprint") @db.VarChar(64)
   uploadedAt  DateTime  @default(now()) @map("uploaded_at") @db.Timestamptz(6)
 
   @@index([candidateId])
   @@index([fileSha256])
+  @@index([textFingerprint])
   @@map("resumes")
   @@schema("commit_hr")
 }
@@ -176,6 +178,7 @@ model AiScreeningResult {
   // Determinism: mode + resumeFileSha + cacheKey together identify a (job, resume, depth) triple.
   mode             String?   @default("standard") @db.VarChar(20) // standard|deep
   resumeFileSha    String?   @map("resume_file_sha") @db.VarChar(64)
+  resumeTextFingerprint String? @map("resume_text_fingerprint") @db.VarChar(64)
   cacheKey         String?   @map("cache_key") @db.VarChar(128)
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
@@ -184,6 +187,7 @@ model AiScreeningResult {
   @@index([candidateId, jobId])
   @@index([cacheKey])
   @@index([jobId, resumeFileSha, mode])
+  @@index([jobId, resumeTextFingerprint, mode])
   @@index([createdAt])
   @@map("ai_screening_results")
   @@schema("commit_hr")
@@ -193,6 +197,7 @@ model ScreeningCache {
   cacheKey      String   @id @map("cache_key") @db.VarChar(128)
   jobId         String   @map("job_id") @db.Uuid
   resumeFileSha String   @map("resume_file_sha") @db.VarChar(64)
+  resumeTextFingerprint String? @map("resume_text_fingerprint") @db.VarChar(64)
   mode          String   @default("standard") @db.VarChar(20)
   matchScore    Float    @map("match_score") @db.Real
   fitLabel      String   @map("fit_label") @db.VarChar(50)
@@ -202,7 +207,9 @@ model ScreeningCache {
   updatedAt     DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@index([jobId, resumeFileSha, mode])
+  @@index([jobId, resumeTextFingerprint, mode])
   @@index([resumeFileSha])
+  @@index([resumeTextFingerprint])
   @@index([createdAt])
   @@map("screening_cache")
   @@schema("commit_hr")
