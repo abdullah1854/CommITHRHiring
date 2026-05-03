@@ -29,7 +29,6 @@ This monorepo deploys as **two services** on a single Railway project.
      - `ANTHROPIC_API_KEY`
      - `ANTHROPIC_DEEP_SCREENING_MODEL` — `claude-sonnet-4-6`
      - `CORS_ORIGIN` — the public URL of the hr-platform service (set after Service B has a domain)
-     - `SESSION_COOKIE_SECURE=true`
      - `NODE_ENV=production`
      - `APIFY_TOKEN` (optional)
      - `SMTP_*` (optional)
