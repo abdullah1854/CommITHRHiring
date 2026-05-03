@@ -5,11 +5,12 @@ import {
   useListCandidates,
 } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
-import { Briefcase, Users, Calendar, Sparkles, TrendingUp, ArrowRight, UploadCloud } from "lucide-react";
+import { Briefcase, Users, Calendar, Sparkles, TrendingUp, ArrowRight, UploadCloud, Target, Gauge, ShieldCheck, Zap } from "lucide-react";
 import { Link } from "wouter";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { formatDistanceToNow } from "date-fns";
 import { EmptyState } from "@/components/ui/empty-state";
+import { buildHiringInsights } from "@/lib/recruiting-insights";
 
 function formatChartDate(value: string | number) {
   const raw = String(value);
@@ -36,6 +37,8 @@ export default function Dashboard() {
 
   const stats = overviewLoading ? fallbackOverview : (overview ?? fallbackOverview);
   const firstName = user?.name?.split(" ")[0] ?? "there";
+  const candidates = candidatesData?.candidates ?? [];
+  const insights = buildHiringInsights(stats, candidates);
 
   return (
     <DashboardLayout title="Overview">
@@ -74,6 +77,8 @@ export default function Dashboard() {
           bg="bg-purple-500/10"
         />
       </div>
+
+      <HiringCommandCenter insights={insights} isLoading={overviewLoading || candidatesLoading} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 bg-card rounded-2xl border border-border shadow-sm p-6">
@@ -190,6 +195,109 @@ export default function Dashboard() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+function HiringCommandCenter({ insights, isLoading }: { insights: ReturnType<typeof buildHiringInsights>; isLoading: boolean }) {
+  const toneClasses: Record<string, string> = {
+    blue: "border-blue-200 bg-blue-50 text-blue-900 dark:border-blue-400/20 dark:bg-blue-500/10 dark:text-blue-100",
+    emerald: "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-400/20 dark:bg-emerald-500/10 dark:text-emerald-100",
+    amber: "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-400/20 dark:bg-amber-500/10 dark:text-amber-100",
+    purple: "border-purple-200 bg-purple-50 text-purple-900 dark:border-purple-400/20 dark:bg-purple-500/10 dark:text-purple-100",
+  };
+
+  return (
+    <section className="mb-8 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-card via-card to-primary/5 shadow-sm">
+      <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_1.4fr_1fr] gap-0">
+        <div className="border-b xl:border-b-0 xl:border-r border-border p-6">
+          <div className="flex items-center gap-2 text-sm font-semibold text-primary mb-4">
+            <Sparkles className="w-4 h-4" /> AI Hiring Command Center
+          </div>
+          <div className="flex items-end gap-3 mb-3">
+            <div className="text-5xl font-display font-black tracking-tight text-foreground">
+              {isLoading ? "—" : insights.healthScore}
+            </div>
+            <div className="pb-2">
+              <div className="text-sm font-bold text-foreground">{insights.healthLabel}</div>
+              <div className="text-xs text-muted-foreground">Pipeline health score</div>
+            </div>
+          </div>
+          <div className="h-2 rounded-full bg-muted overflow-hidden mb-4">
+            <div className="h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 transition-all" style={{ width: `${insights.healthScore}%` }} />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Live quality signal combining AI screening coverage, candidate momentum, and bottlenecks.
+          </p>
+        </div>
+
+        <div className="border-b xl:border-b-0 xl:border-r border-border p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+            <InsightMetric icon={<Gauge className="w-4 h-4" />} label="Screened" value={`${insights.screeningCoverage}%`} />
+            <InsightMetric icon={<Target className="w-4 h-4" />} label="Advanced" value={`${insights.conversionRate}%`} />
+            <InsightMetric icon={<ShieldCheck className="w-4 h-4" />} label="Stale reviews" value={insights.staleReviewCount} />
+          </div>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-3">Recommended next moves</h3>
+          <div className="space-y-3">
+            {insights.actions.map((action) => (
+              <div key={action.label} className={`rounded-2xl border px-4 py-3 ${toneClasses[action.tone]}`}>
+                <div className="flex items-start gap-3">
+                  <Zap className="w-4 h-4 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold">{action.label}</p>
+                    <p className="text-xs opacity-80 mt-0.5">{action.detail}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-bold text-foreground">Best matches</h3>
+              <p className="text-xs text-muted-foreground">Highest AI-scored candidates</p>
+            </div>
+            <Link href="/candidates" className="text-xs font-semibold text-primary hover:underline">Review all</Link>
+          </div>
+          {insights.topCandidates.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
+              Run AI screening to surface ranked candidates here.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {insights.topCandidates.map((candidate) => (
+                <Link key={candidate.id} href={`/candidates/${candidate.id}`}>
+                  <div className="group rounded-2xl border border-border bg-background/70 p-3 hover:border-primary/40 hover:bg-muted transition-colors cursor-pointer">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-sm text-foreground truncate">{candidate.fullName}</p>
+                        <p className="text-xs text-muted-foreground truncate">{candidate.latestFit ?? candidate.status.replace(/_/g, " ")}</p>
+                      </div>
+                      <div className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-black text-emerald-700 dark:text-emerald-300">
+                        {candidate.latestScore}/100
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function InsightMetric({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-border bg-background/70 p-4">
+      <div className="flex items-center gap-2 text-muted-foreground mb-2">
+        {icon}
+        <span className="text-xs font-semibold uppercase tracking-wide">{label}</span>
+      </div>
+      <div className="text-2xl font-display font-black text-foreground">{value}</div>
+    </div>
   );
 }
 

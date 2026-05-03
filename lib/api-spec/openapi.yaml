@@ -1064,6 +1064,20 @@ components:
       properties:
         status:
           type: string
+          enum: [ok, degraded]
+        db:
+          type: string
+          enum: [connected, down]
+        supabase:
+          type: string
+          enum: [connected, down]
+        service:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        uptimeSeconds:
+          type: integer
       required:
         - status
 
