@@ -4,6 +4,7 @@ import { requireAuth } from "../middlewares/auth.js";
 import {
   screenCandidate,
   screeningCacheKey,
+  resumeTextFingerprint,
   generateCandidateSummary,
   generateInterviewQuestions,
   generateJobDescription,
@@ -63,9 +64,9 @@ interface ScreeningRunOptions {
   force?: boolean;
 }
 
-const SCREENING_EXT_COL_RE = /(raw_response|cache_key|resume_file_sha|mode|Invalid column name)/i;
+const SCREENING_EXT_COL_RE = /(raw_response|cache_key|resume_file_sha|resume_text_fingerprint|mode|Invalid column name)/i;
 const SCREENING_CACHE_COL_RE =
-  /(screening_cache|cache_key|resume_file_sha|match_score|fit_label|payload|Invalid column name|Invalid object name|does not exist)/i;
+  /(screening_cache|cache_key|resume_file_sha|resume_text_fingerprint|match_score|fit_label|payload|Invalid column name|Invalid object name|does not exist)/i;
 
 type ScreeningPayload = Pick<
   ScreeningOutput,
@@ -152,6 +153,7 @@ function screeningRowData(
   jobId: string,
   mode: ScreeningMode,
   resumeFileSha: string | null,
+  resumeTextFingerprint: string | null,
   cacheKey: string,
   payload: ScreeningPayload,
 ) {
@@ -172,6 +174,7 @@ function screeningRowData(
     ...baseData,
     mode,
     resumeFileSha,
+    resumeTextFingerprint,
     cacheKey,
     rawResponse: payload.rawResponse ?? null,
   };
@@ -198,6 +201,7 @@ async function createAiScreeningRow(
         ...baseData,
         mode: undefined,
         resumeFileSha: undefined,
+        resumeTextFingerprint: undefined,
         cacheKey: undefined,
         rawResponse: undefined,
       },
@@ -244,6 +248,7 @@ async function createScreeningFromPayload(
   jobId: string,
   mode: ScreeningMode,
   resumeFileSha: string | null,
+  resumeTextFingerprint: string | null,
   cacheKey: string,
   payload: ScreeningPayload,
 ): Promise<any> {
@@ -252,6 +257,7 @@ async function createScreeningFromPayload(
     jobId,
     mode,
     resumeFileSha,
+    resumeTextFingerprint,
     cacheKey,
     payload,
   );
@@ -263,16 +269,26 @@ async function findDurableScreeningCache(
   tag: string,
   cacheKey: string,
   resumeFileSha: string | null,
-): Promise<ScreeningPayload | null> {
-  if (!resumeFileSha || !db.screeningCache) return null;
+  resumeTextFingerprint: string | null = null,
+  jobId: string | null = null,
+  mode: ScreeningMode = "standard",
+): Promise<{ payload: ScreeningPayload; reason: "exact_cache_key" | "normalized_resume_match" } | null> {
+  if ((!resumeFileSha && !resumeTextFingerprint) || !db.screeningCache) return null;
   try {
     const cached = await db.screeningCache.findUnique({ where: { cacheKey } });
-    if (!cached) return null;
-    if (cached.resumeFileSha !== resumeFileSha) {
-      console.warn(`${tag} durable cache sha mismatch for key=${cacheKey.slice(0, 12)}`);
-      return null;
+    if (cached) {
+      if (resumeFileSha && cached.resumeFileSha !== resumeFileSha) {
+        if (resumeTextFingerprint && cached.resumeTextFingerprint === resumeTextFingerprint) {
+          const payload = payloadFromCacheRow(cached);
+          if (payload) return { payload, reason: "normalized_resume_match" };
+        }
+        console.warn(`${tag} durable cache sha mismatch for key=${cacheKey.slice(0, 12)}`);
+        return null;
+      }
+      const payload = payloadFromCacheRow(cached);
+      if (payload) return { payload, reason: "exact_cache_key" };
     }
-    return payloadFromCacheRow(cached);
+    return null;
   } catch (err: any) {
     if (!isScreeningCacheSchemaErr(err)) {
       console.warn(`${tag} durable screening cache lookup failed:`, String(err?.message ?? err));
@@ -287,42 +303,57 @@ async function rememberDurableScreeningCache(
   cacheKey: string,
   jobId: string,
   resumeFileSha: string | null,
+  resumeTextFingerprint: string | null,
   mode: ScreeningMode,
   payload: ScreeningPayload,
+  options: { replaceExisting?: boolean } = {},
 ): Promise<ScreeningPayload> {
-  if (!resumeFileSha || !db.screeningCache) return payload;
+  if ((!resumeFileSha && !resumeTextFingerprint) || !db.screeningCache) return payload;
+  const data = {
+    cacheKey,
+    jobId,
+    resumeFileSha: resumeFileSha ?? "",
+    resumeTextFingerprint: resumeTextFingerprint ?? undefined,
+    mode,
+    matchScore: payload.matchScore,
+    fitLabel: payload.fitLabel,
+    payload: {
+      matchScore: payload.matchScore,
+      fitLabel: payload.fitLabel,
+      matchedSkills: payload.matchedSkills,
+      missingSkills: payload.missingSkills,
+      strengths: payload.strengths,
+      risks: payload.risks,
+      reasoning: payload.reasoning,
+      aiRecommendation: payload.aiRecommendation,
+      rawResponse: payload.rawResponse ?? null,
+    },
+    rawResponse: payload.rawResponse ?? null,
+  };
   try {
-    await db.screeningCache.create({
-      data: {
-        cacheKey,
-        jobId,
-        resumeFileSha,
-        mode,
-        matchScore: payload.matchScore,
-        fitLabel: payload.fitLabel,
-        payload: {
-          matchScore: payload.matchScore,
-          fitLabel: payload.fitLabel,
-          matchedSkills: payload.matchedSkills,
-          missingSkills: payload.missingSkills,
-          strengths: payload.strengths,
-          risks: payload.risks,
-          reasoning: payload.reasoning,
-          aiRecommendation: payload.aiRecommendation,
-          rawResponse: payload.rawResponse ?? null,
-        },
-        rawResponse: payload.rawResponse ?? null,
-      },
-    });
+    await db.screeningCache.create({ data });
     return payload;
   } catch (err: any) {
     if (err?.code === "P2002") {
-      const existing = await findDurableScreeningCache(db, tag, cacheKey, resumeFileSha);
+      if (options.replaceExisting && typeof db.screeningCache.update === "function") {
+        try {
+          await db.screeningCache.update({ where: { cacheKey }, data });
+          console.log(`${tag} force=true refreshed durable cache score=${payload.matchScore}`);
+          return payload;
+        } catch (updateErr: any) {
+          if (!isScreeningCacheSchemaErr(updateErr)) {
+            console.warn(`${tag} durable screening cache refresh failed:`, String(updateErr?.message ?? updateErr));
+          }
+          return payload;
+        }
+      }
+      if (options.replaceExisting) return payload;
+      const existing = await findDurableScreeningCache(db, tag, cacheKey, resumeFileSha, resumeTextFingerprint, jobId, mode);
       if (existing) {
         console.log(
-          `${tag} durable cache already existed; keeping score=${existing.matchScore}`,
+          `${tag} durable cache already existed; keeping score=${existing.payload.matchScore}`,
         );
-        return existing;
+        return existing.payload;
       }
     } else if (!isScreeningCacheSchemaErr(err)) {
       console.warn(`${tag} durable screening cache write failed:`, String(err?.message ?? err));
@@ -383,6 +414,10 @@ export async function runScreeningInternal(
   }
 
   const resumeFileSha: string | null = typeof resume?.fileSha256 === "string" ? resume.fileSha256 : null;
+  const resumeFingerprint: string | null =
+    typeof resume?.textFingerprint === "string" && resume.textFingerprint.length > 0
+      ? resume.textFingerprint
+      : resumeTextFingerprint(resume?.parsedText ?? null);
 
   const screeningInput = {
     candidateName: candidate.fullName,
@@ -401,6 +436,7 @@ export async function runScreeningInternal(
     linkedinDiscrepancies: [] as string[],
     linkedinStatus: null,
     resumeFileSha,
+    resumeTextFingerprint: resumeFingerprint,
     mode,
   };
 
@@ -438,7 +474,7 @@ export async function runScreeningInternal(
         console.log(
           `[ai] cache HIT (db.cacheKey) cand=${candidateId} job=${jobId} mode=${mode} score=${byKey.matchScore}`,
         );
-        return { screening: byKey, candidate, job, cached: true as const };
+        return { screening: byKey, candidate, job, cached: true as const, cacheReason: "exact_cache_key" as const };
       }
     } catch (dbKeyErr: any) {
       // Swallow schema-drift errors silently — column may not exist yet.
@@ -449,13 +485,16 @@ export async function runScreeningInternal(
     }
 
     // Level 0a — Durable cache row independent from candidate lifecycle.
-    const durablePayload = await findDurableScreeningCache(
+    const durableHit = await findDurableScreeningCache(
       db,
       tag,
       inputsCacheKey,
       resumeFileSha,
+      resumeFingerprint,
+      jobId,
+      mode,
     );
-    if (durablePayload) {
+    if (durableHit) {
       const screening = await createScreeningFromPayload(
         db,
         tag,
@@ -463,8 +502,9 @@ export async function runScreeningInternal(
         jobId,
         mode,
         resumeFileSha,
+        resumeFingerprint,
         inputsCacheKey,
-        durablePayload,
+        durableHit.payload,
       );
       try {
         rememberScreening(inputsCacheKey, {
@@ -481,9 +521,9 @@ export async function runScreeningInternal(
         data: { status: "reviewing" },
       });
       console.log(
-        `${tag} cache HIT (durable screening_cache) score=${screening.matchScore}`,
+        `${tag} cache HIT (durable screening_cache:${durableHit.reason}) score=${screening.matchScore}`,
       );
-      return { screening, candidate, job, cached: true as const };
+      return { screening, candidate, job, cached: true as const, cacheReason: durableHit.reason };
     }
 
     // Level 0b — Same job + identical inputs were already scored for a *different*
@@ -506,6 +546,7 @@ export async function runScreeningInternal(
           inputsCacheKey,
           jobId,
           resumeFileSha,
+          resumeFingerprint,
           mode,
           payloadFromScreeningRow(donor),
         );
@@ -516,6 +557,7 @@ export async function runScreeningInternal(
           jobId,
           mode,
           resumeFileSha,
+          resumeFingerprint,
           inputsCacheKey,
           donorPayload,
         );
@@ -537,7 +579,7 @@ export async function runScreeningInternal(
           `${tag} cache HIT (global clone from donor=${donor.candidateId.slice(0, 8)}) ` +
             `score=${screening.matchScore}`,
         );
-        return { screening, candidate, job, cached: true as const };
+        return { screening, candidate, job, cached: true as const, cacheReason: "exact_cache_key" as const };
       }
     } catch (globalErr: any) {
       const msg = String(globalErr?.message ?? "");
@@ -566,6 +608,7 @@ export async function runScreeningInternal(
             inputsCacheKey,
             jobId,
             resumeFileSha,
+            resumeFingerprint,
             mode,
             payloadFromScreeningRow(bySha),
           );
@@ -582,7 +625,7 @@ export async function runScreeningInternal(
           console.log(
             `[ai] cache HIT (db.sha) cand=${candidateId} job=${jobId} mode=${mode} score=${bySha.matchScore}`,
           );
-          return { screening: bySha, candidate, job, cached: true as const };
+          return { screening: bySha, candidate, job, cached: true as const, cacheReason: "resume_sha_match" as const };
         }
       } catch (shaErr: any) {
         const msg = String(shaErr?.message ?? "");
@@ -610,7 +653,7 @@ export async function runScreeningInternal(
           console.log(
             `[ai] cache HIT (file) cand=${candidateId} job=${jobId} mode=${mode} score=${cachedRow.matchScore}`,
           );
-          return { screening: cachedRow, candidate, job, cached: true as const };
+          return { screening: cachedRow, candidate, job, cached: true as const, cacheReason: "file_cache" as const };
         }
       } catch (lookupErr) {
         console.warn(
@@ -636,6 +679,7 @@ export async function runScreeningInternal(
               inputsCacheKey,
               jobId,
               resumeFileSha,
+              resumeFingerprint,
               mode,
               payloadFromScreeningRow(previous),
             );
@@ -652,7 +696,7 @@ export async function runScreeningInternal(
             console.log(
               `[ai] cache HIT (db.legacy) cand=${candidateId} job=${jobId} mode=${mode} score=${previous.matchScore}`,
             );
-            return { screening: previous, candidate, job, cached: true as const };
+            return { screening: previous, candidate, job, cached: true as const, cacheReason: "legacy_raw_response" as const };
           }
         } catch {
           /* fall through */
@@ -688,8 +732,10 @@ export async function runScreeningInternal(
     inputsCacheKey,
     jobId,
     resumeFileSha,
+    resumeFingerprint,
     mode,
     payloadFromResult(result),
+    { replaceExisting: force },
   );
   if (payload.matchScore !== result.matchScore) {
     console.log(
@@ -704,6 +750,7 @@ export async function runScreeningInternal(
     jobId,
     mode,
     resumeFileSha,
+    resumeFingerprint,
     inputsCacheKey,
     payload,
   );
@@ -735,7 +782,7 @@ export async function runScreeningInternal(
     );
   }
 
-  return { screening, candidate, job };
+  return { screening, candidate, job, cached: false as const, cacheReason: force ? "force_rescore" as const : "fresh" as const };
 }
 
 /**

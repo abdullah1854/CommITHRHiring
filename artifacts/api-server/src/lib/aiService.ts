@@ -352,10 +352,13 @@ interface ScreeningInput {
   linkedinProfile?: LinkedInProfileShape | null;
   linkedinDiscrepancies?: string[];
   linkedinStatus?: string | null;
-  // SHA256 of the resume file bytes. When present it replaces candidateName +
-  // resumeText + skills in the cache key, so the same PDF yields the same
-  // score regardless of any drift in LLM-extracted metadata.
+  // SHA256 of the resume file bytes. Used as the strongest resume identity when
+  // a normalized text fingerprint is not available.
   resumeFileSha?: string | null;
+  // Stable hash of normalized parsed resume text. When present it replaces
+  // candidateName + resumeText + skills in the cache key, so semantically
+  // identical re-exports with different PDF bytes reuse the same screening.
+  resumeTextFingerprint?: string | null;
   // "standard" = default rubric + 18k char cap.
   // "deep"     = larger cap, stricter evidence rules, separate cache slot.
   mode?: ScreeningMode;
@@ -577,18 +580,38 @@ function fitLabelFromScore(score: number): "strong_fit" | "moderate_fit" | "weak
  * summary) are excluded so re-uploading the same file never changes the cache
  * key. Legacy callers without a sha fall back to the old behaviour.
  */
+export function normalizeResumeTextForFingerprint(text: string | null | undefined): string {
+  return String(text ?? "")
+    .normalize("NFKC")
+    .toLowerCase()
+    .replace(/[\u2022\u2023\u25e6\u2043\u2219]/g, "-")
+    .replace(/\bpage\s+\d+\s+(of|\/)?\s*\d*\b/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function resumeTextFingerprint(text: string | null | undefined): string | null {
+  const normalized = normalizeResumeTextForFingerprint(text);
+  if (!normalized) return null;
+  return createHash("sha256").update(normalized).digest("hex");
+}
+
 export function screeningCacheKey(input: ScreeningInput): string {
   const mode: ScreeningMode = input.mode === "deep" ? "deep" : "standard";
+  const hasTextFingerprint =
+    typeof input.resumeTextFingerprint === "string" && input.resumeTextFingerprint.length > 0;
   const hasSha = typeof input.resumeFileSha === "string" && input.resumeFileSha.length > 0;
 
-  const resumeIdentity = hasSha
-    ? { kind: "sha256", value: input.resumeFileSha }
-    : {
-        kind: "legacy",
-        candidateName: input.candidateName ?? "",
-        skills: [...(input.skills ?? [])].sort(),
-        resumeText: input.resumeText ?? "",
-      };
+  const resumeIdentity = hasTextFingerprint
+    ? { kind: "normalized_text", value: input.resumeTextFingerprint }
+    : hasSha
+      ? { kind: "sha256", value: input.resumeFileSha }
+      : {
+          kind: "legacy",
+          candidateName: input.candidateName ?? "",
+          skills: [...(input.skills ?? [])].sort(),
+          resumeText: input.resumeText ?? "",
+        };
 
   const payload = JSON.stringify({
     promptVersion: SCREEN_PROMPT_VERSION,

@@ -30,6 +30,99 @@ function hydrateCandidate<T extends { skills?: unknown } | null | undefined>(c: 
   return { ...(c as any), skills: parseList((c as any).skills) } as T;
 }
 
+type ScreeningWithProvenance = Record<string, any> & {
+  cacheReason?: string | null;
+  duplicateScoreCount?: number;
+  duplicateCandidateCount?: number;
+};
+
+function scoringFingerprint(s: any): string | null {
+  return s?.resumeTextFingerprint || s?.resumeFileSha || s?.cacheKey || null;
+}
+
+function inferCacheReason(s: any, duplicateScoreCount: number, duplicateCandidateCount: number): string | null {
+  if (duplicateCandidateCount > 1) {
+    return s?.resumeTextFingerprint ? "normalized_resume_match" : "duplicate_resume_clone";
+  }
+  if (duplicateScoreCount > 1) {
+    if (s?.resumeFileSha) return "same_resume_sha";
+    if (s?.cacheKey) return "durable_cache";
+  }
+  return null;
+}
+
+function annotateScreeningsWithLocalProvenance(screenings: any[]): ScreeningWithProvenance[] {
+  const scoreCounts = new Map<string, number>();
+  const candidateSets = new Map<string, Set<string>>();
+
+  for (const s of screenings) {
+    const fingerprint = scoringFingerprint(s);
+    if (!fingerprint) continue;
+    const key = `${s.jobId ?? ""}:${s.mode ?? "standard"}:${fingerprint}`;
+    scoreCounts.set(key, (scoreCounts.get(key) ?? 0) + 1);
+    if (!candidateSets.has(key)) candidateSets.set(key, new Set());
+    candidateSets.get(key)?.add(s.candidateId);
+  }
+
+  return screenings.map((s) => {
+    const fingerprint = scoringFingerprint(s);
+    const key = fingerprint ? `${s.jobId ?? ""}:${s.mode ?? "standard"}:${fingerprint}` : null;
+    const duplicateScoreCount = key ? scoreCounts.get(key) ?? 1 : 1;
+    const duplicateCandidateCount = key ? candidateSets.get(key)?.size ?? 1 : 1;
+    return {
+      ...s,
+      cacheReason: inferCacheReason(s, duplicateScoreCount, duplicateCandidateCount),
+      duplicateScoreCount,
+      duplicateCandidateCount,
+    };
+  });
+}
+
+async function annotateScreeningsWithDbProvenance(screenings: any[]): Promise<ScreeningWithProvenance[]> {
+  const annotated: ScreeningWithProvenance[] = [];
+
+  for (const s of screenings) {
+    const fingerprint = scoringFingerprint(s);
+    if (!fingerprint) {
+      annotated.push({ ...s, cacheReason: null, duplicateScoreCount: 1, duplicateCandidateCount: 1 });
+      continue;
+    }
+
+    const where: any = {
+      jobId: s.jobId,
+      mode: s.mode ?? "standard",
+      ...(s.resumeTextFingerprint
+        ? { resumeTextFingerprint: s.resumeTextFingerprint }
+        : s.resumeFileSha
+          ? { resumeFileSha: s.resumeFileSha }
+          : { cacheKey: s.cacheKey }),
+    };
+
+    try {
+      const matches = await prisma.aiScreeningResult.findMany({
+        where,
+        select: { id: true, candidateId: true },
+      });
+      const duplicateScoreCount = Math.max(1, matches.length);
+      const duplicateCandidateCount = Math.max(1, new Set(matches.map((m) => m.candidateId)).size);
+      annotated.push({
+        ...s,
+        cacheReason: inferCacheReason(s, duplicateScoreCount, duplicateCandidateCount),
+        duplicateScoreCount,
+        duplicateCandidateCount,
+      });
+    } catch (err: any) {
+      const msg = String(err?.message ?? "");
+      if (err?.code !== "P2022" && !/resume_text_fingerprint|resume_file_sha|cache_key|mode|Invalid column/i.test(msg)) {
+        console.warn("[candidates] scoring provenance lookup failed:", msg);
+      }
+      annotated.push({ ...s, cacheReason: null, duplicateScoreCount: 1, duplicateCandidateCount: 1 });
+    }
+  }
+
+  return annotated;
+}
+
 function parseLinkedInData(raw: unknown): { profile: any | null; discrepancies: string[] } {
   if (!raw || typeof raw !== "string") return { profile: null, discrepancies: [] };
   try {
@@ -309,7 +402,7 @@ router.get("/:id", requireAuth, async (req, res) => {
           }
         : s;
 
-    const hydratedScreenings = screeningData.map(hydrateScreening);
+    const hydratedScreenings = await annotateScreeningsWithDbProvenance(screeningData.map(hydrateScreening));
     const latestScreening = hydratedScreenings[0] ?? null;
 
     // Parse stored LinkedIn data
@@ -713,14 +806,15 @@ async function enrichGlobalCandidates(candidateList: any[]) {
     orderBy: { createdAt: "desc" },
   });
 
-  const latestMap = new Map<string, (typeof screenings)[number]>();
-  for (const s of screenings) {
+  const annotatedScreenings = annotateScreeningsWithLocalProvenance(screenings);
+  const latestMap = new Map<string, (typeof annotatedScreenings)[number]>();
+  for (const s of annotatedScreenings) {
     if (!latestMap.has(s.candidateId)) latestMap.set(s.candidateId, s);
   }
 
   return candidateList.map((c) => {
     const s = latestMap.get(c.id);
-    return { ...c, latestScore: s?.matchScore ?? null, latestFit: s?.fitLabel ?? null };
+    return { ...c, latestScore: s?.matchScore ?? null, latestFit: s?.fitLabel ?? null, latestScreening: s ?? null };
   });
 }
 
@@ -733,14 +827,15 @@ async function enrichWithScores(candidateList: any[], jobId: string) {
     orderBy: { createdAt: "desc" },
   });
 
-  const scoreMap = new Map<string, (typeof screenings)[number]>();
-  for (const s of screenings) {
+  const annotatedScreenings = annotateScreeningsWithLocalProvenance(screenings);
+  const scoreMap = new Map<string, (typeof annotatedScreenings)[number]>();
+  for (const s of annotatedScreenings) {
     if (!scoreMap.has(s.candidateId)) scoreMap.set(s.candidateId, s);
   }
 
   return candidateList.map((c) => {
     const s = scoreMap.get(c.id);
-    return { ...c, latestScore: s?.matchScore ?? null, latestFit: s?.fitLabel ?? null };
+    return { ...c, latestScore: s?.matchScore ?? null, latestFit: s?.fitLabel ?? null, latestScreening: s ?? null };
   });
 }
 

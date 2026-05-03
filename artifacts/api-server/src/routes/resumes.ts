@@ -13,7 +13,7 @@ import {
   resolveCandidateDisplayName,
   sanitizeExtractedSkills,
 } from "../lib/resumeParser.js";
-import { extractFullResumeData } from "../lib/aiService.js";
+import { extractFullResumeData, resumeTextFingerprint } from "../lib/aiService.js";
 import { candidatePublicSelect } from "../lib/prismaSafeSelects.js";
 
 // Disk storage: set UPLOAD_RESUMES_DIR on the server if cwd differs from the repo root (PM2 should set cwd to project root).
@@ -209,9 +209,10 @@ router.post("/upload", requireAuth, (req, res) => {
       }
 
       // 4. Insert resume row linking file path + raw text.
-      // fileSha256 is tolerant of schema drift: if the DB predates the column,
-      // fall back to inserting without it so uploads keep working.
+      // fileSha256/textFingerprint are tolerant of schema drift: if the DB predates
+      // either column, fall back progressively so uploads keep working.
       const fileUrl = `/api/resumes/files/${path.basename(file.path)}`;
+      const textFingerprint = resumeTextFingerprint(parsedText);
       const resumeBaseData = {
         candidateId,
         fileName: file.originalname,
@@ -222,18 +223,34 @@ router.post("/upload", requireAuth, (req, res) => {
       let resumeRow: any;
       try {
         resumeRow = await prisma.resume.create({
-          data: { ...resumeBaseData, fileSha256: fileSha256 ?? undefined },
+          data: {
+            ...resumeBaseData,
+            fileSha256: fileSha256 ?? undefined,
+            textFingerprint: textFingerprint ?? undefined,
+          },
         });
       } catch (createErr: any) {
         const msg = String(createErr?.message ?? "");
         const code = createErr?.code;
-        const looksLikeSchemaDrift =
+        const looksLikeTextFingerprintDrift =
+          code === "P2022" || /text_fingerprint|Invalid column name/i.test(msg);
+        const looksLikeFileShaDrift =
           code === "P2022" || /file_sha256|Invalid column name/i.test(msg);
-        if (!looksLikeSchemaDrift) throw createErr;
-        console.warn(
-          "[resumes] file_sha256 column missing; inserting without it. Run prisma db push on this server.",
-        );
-        resumeRow = await prisma.resume.create({ data: resumeBaseData });
+        if (looksLikeTextFingerprintDrift && !looksLikeFileShaDrift) {
+          console.warn(
+            "[resumes] text_fingerprint column missing; inserting without it. Run prisma db push on this server.",
+          );
+          resumeRow = await prisma.resume.create({
+            data: { ...resumeBaseData, fileSha256: fileSha256 ?? undefined },
+          });
+        } else if (looksLikeFileShaDrift) {
+          console.warn(
+            "[resumes] resume fingerprint columns missing; inserting base row only. Run prisma db push on this server.",
+          );
+          resumeRow = await prisma.resume.create({ data: resumeBaseData });
+        } else {
+          throw createErr;
+        }
       }
 
       // 5. Optional: link to job if provided (unique on candidateId+jobId)
