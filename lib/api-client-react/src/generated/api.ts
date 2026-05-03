@@ -77,7 +77,83 @@ type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 /**
- * @summary Health check
+ * Returns HTTP 200 for Railway health probes, with degraded status when dependencies are unavailable.
+ * @summary Railway health check
+ */
+export const getGetHealthStatusUrl = () => {
+  return `/api/health`;
+};
+
+export const getHealthStatus = async (
+  options?: RequestInit,
+): Promise<HealthStatus> => {
+  return customFetch<HealthStatus>(getGetHealthStatusUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetHealthStatusQueryKey = () => {
+  return [`/api/health`] as const;
+};
+
+export const getGetHealthStatusQueryOptions = <
+  TData = Awaited<ReturnType<typeof getHealthStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getHealthStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetHealthStatusQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getHealthStatus>>> = ({
+    signal,
+  }) => getHealthStatus({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getHealthStatus>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetHealthStatusQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getHealthStatus>>
+>;
+export type GetHealthStatusQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Railway health check
+ */
+
+export function useGetHealthStatus<
+  TData = Awaited<ReturnType<typeof getHealthStatus>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getHealthStatus>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetHealthStatusQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Back-compatible health check
  */
 export const getHealthCheckUrl = () => {
   return `/api/healthz`;
@@ -128,7 +204,7 @@ export type HealthCheckQueryResult = NonNullable<
 export type HealthCheckQueryError = ErrorType<unknown>;
 
 /**
- * @summary Health check
+ * @summary Back-compatible health check
  */
 
 export function useHealthCheck<

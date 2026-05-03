@@ -5,8 +5,37 @@
  * GIQ HR Recruitment Platform API
  * OpenAPI spec version: 0.1.0
  */
+export type HealthStatusStatus =
+  (typeof HealthStatusStatus)[keyof typeof HealthStatusStatus];
+
+export const HealthStatusStatus = {
+  ok: "ok",
+  degraded: "degraded",
+} as const;
+
+export type HealthStatusDb =
+  (typeof HealthStatusDb)[keyof typeof HealthStatusDb];
+
+export const HealthStatusDb = {
+  connected: "connected",
+  down: "down",
+} as const;
+
+export type HealthStatusSupabase =
+  (typeof HealthStatusSupabase)[keyof typeof HealthStatusSupabase];
+
+export const HealthStatusSupabase = {
+  connected: "connected",
+  down: "down",
+} as const;
+
 export interface HealthStatus {
-  status: string;
+  status: HealthStatusStatus;
+  db?: HealthStatusDb;
+  supabase?: HealthStatusSupabase;
+  service?: string;
+  timestamp?: string;
+  uptimeSeconds?: number;
 }
 
 export interface MessageResponse {
