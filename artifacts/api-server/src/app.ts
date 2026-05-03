@@ -10,12 +10,17 @@ const allowedOrigins = rawCorsOrigin
   ? rawCorsOrigin.split(",").map((s) => s.trim()).filter(Boolean)
   : [];
 
+if (!isDev && allowedOrigins.includes("*")) {
+  throw new Error("CORS_ORIGIN must list explicit origins in production; wildcard is not allowed");
+}
+
 app.use(cors({
   // In development with no CORS_ORIGIN set, allow all origins.
   // In production with no CORS_ORIGIN set, deny all cross-origin requests (origin: false).
   origin: allowedOrigins.length > 0 ? allowedOrigins : isDev ? true : false,
-  // We no longer use cookie-based sessions, but allow credentials so the
-  // browser can send Authorization headers across origins where needed.
+  // Some legacy frontend fetches still use credentials: "include". Keep the
+  // response compatible, but require explicit production origins above so
+  // cookies (if introduced later) are never combined with wildcard CORS.
   credentials: true,
 }));
 app.use(express.json({ limit: "50mb" }));

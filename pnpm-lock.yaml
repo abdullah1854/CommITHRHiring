@@ -191,6 +191,9 @@ importers:
       '@workspace/db':
         specifier: workspace:*
         version: link:../../lib/db
+      '@workspace/integrations-anthropic-ai-server':
+        specifier: workspace:*
+        version: link:../../lib/integrations/anthropic_ai_integrations
       '@workspace/integrations-openai-ai-server':
         specifier: workspace:*
         version: link:../../lib/integrations-openai-ai-server
@@ -472,6 +475,8 @@ importers:
       p-retry:
         specifier: ^7.1.1
         version: 7.1.1
+
+  lib/integrations/anthropic_ai_integrations: {}
 
   scripts:
     dependencies:

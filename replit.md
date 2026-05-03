@@ -27,7 +27,7 @@ workspace/
 - **Backend**: Express 5, TypeScript, tsx (dev hot-reload)
 - **Database**: Azure SQL Server + Prisma ORM (connected via `DATABASE_URL` sqlserver connection string)
 - **AI**: OpenAI (base model **GPT-4o** for screening, summaries, interview questions, JD generation/improvement, and resume parsing). Configurable via `OPENAI_API_KEY` / `OPENAI_MODEL` / `OPENAI_BASE_URL`, with legacy fallback to `AI_INTEGRATIONS_OPENAI_API_KEY` and `AI_INTEGRATIONS_OPENAI_BASE_URL`.
-- **Auth**: Session-based (`express-session`), httpOnly cookies, 24h TTL
+- **Auth**: Supabase JWT bearer tokens verified by the API; no Express session cookie middleware is mounted.
 - **API client**: Orval-generated React Query hooks from OpenAPI spec
 - **API type-safety**: Orval-generated Zod schemas
 - **Package manager**: pnpm workspaces
@@ -90,7 +90,6 @@ Push schema to database: `pnpm --filter @workspace/db run push` (runs `prisma db
 ## Environment Variables
 
 - `DATABASE_URL` — Prisma sqlserver connection string (e.g. `sqlserver://HOST:1433;database=DB;user=USER;password=PASS;encrypt=true;trustServerCertificate=false`)
-- `SESSION_SECRET` — Required for session middleware (auto-set)
 - `AI_INTEGRATIONS_OPENAI_BASE_URL` — OpenAI proxy URL (Replit integration)
 - `AI_INTEGRATIONS_OPENAI_API_KEY` — OpenAI API key (Replit integration)
 - `PORT` — App port (auto-assigned per artifact by Replit)
@@ -105,7 +104,7 @@ pnpm i
 
 # 2. Copy .env.example → .env and fill in secrets
 #    Required: OPENAI_API_KEY, DATABASE_URL
-#    Optional: SESSION_SECRET, SMTP_*
+#    Optional: SMTP_*
 cp .env.example .env
 
 # 3. Generate the Prisma client, then push the schema to Azure SQL (creates all tables)

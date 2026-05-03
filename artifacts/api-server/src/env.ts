@@ -49,9 +49,18 @@ if (cwdEnv !== walkedEnv && cwdEnv !== explicit) {
   loadFrom(cwdEnv, { override: true });
 }
 
+if (process.env.NODE_ENV === "production") {
+  const corsOrigins = (process.env.CORS_ORIGIN ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  if (corsOrigins.includes("*")) {
+    throw new Error("CORS_ORIGIN must list explicit origins in production; wildcard is not allowed");
+  }
+}
+
 console.log(
   `[env] cwd=${process.cwd()} loaded=${sources.length ? sources.join(", ") : "(none)"} ` +
     `OPENAI_API_KEY=${process.env.OPENAI_API_KEY ? "set" : "MISSING"} ` +
-    `DATABASE_URL=${process.env.DATABASE_URL ? "set" : "MISSING"} ` +
-    `SESSION_SECRET=${process.env.SESSION_SECRET ? "set" : "MISSING"}`,
+    `DATABASE_URL=${process.env.DATABASE_URL ? "set" : "MISSING"}`,
 );
