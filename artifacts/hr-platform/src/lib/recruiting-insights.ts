@@ -64,6 +64,12 @@ export function buildHiringInsights(overview: OverviewLike | null | undefined, c
   const screeningCoverage = totalCandidates > 0 ? Math.round(((overview?.aiScreeningCount ?? screenedCandidates) / totalCandidates) * 100) : 100;
   const conversionRate = totalCandidates > 0 ? Math.round(((shortlistedCount + interviewCount + hires) / totalCandidates) * 100) : 0;
 
+  // `aiScreeningCount` / `totalInterviewsScheduled` count records, not unique
+  // candidates, so these ratios can exceed 100 % and must be clamped before
+  // they feed the health score or are surfaced to the dashboard.
+  const clampedScreeningCoverage = clamp(screeningCoverage);
+  const clampedConversionRate = clamp(conversionRate);
+
   const now = Date.now();
   const staleReviewCount = candidates.filter((candidate) => {
     if (!["new", "reviewing"].includes(candidate.status)) return false;
@@ -78,8 +84,8 @@ export function buildHiringInsights(overview: OverviewLike | null | undefined, c
 
   const healthScore = clamp(
     Math.round(
-      screeningCoverage * 0.34 +
-      Math.min(conversionRate, 60) * 0.45 +
+      clampedScreeningCoverage * 0.34 +
+      Math.min(clampedConversionRate, 60) * 0.45 +
       Math.min(averageScore, 100) * 0.21 -
       Math.min(staleReviewCount * 4, 20),
     ),
@@ -127,8 +133,8 @@ export function buildHiringInsights(overview: OverviewLike | null | undefined, c
   return {
     healthScore,
     healthLabel,
-    conversionRate,
-    screeningCoverage: clamp(screeningCoverage),
+    conversionRate: clampedConversionRate,
+    screeningCoverage: clampedScreeningCoverage,
     needsScreeningCount,
     staleReviewCount,
     topCandidates,
