@@ -28,6 +28,7 @@ import { getInitials } from "@/lib/utils";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { buildScoringProvenance } from "@/lib/scoring-provenance";
 
 /** Safely coerce a DB value (string JSON, array, null, undefined) to string[]. */
 function safeList(v: unknown): string[] {
@@ -323,6 +324,17 @@ export default function CandidateProfile() {
   };
 
   const latestScreening = candidate.screeningResults?.[0];
+  const latestScreeningProvenance = latestScreening
+    ? buildScoringProvenance({
+        cacheReason: (latestScreening as any).cacheReason,
+        cacheKey: (latestScreening as any).cacheKey,
+        mode: (latestScreening as any).mode,
+        resumeFileSha: (latestScreening as any).resumeTextFingerprint ?? (latestScreening as any).resumeFileSha,
+        createdAt: latestScreening.createdAt,
+        duplicateScoreCount: (latestScreening as any).duplicateScoreCount,
+        duplicateCandidateCount: (latestScreening as any).duplicateCandidateCount,
+      })
+    : null;
   const resumeMime = (candidate.resume as any)?.mimeType as string | undefined;
   const isPdfResume = resumeMime === "application/pdf" || candidate.resume?.fileUrl?.toLowerCase().endsWith(".pdf");
 
@@ -462,6 +474,21 @@ export default function CandidateProfile() {
                 <div className="text-white/70 font-medium mb-1">/ 100</div>
               </div>
               <p className="text-sm text-white/80 mt-4 leading-relaxed">{latestScreening.aiRecommendation}</p>
+              {latestScreeningProvenance && (
+                <div className="mt-5 rounded-xl bg-white/10 border border-white/15 p-3">
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    <span className={`inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md border ${latestScreeningProvenance.primaryBadge === "Fresh score" ? "bg-emerald-300/20 text-emerald-50 border-emerald-200/30" : "bg-amber-300/20 text-amber-50 border-amber-200/30"}`}>
+                      <AlertTriangle className="w-3 h-3" /> {latestScreeningProvenance.primaryBadge}
+                    </span>
+                    {latestScreeningProvenance.badges.map((badge) => (
+                      <span key={badge} className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-white/10 text-white border border-white/15">
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-xs text-white/75 leading-relaxed">{latestScreeningProvenance.detailLines[0]}</p>
+                </div>
+              )}
             </div>
           )}
 
@@ -664,6 +691,19 @@ export default function CandidateProfile() {
                       {latestScreening.reasoning && (
                         <div className="bg-muted p-4 rounded-xl border border-border">
                           <p className="text-sm text-muted-foreground leading-relaxed">{latestScreening.reasoning}</p>
+                        </div>
+                      )}
+                      {latestScreeningProvenance && (
+                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
+                          <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-2">Scoring provenance</p>
+                          <ul className="space-y-1.5">
+                            {latestScreeningProvenance.detailLines.map((line) => (
+                              <li key={line} className="text-sm text-amber-900 leading-relaxed flex gap-2">
+                                <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                                <span>{line}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       )}
                       {latestScreening.aiRecommendation && (

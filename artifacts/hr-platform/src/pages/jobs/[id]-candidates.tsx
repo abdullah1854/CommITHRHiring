@@ -2,11 +2,47 @@ import { useRoute } from "wouter";
 import { useGetJob, useListCandidates, useRankCandidates } from "@workspace/api-client-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Link } from "wouter";
-import { ArrowLeft, User, Bot, Zap } from "lucide-react";
+import { ArrowLeft, User, Bot, Zap, CopyCheck, History } from "lucide-react";
 import { CandidateStatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DataTable, DataTableBody, DataTableCell, DataTableHead, DataTableHeader, DataTableRow } from "@/components/ui/data-table";
 import { getInitials } from "@/lib/utils";
+import { buildScoringProvenance } from "@/lib/scoring-provenance";
+
+function ScoringProvenanceBadges({ screening }: { screening: any }) {
+  const provenance = buildScoringProvenance({
+    cacheReason: screening?.cacheReason,
+    cacheKey: screening?.cacheKey,
+    mode: screening?.mode,
+    resumeFileSha: screening?.resumeTextFingerprint ?? screening?.resumeFileSha,
+    createdAt: screening?.createdAt,
+    duplicateScoreCount: screening?.duplicateScoreCount,
+    duplicateCandidateCount: screening?.duplicateCandidateCount,
+  });
+
+  if (provenance.primaryBadge === "Fresh score" && provenance.badges.length === 0) {
+    return (
+      <span className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-100 w-max">
+        <History className="w-3 h-3" /> Fresh score
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {provenance.badges.map((badge) => (
+        <span
+          key={badge}
+          className="inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-100 w-max"
+          title={provenance.detailLines.join("\n")}
+        >
+          {badge === "Duplicate CV" ? <CopyCheck className="w-3 h-3" /> : <History className="w-3 h-3" />}
+          {badge}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 export default function JobCandidates() {
   const [, params] = useRoute("/jobs/:id/candidates");
@@ -25,7 +61,8 @@ export default function JobCandidates() {
     const rankInfo = rankings?.rankings?.find(r => r.candidateId === candidate.id);
     return {
       ...candidate,
-      rankInfo
+      rankInfo,
+      scoreInfo: rankInfo ? { ...((candidate as any).latestScreening ?? {}), ...rankInfo } : (candidate as any).latestScreening,
     };
   }).sort((a, b) => {
     if (a.rankInfo && b.rankInfo) return a.rankInfo.rank - b.rankInfo.rank;
@@ -102,21 +139,22 @@ export default function JobCandidates() {
                       </div>
                     </DataTableCell>
                     <DataTableCell>
-                      {candidate.rankInfo ? (
+                      {candidate.scoreInfo ? (
                         <div className="flex items-center gap-3">
                           <div className={`text-xl font-display font-bold
-                            ${candidate.rankInfo.score >= 80 ? 'text-emerald-600' : 
-                              candidate.rankInfo.score >= 60 ? 'text-yellow-600' : 'text-red-600'}
+                            ${(candidate.scoreInfo.score ?? candidate.scoreInfo.matchScore) >= 80 ? 'text-emerald-600' : 
+                              (candidate.scoreInfo.score ?? candidate.scoreInfo.matchScore) >= 60 ? 'text-yellow-600' : 'text-red-600'}
                           `}>
-                            {candidate.rankInfo.score}
+                            {candidate.scoreInfo.score ?? candidate.scoreInfo.matchScore}
                           </div>
                           <div className="flex flex-col gap-1">
                             <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md inline-block w-max
-                            ${candidate.rankInfo.fitLabel === 'strong_fit' ? 'bg-emerald-100 text-emerald-800' : 
-                                candidate.rankInfo.fitLabel === 'moderate_fit' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}
+                            ${candidate.scoreInfo.fitLabel === 'strong_fit' ? 'bg-emerald-100 text-emerald-800' : 
+                                candidate.scoreInfo.fitLabel === 'moderate_fit' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}
                             `}>
-                              {candidate.rankInfo.fitLabel.replace(/_/g, ' ')}
+                              {candidate.scoreInfo.fitLabel.replace(/_/g, ' ')}
                             </span>
+                            <ScoringProvenanceBadges screening={candidate.scoreInfo} />
                           </div>
                         </div>
                       ) : (
