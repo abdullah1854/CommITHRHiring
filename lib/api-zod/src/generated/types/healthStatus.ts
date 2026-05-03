@@ -5,7 +5,15 @@
  * GIQ HR Recruitment Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { HealthStatusDb } from "./healthStatusDb";
+import type { HealthStatusStatus } from "./healthStatusStatus";
+import type { HealthStatusSupabase } from "./healthStatusSupabase";
 
 export interface HealthStatus {
-  status: string;
+  status: HealthStatusStatus;
+  db?: HealthStatusDb;
+  supabase?: HealthStatusSupabase;
+  service?: string;
+  timestamp?: Date;
+  uptimeSeconds?: number;
 }

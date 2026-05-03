@@ -8,10 +8,28 @@
 import * as zod from "zod";
 
 /**
- * @summary Health check
+ * Returns HTTP 200 for Railway health probes, with degraded status when dependencies are unavailable.
+ * @summary Railway health check
+ */
+export const GetHealthStatusResponse = zod.object({
+  status: zod.enum(["ok", "degraded"]),
+  db: zod.enum(["connected", "down"]).optional(),
+  supabase: zod.enum(["connected", "down"]).optional(),
+  service: zod.string().optional(),
+  timestamp: zod.date().optional(),
+  uptimeSeconds: zod.number().optional(),
+});
+
+/**
+ * @summary Back-compatible health check
  */
 export const HealthCheckResponse = zod.object({
-  status: zod.string(),
+  status: zod.enum(["ok", "degraded"]),
+  db: zod.enum(["connected", "down"]).optional(),
+  supabase: zod.enum(["connected", "down"]).optional(),
+  service: zod.string().optional(),
+  timestamp: zod.date().optional(),
+  uptimeSeconds: zod.number().optional(),
 });
 
 /**

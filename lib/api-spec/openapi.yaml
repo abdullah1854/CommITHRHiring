@@ -29,11 +29,25 @@ tags:
     description: Email notification management
 
 paths:
+  /health:
+    get:
+      operationId: getHealthStatus
+      tags: [health]
+      summary: Railway health check
+      description: Returns HTTP 200 for Railway health probes, with degraded status when dependencies are unavailable.
+      responses:
+        "200":
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
-      summary: Health check
+      summary: Back-compatible health check
       responses:
         "200":
           description: Healthy

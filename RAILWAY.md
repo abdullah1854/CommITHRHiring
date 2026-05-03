@@ -57,4 +57,5 @@ This monorepo deploys as **two services** on a single Railway project.
 - `pnpm --filter @workspace/db generate` runs on the api-server build to generate the Prisma client before the esbuild bundle picks it up.
 - The api-server `startCommand` runs the bundled output at `artifacts/api-server/dist/index.mjs`. The bundle is produced by `artifacts/api-server/build.ts`.
 - The hr-platform `startCommand` runs `vite preview` (the `serve` script in `artifacts/hr-platform/package.json`) bound to `$PORT`. For higher production polish you can swap this for a static file server like `npx serve dist/public -l $PORT`.
-- Healthcheck path `/api/health` assumes `routes/health.ts` exposes a 200 OK GET on `/api/health` — verify before enabling.
+- Healthcheck path `/api/health` is implemented by `artifacts/api-server/src/routes/health.ts` and is mounted through `app.use("/api", router)`. It returns HTTP 200 with `status: "ok"` when DB and Supabase Auth checks pass, or HTTP 200 with `status: "degraded"` plus dependency statuses when either dependency is unavailable, so Railway health probes can still distinguish process liveness from dependency health.
+- Back-compatible `/api/healthz` remains available for simple status-only checks.
