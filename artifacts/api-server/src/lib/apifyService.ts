@@ -1,7 +1,7 @@
 const APIFY_TOKEN = process.env.APIFY_TOKEN;
 const APIFY_BASE = "https://api.apify.com/v2";
 // Public LinkedIn profile scraper actor on Apify
-const ACTOR_ID = "apify~linkedin-profile-scraper";
+const ACTOR_ID = "johnvc~linkedin-profile-api";
 const POLL_INTERVAL_MS = 4_000;
 const MAX_WAIT_MS = 120_000; // 2 min timeout
 
@@ -59,15 +59,15 @@ function mapProfile(raw: any, profileUrl: string): LinkedInProfile {
     (e: any) => ({
       title: e.title ?? e.jobTitle ?? null,
       company: e.company ?? e.companyName ?? null,
-      startDate: e.startDate ?? e.start ?? null,
-      endDate: e.endDate ?? e.end ?? null,
+      startDate: e.startDate ?? e.start ?? e.start_date ?? null,
+      endDate: e.endDate ?? e.end ?? e.end_date ?? null,
       description: e.description ?? null,
     }),
   );
 
   const education: LinkedInEducation[] = (raw.educations ?? raw.education ?? []).map(
     (e: any) => ({
-      school: e.school ?? e.schoolName ?? null,
+      school: e.school ?? e.schoolName ?? e.title ?? null,
       degree: e.degree ?? e.degreeName ?? null,
       field: e.field ?? e.fieldOfStudy ?? null,
       startDate: e.startDate ?? e.start ?? null,
@@ -111,8 +111,7 @@ export async function scrapeLinkedInProfile(
     const startRes = await apifyFetch(`/acts/${ACTOR_ID}/runs`, {
       method: "POST",
       body: JSON.stringify({
-        startUrls: [{ url: normalised }],
-        proxy: { useApifyProxy: true },
+        profileUrls: [normalised],
       }),
     });
 
@@ -167,6 +166,10 @@ export async function scrapeLinkedInProfile(
     const items: any[] = await itemsRes.json();
     if (!Array.isArray(items) || items.length === 0) {
       console.warn("[apifyService] No LinkedIn profile data returned (profile may be private)");
+      return { status: "not_found", profile: null };
+    }
+    if (items[0]?.error_message) {
+      console.warn(`[apifyService] No LinkedIn profile data returned: ${items[0].error_message}`);
       return { status: "not_found", profile: null };
     }
 
